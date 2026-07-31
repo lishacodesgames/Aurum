@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "src",
+			"name": "source"
+		}
+	],
+
+	"settings": {
+		"workbench.colorTheme": "Bearded Theme HC Wonderland Wood",
+		"workbench.iconTheme": "bearded-icons",
+
+		"files.exclude": {
+			"src": true
+		}
+	},
+
+	"extensions": {
+		"recommendations": [
+			"beardedbear.beardedtheme",
+			"beardedbear.beardedicons",
+			"dan-c-underwood.arm"
+		]
+	}
+}
