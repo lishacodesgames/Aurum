@@ -26,7 +26,18 @@ I do want to support Linux soon... I'll see about Windows
 Currently, `scripts/` only holds the mac's compilation command for assembly, but I hope to add more... soon...
 
 ## Build & Run
-coming soon...
+(Run from `Orum/`)
+
+### Build
+```bash
+cmake --preset Release
+cmake --build --preset Release
+```
+
+### Run
+```bash
+./build/Release/Orum gold.or
+```
 
 ### Dependencies
 - NASM

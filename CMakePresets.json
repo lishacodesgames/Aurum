@@ -1,0 +1,53 @@
+{
+   "version": 3,
+   "configurePresets": [
+      {
+         "name": "Base",
+         "hidden": true,
+         "generator": "Ninja",
+         "binaryDir": "${sourceDir}/build/${presetName}",
+         "cacheVariables": {
+            "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+            "CMAKE_CXX_STANDARD": "20",
+            "CMAKE_CXX_STANDARD_REQUIRED": "ON"
+         }
+      },
+
+      {
+         "name": "Debug",
+         "inherits": "Base",
+         "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Debug"
+         }
+      },
+      {
+         "name": "Symbols",
+         "inherits": "Base",
+         "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+         }
+      },
+      {
+         "name": "Release",
+         "inherits": "Base",
+         "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Release"
+         }
+      }
+   ],
+
+   "buildPresets": [
+      {
+         "name": "Debug",
+         "configurePreset": "Debug"
+      },
+      {
+         "name": "Symbols",
+         "configurePreset": "Symbols"
+      },
+      {
+         "name": "Release",
+         "configurePreset": "Release"
+      }
+   ]
+}
