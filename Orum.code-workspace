@@ -12,7 +12,7 @@
       "cmake.useCMakePresets": "always",
       "cmake.debugConfig": {
          "args": [
-            "${workspaceFolder}/gold.or"
+            "gold.or"
          ],
          "cwd": "${workspaceFolder}"
       },
