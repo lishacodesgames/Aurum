@@ -20,9 +20,13 @@ I code in C++, Java and Python, so I want to mix all the best syntax features (i
 - Semicolon based
 
 ## Architecture
-I work on my macbook, which uses arm64, but I like the x64 syntax of assembly better, so I'm using that.
+currently only supports MacOS, running assembly in x64 architecture, bcz I like its syntax better
+I do want to support Linux soon... I'll see about Windows
 
 Currently, `scripts/` only holds the mac's compilation command for assembly, but I hope to add more... soon...
 
 ## Build & Run
 coming soon...
+
+### Dependencies
+- NASM

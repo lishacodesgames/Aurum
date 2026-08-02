@@ -1,23 +1,18 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -euo pipefail # stop if a command fails, if a variable is unset, or if a command in a pipe fails
 
-if [[ $# -ne 1 ]]; then
-   echo "Usage: $0 <file.asm>" >&2
+if [[ $# -ne 1 || $1 != *.asm ]]; then
+   echo "Incorrect usage!" >&2
+   echo "Correct usage: $0 <file.asm>" >&2
    exit 1
 fi
 
-input=$1
+filename=$(basename -- "$1") # program.asm
+name=${filename%.asm}        # program
+object="/tmp/$name.o"
 
-if [[ $input != *.asm ]]; then
-   echo "Error: argument must be an .asm file" >&2
-   exit 1
-fi
+# Compile the assembly file into an object file
+nasm -f macho64 -o "$object" "$1"
 
-filename=$(basename -- "$input")   # e.g. program.asm
-name=${filename%.asm}              # e.g. program
-
-clang \
-   -x assembler \
-   -arch x86_64 \
-   -o "$name" \
-   "$filename"
+# Link object file into an executable
+clang -arch x86_64 -o "$name" "$object"
