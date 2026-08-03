@@ -13,7 +13,6 @@ std::string to_string(TokenType type) {
    return "to_string(TokenType) messed up!";
 }
 
-/// @todo return a better, lighter data structure than vector
 std::vector<Token> tokenize(std::string_view src) {
    std::vector<Token> tokens;
    std::string buffer;
@@ -35,8 +34,7 @@ std::vector<Token> tokenize(std::string_view src) {
             buffer.clear();
             continue;
          } else { // for now
-            std::cerr << "Unknown token!\n";
-            exit(EXIT_FAILURE);
+            throw std::runtime_error("Unknown token!\n");
          }
       } else if(std::isdigit(src.at(i))) {
          // assign buffer
@@ -59,10 +57,46 @@ std::vector<Token> tokenize(std::string_view src) {
       }
 
       // this part should not be reached. Each control flow previously has a continue;
-      std::cerr << "Reached end of tokenizer while loop!\n";
-      exit(EXIT_FAILURE);
+      throw std::runtime_error( "Reached end of tokenizer while loop!\n");
    }
 
    return tokens;
 }
 
+void toAssembly(const std::vector<Token>& tokens, const std::string& assemblyOutputFile) {
+   std::string assembly = R"asm(; macOS x86_64, NASM syntax
+)asm";
+   
+   // for now, this part is always in the beginning
+   assembly.append(R"asm(
+global _main
+_main:)asm");
+
+   size_t i = 0;
+   while(i < tokens.size()) {
+      if(tokens.at(i).type == TokenType::EXIT) {
+         if(tokens.at(++i) != TokenType::INTEGER_LITERAL) {
+            throw std::runtime_error("Exit code not given!");
+         }
+
+         assembly.append(
+            std::format(R"asm(
+   mov eax, {}
+   ret
+)asm", tokens.at(i).value.value())); // good practice to end files with 1 newline
+
+         ++i; // move past the integer literal
+         continue;
+      } else if(tokens.at(i).type == TokenType::SEMICOLON) {
+         ++i; // just skip semicolons
+         continue;
+      } else {
+         throw std::runtime_error("Unknown token!");
+      }
+   }
+
+   {
+      std::ofstream outfile(assemblyOutputFile);
+      outfile << assembly;
+   }
+}
