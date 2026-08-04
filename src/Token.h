@@ -22,4 +22,5 @@ struct Token {
 
 std::string to_string(TokenType type);
 
-void toAssembly(const std::vector<Token>& tokens, const std::string& assemblyOutputFile);
+/// @param assemblyOutputFile parent directories must exist already
+void toAssembly(const std::vector<Token>& tokens, const std::filesystem::path& assemblyOutputFile);

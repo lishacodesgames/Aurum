@@ -11,8 +11,10 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
    }
    std::string fileBaseName = orumFile.substr(0, orumFile.find_last_of('.'));
+   std::filesystem::path outputDir("out");
+   std::filesystem::create_directories(outputDir); // does nothing if it already exists
+   
    std::println("Compiling Orum file '{}'...", orumFile);
-
    std::string orum_src;
    {
       std::ifstream file(orumFile);
@@ -28,23 +30,25 @@ int main(int argc, char* argv[]) {
 
    Tokenizer tokenizer(orum_src);
 
-   std::string assemblyFile = fileBaseName + ".asm";   
+   std::filesystem::path assemblyFile = outputDir / (fileBaseName + ".asm");
    toAssembly(tokenizer.getTokens(), assemblyFile);
-   std::println("Successfully compiled to assembly file '{}'", assemblyFile);
+   std::println("Successfully compiled to assembly file '{}'", assemblyFile.string());
 
    if(!std::filesystem::exists("scripts")) {
       std::println("Please run from the root of the project, where the 'scripts' folder is located.");
       return EXIT_FAILURE;
    }
-   std::string compileAssemblyCommand = std::string("./scripts/compile_assembly_mac_x64.sh ") + assemblyFile;
 
-   std::println("Compiling assembly file '{}' to executable...", assemblyFile);
+   std::string compileAssemblyCommand = std::string("./scripts/compile_assembly_mac_x64.sh ") + assemblyFile.string() + " ./out"; // check args of the script
+   std::string executablePath = (outputDir / fileBaseName).string();
+
+   std::println("Compiling assembly file '{}' to executable...", executablePath);
    system(compileAssemblyCommand.c_str()); // compile the assembly file to an executable
    
-   std::println("\nIgnore the ld warning");
-   std::println("Successfully compiled to executable '{}'", assemblyFile.substr(0, assemblyFile.find_last_of('.'))); // print the name of the executable file
+   std::println("\n(Ignore the ld warning)");
+   std::println("Successfully compiled to executable '{}'", executablePath);
    std::println("\nCurrently, our cute little Orum file does nothing except exit with code 40.");
-   std::println("To confirm this, run the executable ('./{}') and check the exit code with 'echo $?'", assemblyFile.substr(0, assemblyFile.find_last_of('.')));
+   std::println("To confirm this, run the executable ('./{}') and check the exit code with 'echo $?'", executablePath);
 
    return EXIT_SUCCESS; // fanciness
 }

@@ -2,5 +2,5 @@
 .DS_Store
 build/
 
-# the orum file's compiled executable
-gold
+# the orum file's compiled executable folder
+out/

@@ -63,7 +63,7 @@ std::vector<Token> tokenize(std::string_view src) {
    return tokens;
 }
 
-void toAssembly(const std::vector<Token>& tokens, const std::string& assemblyOutputFile) {
+void toAssembly(const std::vector<Token>& tokens, const std::filesystem::path& assemblyOutputFile) {
    std::string assembly = R"asm(; macOS x86_64, NASM syntax
 )asm";
    
