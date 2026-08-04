@@ -22,6 +22,4 @@ struct Token {
 
 std::string to_string(TokenType type);
 
-/// @todo return a better, lighter data structure than vector
-std::vector<Token> tokenize(std::string_view src);
 void toAssembly(const std::vector<Token>& tokens, const std::string& assemblyOutputFile);

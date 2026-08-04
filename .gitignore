@@ -1,4 +1,5 @@
 *.o
+.DS_Store
 build/
 
 # the orum file's compiled executable

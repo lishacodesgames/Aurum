@@ -1,6 +1,6 @@
 #include <pch/Precompiled.h>
 
-#include "Token.h"
+#include "Tokenizer.h"
 
 int main(int argc, char* argv[]) {
    // make sure the correct number of arguments is provided
@@ -26,10 +26,10 @@ int main(int argc, char* argv[]) {
       // end of scope closes file
    }
 
-   std::vector<Token> tokens = tokenize(orum_src);
+   Tokenizer tokenizer(orum_src);
 
    std::string assemblyFile = fileBaseName + ".asm";   
-   toAssembly(tokens, assemblyFile);
+   toAssembly(tokenizer.getTokens(), assemblyFile);
    std::println("Successfully compiled to assembly file '{}'", assemblyFile);
 
    if(!std::filesystem::exists("scripts")) {
