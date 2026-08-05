@@ -37,6 +37,7 @@
 #include <source_location>
 #include <filesystem>
 #include <stdexcept>
+#include <expected>
 #include <chrono>
 #include <random>
 #include <thread>

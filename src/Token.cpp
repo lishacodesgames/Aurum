@@ -6,7 +6,11 @@ std::string Token::to_string() const {
 }
 
 std::string to_string(TokenType type) {
-   #define X(name) if(type == TokenType::name) { return #name; }
+   #define X(name) \
+      if(type == TokenType::name) { \
+         return #name; \
+      }
+
       TOKEN_TYPES
    #undef X
 
