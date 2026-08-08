@@ -12,33 +12,38 @@ std::expected<ast::Node, std::string> Parser::parse() {
    // }
 }
 
-std::optional<Token> Parser::peek(int ahead) {
-   if(m_pos + ahead >= m_tokens.size())
+std::optional<Token> Parser::peek(int offset) {
+   if(m_pos + offset >= m_tokens.size())
       return std::nullopt;
    else
-      return m_tokens.at(m_pos + ahead);
+      return m_tokens.at(m_pos + offset);
 }
 
-Token Parser::consume() {
+Token Parser::consume(uint32_t count) {
    if(!peek())
       throw std::runtime_error("Tried to consume out-of-bounds Token!");
 
-   return m_tokens.at(m_pos++);
+   Token current = m_tokens.at(m_pos);
+   m_pos += count;
+
+   return current;
 }
 
 std::expected<ast::Exit, std::string> Parser::parseExit() {
    auto expression = parseExpression(); 
-   if(expression.has_value()) {
-      return ast::Exit{ .expression = *expression };
-   } else {
-      return std::unexpected("Failed to parse Exit node!");
-   }
+   if(!expression)
+      return std::unexpected(expression.error());
+   if(!peek() || *peek() != TokenType::SEMICOLON)
+      return std::unexpected("Expected `;`!");
+
+   return ast::Exit{ .expression = *expression };
 }
 
 std::expected<ast::Expression, std::string> Parser::parseExpression() {
-   if(peek().has_value() && peek()->type == TokenType::INTEGER_LITERAL) {
-      return ast::Expression{ .integerLiteral = consume() };
-   } else {
-      return std::unexpected("Failed to parse Expression node!");
-   }
+   if(!peek())
+      return std::unexpected("Expected an expression!");
+   if(peek()->type != TokenType::INTEGER_LITERAL)
+      return std::unexpected("Unexpected expression type!");
+
+   return ast::Expression{ .integerLiteral = consume() };
 }

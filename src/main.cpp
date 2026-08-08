@@ -6,10 +6,10 @@
 
 int main(int argc, char* argv[]) {
    // make sure the correct number of arguments is provided
-   std::string orumFile = argv[1]; // is not accessed if it is not provided, so this is safe
-   if(argc != 2 || !orumFile.ends_with(".or") || orumFile.find('/') != std::string::npos) {
+   std::string aurumFile = argv[1]; // is not accessed if it is not provided, so this is safe
+   if(argc != 2 || !aurumFile.ends_with(".arum") || aurumFile.find('/') != std::string::npos) {
       std::println("Incorrect usage!");
-      std::println("Correct usage: {} <file.or>, without any slashes", argv[0]);
+      std::println("Correct usage: {} <file.arum>, without any slashes", argv[0]);
       return EXIT_FAILURE;
    }
 
@@ -19,28 +19,28 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
    }
 
-   std::string fileBaseName = orumFile.substr(0, orumFile.find_last_of('.'));
+   std::string fileBaseName = aurumFile.substr(0, aurumFile.find_last_of('.'));
    std::filesystem::path outputDir("out");
    std::filesystem::create_directories(outputDir); // does nothing if it already exists
    std::filesystem::path assemblyFile = outputDir / (fileBaseName + ".asm");
    
-   // get orum source code
-   std::println("Compiling Orum file '{}'...", orumFile);
-   std::string orum_src;
+   // get Aurum source code
+   std::println("Compiling aurum file '{}'...", aurumFile);
+   std::string aurum_src;
    {
-      std::ifstream srcFile(orumFile);
+      std::ifstream srcFile(aurumFile);
       if(!srcFile) {
-         throw std::runtime_error(std::format("Could not open file '{}'", orumFile));
+         throw std::runtime_error(std::format("Could not open file '{}'", aurumFile));
       }
 
       std::ostringstream contents; // osstream because we only want to store, not read
       contents << srcFile.rdbuf(); // read the entire file into the string stream
-      orum_src = contents.str();
+      aurum_src = contents.str();
       // end of scope closes file
    }
 
    // parse & generate assembly
-   Tokenizer tokenizer(orum_src);
+   Tokenizer tokenizer(aurum_src);
    Parser parser(tokenizer.releaseTokens());
    auto rootNode = parser.parse();
    if(!rootNode)
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
    // disclaimers for the user
    std::println("\n(Ignore the ld warning)");
    std::println("Successfully compiled to executable '{}'", executablePath);
-   std::println("\nCurrently, our cute little Orum file does nothing except exit with code 40.");
+   std::println("\nCurrently, our cute little Aurum file does nothing except exit with an integer value.");
    std::println("To confirm this, run the executable ('./{}') and check the exit code with 'echo $?'", executablePath);
 
    return EXIT_SUCCESS; // fanciness

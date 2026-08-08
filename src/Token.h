@@ -2,9 +2,20 @@
 
 #define TOKEN_TYPES \
    X(EXIT) \
-   X(INTEGER_LITERAL) \
    X(SEMICOLON) \
-   X(END_OF_FILE)
+   X(END_OF_FILE) \
+\
+   X(INTEGER_LITERAL) \
+\
+   /* variable name */ \
+   X(IDENTIFIER) \
+\
+   /* [] */ \
+   X(OPEN_BRACKET) X(CLOSE_BRACKET) \
+   /* () */ \
+   X(OPEN_PAREN) X(CLOSE_PAREN) \
+   /* {} */ \
+   X(OPEN_CURLY) X(CLOSE_CURLY) \
 
 enum class TokenType {
    #define X(name) name,

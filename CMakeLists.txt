@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(Orum LANGUAGES CXX)
+project(Aurum LANGUAGES CXX)
 
 file(GLOB_RECURSE SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})

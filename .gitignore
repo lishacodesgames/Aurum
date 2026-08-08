@@ -2,5 +2,5 @@
 .DS_Store
 build/
 
-# the orum file's compiled executable folder
+# the Aurum file's compiled executable folder
 out/

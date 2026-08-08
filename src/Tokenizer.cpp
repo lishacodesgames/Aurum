@@ -1,18 +1,21 @@
 #include <pch/Precompiled.h>
 #include "Tokenizer.h"
 
-std::optional<char> Tokenizer::peek(int ahead) {
-   if(m_pos + ahead >= m_src.size())
+std::optional<char> Tokenizer::peek(int offset) {
+   if(m_pos + offset >= m_src.size())
       return std::nullopt;
    else
-      return m_src.at(m_pos + ahead);
+      return m_src.at(m_pos + offset);
 }
 
-char Tokenizer::consume() {
+char Tokenizer::consume(uint32_t count) {
    if(!peek())
       throw std::runtime_error("Tried to consume end of file character!");
 
-   return m_src.at(m_pos++);
+   char current = m_src.at(m_pos);
+   m_pos += count;
+
+   return current;
 }
 
 Token Tokenizer::next() {
@@ -35,7 +38,7 @@ Token Tokenizer::next() {
       if(buffer == "exit")
          return TokenType::EXIT;
       else // for now
-         throw std::runtime_error("Unkown token!");
+         throw std::runtime_error(std::format("Unkown token '{}'!", buffer));
    } else if(std::isdigit(*peek())) {
       // assign buffer
       buffer.push_back(consume());
@@ -50,7 +53,7 @@ Token Tokenizer::next() {
       return TokenType::SEMICOLON;
    }
 
-   throw std::runtime_error("Unknown character!");
+   throw std::runtime_error(std::format("Unknown character '{}'!", consume()));
 }
 
 void Tokenizer::tokenize() {
@@ -70,7 +73,7 @@ void Tokenizer::tokenize() {
             buffer.clear();
             continue;
          } else {
-            throw std::runtime_error("Unkown token!");
+            throw std::runtime_error(std::format("Unkown token '{}'!", buffer));
          }
       } else if(std::isdigit(*peek())) {
          // assign buffer
@@ -90,11 +93,8 @@ void Tokenizer::tokenize() {
       } else if(std::isspace(*peek())) {
          consume();
          continue;
-      } else {
-         throw std::runtime_error("Unknown character!");
       }
 
-      // this part should not be reached. Each control flow statement should end in continue
-      throw std::runtime_error("Reached end of tokenizer while loop!");
+      throw std::runtime_error(std::format("Unknown character '{}'!", consume()));
    }
 }
