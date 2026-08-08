@@ -1,0 +1,30 @@
+\doxysection{Nodes.\+h}
+\hypertarget{_nodes_8h_source}{}\label{_nodes_8h_source}\index{src/Nodes.h@{src/Nodes.h}}
+\doxymbox{\hyperlink{_nodes_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{_token_8h}{Token.h}}"{}}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00005\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceast}{ast}}\ \{}
+\DoxyCodeLine{00006\ \ \ \ \textcolor{comment}{//\ struct\ Node\ \{}}
+\DoxyCodeLine{00007\ \ \ \ \textcolor{comment}{//\ \ \ \ ///\ @todo}}
+\DoxyCodeLine{00008\ \ \ \ \textcolor{comment}{//\ \};}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structast_1_1_integer_literal}{IntegerLiteral}}\ \{}
+\DoxyCodeLine{00011\ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_token}{Token}}\ \doxymbox{\hyperlink{structast_1_1_integer_literal_a50b406bb72a438e0cf2a716dfb529838}{integer}}\ =\ TokenType::INTEGER\_LITERAL;}
+\DoxyCodeLine{00012\ \ \ \ \};}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structast_1_1_identifier}{Identifier}}\ \{}
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_token}{Token}}\ \doxymbox{\hyperlink{structast_1_1_identifier_a4e5340438bb82ca00e62ce035af52984}{name}};}
+\DoxyCodeLine{00016\ \ \ \ \};}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00019\ \ \ \ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{Expression}}\ =\ std::variant<std::monostate,\ IntegerLiteral,\ Identifier>;}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structast_1_1_exit}{Exit}}\ \textcolor{comment}{/*\ :\ public\ Node\ */}\ \{}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{Expression}}\ \doxymbox{\hyperlink{structast_1_1_exit_a309931719d77c7e13e16cf30b0002096}{expression}};}
+\DoxyCodeLine{00023\ \ \ \ \};}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \ \ \ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{Node}}\ =\ \doxymbox{\hyperlink{structast_1_1_exit}{Exit}};\ \textcolor{comment}{//\ for\ now}}
+\DoxyCodeLine{00026\ \}}
+
+\end{DoxyCode}

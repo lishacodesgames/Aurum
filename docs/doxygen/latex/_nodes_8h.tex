@@ -1,0 +1,24 @@
+\doxysection{src/\+\+Nodes.h File Reference}
+\hypertarget{_nodes_8h}{}\label{_nodes_8h}\index{src/Nodes.h@{src/Nodes.h}}
+{\ttfamily \+\#include "{}Token.\+h"{}}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_integer_literal}{ast::\+\+Integer\+Literal}}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_identifier}{ast::\+\+Identifier}}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_exit}{ast::\+\+Exit}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+namespace \doxymbox{\hyperlink{namespaceast}{ast}}
+\begin{DoxyCompactList}\small\item\em Abstract Syntax Tree. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{ast::\+\+Expression}} = std::\+variant$<$std::\+monostate, \doxymbox{\hyperlink{structast_1_1_integer_literal}{Integer\+Literal}}, \doxymbox{\hyperlink{structast_1_1_identifier}{Identifier}}$>$
+\item 
+using \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::\+\+Node}} = \doxymbox{\hyperlink{structast_1_1_exit}{Exit}}
+\end{DoxyCompactItemize}

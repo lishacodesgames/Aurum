@@ -28,7 +28,11 @@ $$
 \\
    [\text{exit}] &\to exit\ \text{[expression]};
 \\
-   [\text{expression}] &\to integer\ literal % for now
+   [\text{expression}] &\to
+      \begin{cases}
+         integer\ literal \\
+         \text{[identifier]}
+      \end{cases}
 \end{align}
 $$
 

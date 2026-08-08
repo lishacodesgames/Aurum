@@ -7,13 +7,20 @@ namespace ast {
    //    /// @todo
    // };
 
-   struct Expression /* : public Node */ {
-      Token integerLiteral = TokenType::INTEGER_LITERAL;
+   struct IntegerLiteral {
+      Token integer = TokenType::INTEGER_LITERAL;
    };
+
+   struct Identifier {
+      Token name;
+   };
+
+   /// @todo do we need monostate?
+   using Expression = std::variant<std::monostate, IntegerLiteral, Identifier>;
 
    struct Exit /* : public Node */ {
       Expression expression;
    };
 
-   using Node = Exit;
+   using Node = Exit; // for now
 }

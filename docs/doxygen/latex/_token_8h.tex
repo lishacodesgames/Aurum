@@ -1,0 +1,96 @@
+\doxysection{src/\+\+Token.h File Reference}
+\hypertarget{_token_8h}{}\label{_token_8h}\index{src/Token.h@{src/Token.h}}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \doxymbox{\hyperlink{struct_token}{Token}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\+\#define \doxymbox{\hyperlink{_token_8h_abc7a9d01b7ddc94b6ba8fb09cdea2461}{TOKEN\+\_\+\+TYPES}}
+\item 
+\+\#define \doxymbox{\hyperlink{_token_8h_a826edd40636cbaa44266b97c8c6a4fa3}{X}}(name)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum class \doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{Token\+Type}} \{ \doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921a232bc3adf9a2b9a79e64449bf52059bd}{TOKEN\+\_\+\+TYPES}}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std::\+string \doxymbox{\hyperlink{_token_8h_a4ce491a3042631c6edb73ef6e38c7bef}{to\+\_\+string}} (\doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{Token\+Type}} type)
+\end{DoxyCompactItemize}
+
+
+\label{_token_8h_doc-define-members}
+\Hypertarget{_token_8h_doc-define-members}
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{_token_8h_abc7a9d01b7ddc94b6ba8fb09cdea2461}\index{Token.h@{Token.h}!TOKEN\_TYPES@{TOKEN\_TYPES}}
+\index{TOKEN\_TYPES@{TOKEN\_TYPES}!Token.h@{Token.h}}
+\doxysubsubsection{\texorpdfstring{TOKEN\_TYPES}{TOKEN\_TYPES}}
+{\footnotesize\ttfamily \label{_token_8h_abc7a9d01b7ddc94b6ba8fb09cdea2461} 
+\+\#define TOKEN\+\_\+\+TYPES}
+
+{\bfseries Value:\+}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\doxymbox{\hyperlink{_token_8cpp_a826edd40636cbaa44266b97c8c6a4fa3}{X}}(EXIT)\ \(\backslash\)}
+\DoxyCodeLine{X(SEMICOLON)\ \(\backslash\)}
+\DoxyCodeLine{X(END\_OF\_FILE)\ \(\backslash\)}
+\DoxyCodeLine{\(\backslash\)}
+\DoxyCodeLine{X(INTEGER\_LITERAL)\ \(\backslash\)}
+\DoxyCodeLine{\(\backslash\)}
+\DoxyCodeLine{\textcolor{comment}{/*\ variable\ name\ */}\ \(\backslash\)}
+\DoxyCodeLine{X(IDENTIFIER)\ \(\backslash\)}
+\DoxyCodeLine{\(\backslash\)}
+\DoxyCodeLine{\textcolor{comment}{/*\ []\ */}\ \(\backslash\)}
+\DoxyCodeLine{X(OPEN\_BRACKET)\ \doxymbox{\hyperlink{_token_8cpp_a826edd40636cbaa44266b97c8c6a4fa3}{X}}(CLOSE\_BRACKET)\ \(\backslash\)}
+\DoxyCodeLine{\textcolor{comment}{/*\ ()\ */}\ \(\backslash\)}
+\DoxyCodeLine{X(OPEN\_PAREN)\ \doxymbox{\hyperlink{_token_8cpp_a826edd40636cbaa44266b97c8c6a4fa3}{X}}(CLOSE\_PAREN)\ \(\backslash\)}
+\DoxyCodeLine{\textcolor{comment}{/*\ \{\}\ */}\ \(\backslash\)}
+\DoxyCodeLine{X(OPEN\_CURLY)\ \doxymbox{\hyperlink{_token_8cpp_a826edd40636cbaa44266b97c8c6a4fa3}{X}}(CLOSE\_CURLY)\ \(\backslash\)}
+
+\end{DoxyCode}
+\Hypertarget{_token_8h_a826edd40636cbaa44266b97c8c6a4fa3}\index{Token.h@{Token.h}!X@{X}}
+\index{X@{X}!Token.h@{Token.h}}
+\doxysubsubsection{\texorpdfstring{X}{X}}
+{\footnotesize\ttfamily \label{_token_8h_a826edd40636cbaa44266b97c8c6a4fa3} 
+\+\#define X(\begin{DoxyParamCaption}\item[{}]{name}{}\end{DoxyParamCaption})}
+
+{\bfseries Value:\+}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{name,}
+
+\end{DoxyCode}
+
+
+\label{_token_8h_doc-enum-members}
+\Hypertarget{_token_8h_doc-enum-members}
+\doxysubsection{Enumeration Type Documentation}
+\Hypertarget{_token_8h_aa520fbf142ba1e7e659590c07da31921}\index{Token.h@{Token.h}!TokenType@{TokenType}}
+\index{TokenType@{TokenType}!Token.h@{Token.h}}
+\doxysubsubsection{\texorpdfstring{TokenType}{TokenType}}
+{\footnotesize\ttfamily \label{_token_8h_aa520fbf142ba1e7e659590c07da31921} 
+enum class \doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{Token\+Type}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}[2]{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{TOKEN\_TYPES@{TOKEN\_TYPES}!Token.h@{Token.h}}
+\index{Token.h@{Token.h}!TOKEN\_TYPES@{TOKEN\_TYPES}}
+}\Hypertarget{_token_8h_aa520fbf142ba1e7e659590c07da31921a232bc3adf9a2b9a79e64449bf52059bd}\label{_token_8h_aa520fbf142ba1e7e659590c07da31921a232bc3adf9a2b9a79e64449bf52059bd} 
+TOKEN\+\_\+\+TYPES&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\label{_token_8h_doc-func-members}
+\Hypertarget{_token_8h_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{_token_8h_a4ce491a3042631c6edb73ef6e38c7bef}\index{Token.h@{Token.h}!to\_string@{to\_string}}
+\index{to\_string@{to\_string}!Token.h@{Token.h}}
+\doxysubsubsection{\texorpdfstring{to\_string()}{to\_string()}}
+{\footnotesize\ttfamily \label{_token_8h_a4ce491a3042631c6edb73ef6e38c7bef} 
+std::\+string to\+\_\+string (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{Token\+Type}}}]{type}{}\end{DoxyParamCaption})}
+

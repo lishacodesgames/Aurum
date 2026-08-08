@@ -1,0 +1,28 @@
+\doxysection{Parser.\+h}
+\hypertarget{_parser_8h_source}{}\label{_parser_8h_source}\index{src/Parser.h@{src/Parser.h}}
+\doxymbox{\hyperlink{_parser_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{_token_8h}{Token.h}}"{}}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{_nodes_8h}{Nodes.h}}"{}}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_parser_ac93b3201fac5ebaf8c398054c7fec2b9}{Parser}}\ \{}
+\DoxyCodeLine{00006\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00007\ \ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{class_parser_ac93b3201fac5ebaf8c398054c7fec2b9}{Parser}}(std::vector<Token>\ tokens)\ :\ \doxymbox{\hyperlink{class_parser_a3e31029db085e07539f2f0cc965bc1b3}{m\_tokens}}(std::move(tokens))\ \{\}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \ \ \ std::expected<ast::Node,\ std::string>\ \doxymbox{\hyperlink{class_parser_a7ea19afc016fea904b0c91f245498965}{parse}}();}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00012\ \ \ \ std::vector<Token>\ \doxymbox{\hyperlink{class_parser_a3e31029db085e07539f2f0cc965bc1b3}{m\_tokens}}\{\};}
+\DoxyCodeLine{00013\ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{class_parser_ac32ae2673e573063e2433af141d3255a}{m\_pos}}\ =\ 0;}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00016\ \ \ \ std::optional<Token>\ \doxymbox{\hyperlink{class_parser_a1cfe459e39f2406a5a240446cdb89c29}{peek}}(\textcolor{keywordtype}{int}\ offset\ =\ 0);}
+\DoxyCodeLine{00017\ \ }
+\DoxyCodeLine{00024\ \ \ \ \doxymbox{\hyperlink{struct_token}{Token}}\ \doxymbox{\hyperlink{class_parser_aa98b3c14c9420a69f5484fee2354ca7b}{consume}}(uint32\_t\ count\ =\ 1);}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00027\ \ \ \ std::expected<ast::Exit,\ std::string>\ \doxymbox{\hyperlink{class_parser_a1eaf9737bfc737993c25415ef3b70c66}{parseExit}}();}
+\DoxyCodeLine{00028\ \ \ \ std::expected<ast::Expression,\ std::string>\ \doxymbox{\hyperlink{class_parser_ac049300f4f8d62990ba8e5408163be21}{parseExpression}}();}
+\DoxyCodeLine{00029\ \};}
+
+\end{DoxyCode}

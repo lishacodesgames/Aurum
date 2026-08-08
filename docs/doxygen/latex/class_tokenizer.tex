@@ -1,0 +1,144 @@
+\doxysection{Tokenizer Class Reference}
+\hypertarget{class_tokenizer}{}\label{class_tokenizer}\index{Tokenizer@{Tokenizer}}
+
+
+{\ttfamily \+\#include $<$Tokenizer.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{class_tokenizer_a248bd309221958cc6843f61bc69dbeb7}{Tokenizer}} (std::\+string\+\_\+view src)
+\item 
+std::\+vector$<$ \doxymbox{\hyperlink{struct_token}{Token}} $>$ \doxymbox{\hyperlink{class_tokenizer_a2125eb289f9fac6965aea99989965eaf}{release\+Tokens}} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+std::\+optional$<$ char $>$ \doxymbox{\hyperlink{class_tokenizer_affbbc933798a0e474e210f9f1320fd28}{peek}} (int offset=0)
+\item 
+char \doxymbox{\hyperlink{class_tokenizer_ae496d3fc6e8641a0daf3bcc2efe3ecdb}{consume}} (uint32\+\_\+t count=1)
+\begin{DoxyCompactList}\small\item\em increments m\+\_\+pos but returns current character \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{struct_token}{Token}} \doxymbox{\hyperlink{class_tokenizer_a4fca4fd6feb69ad6033ce0f6cab38637}{next}} ()
+\item 
+void \doxymbox{\hyperlink{class_tokenizer_a40933c274107d75b504bc7ee1bfaeecf}{tokenize}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std::\+string\+\_\+view \doxymbox{\hyperlink{class_tokenizer_a46976e30ab7cc5b7753aeb376accf7f6}{m\+\_\+src}}
+\item 
+size\+\_\+t \doxymbox{\hyperlink{class_tokenizer_a82d18884339f5f4b8b9c1cfb05ddafbf}{m\+\_\+pos}} = 0
+\item 
+std::\+vector$<$ \doxymbox{\hyperlink{struct_token}{Token}} $>$ \doxymbox{\hyperlink{class_tokenizer_adbc785a0937a47b89135c0d8698a3588}{m\+\_\+tokens}} \{\}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyRefDesc}{Todo}
+\item[\doxymbox{\hyperlink{todo__todo000006}{Todo}}]taking negative integer literals \end{DoxyRefDesc}
+
+
+\label{class_tokenizer_doc-constructors}
+\Hypertarget{class_tokenizer_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_tokenizer_a248bd309221958cc6843f61bc69dbeb7}\index{Tokenizer@{Tokenizer}!Tokenizer@{Tokenizer}}
+\index{Tokenizer@{Tokenizer}!Tokenizer@{Tokenizer}}
+\doxysubsubsection{\texorpdfstring{Tokenizer()}{Tokenizer()}}
+{\footnotesize\ttfamily \label{class_tokenizer_a248bd309221958cc6843f61bc69dbeb7} 
+Tokenizer::\+\+Tokenizer (\begin{DoxyParamCaption}\item[{std::\+string\+\_\+view}]{src}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+
+
+
+\label{class_tokenizer_doc-func-members}
+\Hypertarget{class_tokenizer_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_tokenizer_ae496d3fc6e8641a0daf3bcc2efe3ecdb}\index{Tokenizer@{Tokenizer}!consume@{consume}}
+\index{consume@{consume}!Tokenizer@{Tokenizer}}
+\doxysubsubsection{\texorpdfstring{consume()}{consume()}}
+{\footnotesize\ttfamily \label{class_tokenizer_ae496d3fc6e8641a0daf3bcc2efe3ecdb} 
+char Tokenizer::\+consume (\begin{DoxyParamCaption}\item[{uint32\+\_\+t}]{count}{ = {\ttfamily 1}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+increments m\+\_\+pos but returns current character 
+
+
+\begin{DoxyParams}{Parameters}
+{\em count} & by how much to increment m\+\_\+pos \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+CURRENT char 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em runtime\+\_\+error} & if next char doesn\textquotesingle{}t exist, so check with \doxylink{class_tokenizer_affbbc933798a0e474e210f9f1320fd28}{peek()} before calling \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{class_tokenizer_a4fca4fd6feb69ad6033ce0f6cab38637}\index{Tokenizer@{Tokenizer}!next@{next}}
+\index{next@{next}!Tokenizer@{Tokenizer}}
+\doxysubsubsection{\texorpdfstring{next()}{next()}}
+{\footnotesize\ttfamily \label{class_tokenizer_a4fca4fd6feb69ad6033ce0f6cab38637} 
+\doxymbox{\hyperlink{struct_token}{Token}} Tokenizer::\+next (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\begin{DoxyRefDesc}{Todo}
+\item[\doxymbox{\hyperlink{todo__todo000004}{Todo}}]check buffer ~\newline
+ \end{DoxyRefDesc}
+\Hypertarget{class_tokenizer_affbbc933798a0e474e210f9f1320fd28}\index{Tokenizer@{Tokenizer}!peek@{peek}}
+\index{peek@{peek}!Tokenizer@{Tokenizer}}
+\doxysubsubsection{\texorpdfstring{peek()}{peek()}}
+{\footnotesize\ttfamily \label{class_tokenizer_affbbc933798a0e474e210f9f1320fd28} 
+std::\+optional$<$ char $>$ Tokenizer::\+peek (\begin{DoxyParamCaption}\item[{int}]{offset}{ = {\ttfamily 0}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_tokenizer_a2125eb289f9fac6965aea99989965eaf}\index{Tokenizer@{Tokenizer}!releaseTokens@{releaseTokens}}
+\index{releaseTokens@{releaseTokens}!Tokenizer@{Tokenizer}}
+\doxysubsubsection{\texorpdfstring{releaseTokens()}{releaseTokens()}}
+{\footnotesize\ttfamily \label{class_tokenizer_a2125eb289f9fac6965aea99989965eaf} 
+std::\+vector$<$ \doxymbox{\hyperlink{struct_token}{Token}} $>$ Tokenizer::\+release\+Tokens (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\begin{DoxyWarning}{Warning}
+DO NOT use tokens after releasing them. Stored vector is emptied.
+\end{DoxyWarning}
+\begin{DoxyRefDesc}{Todo}
+\item[\doxymbox{\hyperlink{todo__todo000007}{Todo}}]unnecessary, I think. Change this. \end{DoxyRefDesc}
+\Hypertarget{class_tokenizer_a40933c274107d75b504bc7ee1bfaeecf}\index{Tokenizer@{Tokenizer}!tokenize@{tokenize}}
+\index{tokenize@{tokenize}!Tokenizer@{Tokenizer}}
+\doxysubsubsection{\texorpdfstring{tokenize()}{tokenize()}}
+{\footnotesize\ttfamily \label{class_tokenizer_a40933c274107d75b504bc7ee1bfaeecf} 
+void Tokenizer::\+tokenize (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\begin{DoxyRefDesc}{Todo}
+\item[\doxymbox{\hyperlink{todo__todo000009}{Todo}}]make public, change class as needed \end{DoxyRefDesc}
+\begin{DoxyRefDesc}{Todo}
+\item[\doxymbox{\hyperlink{todo__todo000005}{Todo}}]check buffer \end{DoxyRefDesc}
+
+
+\label{class_tokenizer_doc-variable-members}
+\Hypertarget{class_tokenizer_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_tokenizer_a82d18884339f5f4b8b9c1cfb05ddafbf}\index{Tokenizer@{Tokenizer}!m\_pos@{m\_pos}}
+\index{m\_pos@{m\_pos}!Tokenizer@{Tokenizer}}
+\doxysubsubsection{\texorpdfstring{m\_pos}{m\_pos}}
+{\footnotesize\ttfamily \label{class_tokenizer_a82d18884339f5f4b8b9c1cfb05ddafbf} 
+size\+\_\+t Tokenizer::\+m\+\_\+pos = 0\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_tokenizer_a46976e30ab7cc5b7753aeb376accf7f6}\index{Tokenizer@{Tokenizer}!m\_src@{m\_src}}
+\index{m\_src@{m\_src}!Tokenizer@{Tokenizer}}
+\doxysubsubsection{\texorpdfstring{m\_src}{m\_src}}
+{\footnotesize\ttfamily \label{class_tokenizer_a46976e30ab7cc5b7753aeb376accf7f6} 
+std::\+string\+\_\+view Tokenizer::\+m\+\_\+src\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_tokenizer_adbc785a0937a47b89135c0d8698a3588}\index{Tokenizer@{Tokenizer}!m\_tokens@{m\_tokens}}
+\index{m\_tokens@{m\_tokens}!Tokenizer@{Tokenizer}}
+\doxysubsubsection{\texorpdfstring{m\_tokens}{m\_tokens}}
+{\footnotesize\ttfamily \label{class_tokenizer_adbc785a0937a47b89135c0d8698a3588} 
+std::\+vector$<$\doxymbox{\hyperlink{struct_token}{Token}}$>$ Tokenizer::\+m\+\_\+tokens \{\}\hspace{0.3cm}{\ttfamily [private]}}
+
+\begin{DoxyRefDesc}{Todo}
+\item[\doxymbox{\hyperlink{todo__todo000008}{Todo}}]use a better, lighter data structure than vector \end{DoxyRefDesc}
+
+
+The documentation for this class was generated from the following files:\+\begin{DoxyCompactItemize}
+\item 
+src/\+\doxymbox{\hyperlink{_tokenizer_8h}{Tokenizer.\+h}}\item 
+src/\+\doxymbox{\hyperlink{_tokenizer_8cpp}{Tokenizer.\+cpp}}\end{DoxyCompactItemize}

@@ -1,0 +1,119 @@
+\doxysection{Parser Class Reference}
+\hypertarget{class_parser}{}\label{class_parser}\index{Parser@{Parser}}
+
+
+{\ttfamily \+\#include $<$Parser.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{class_parser_ac93b3201fac5ebaf8c398054c7fec2b9}{Parser}} (std::\+vector$<$ \doxymbox{\hyperlink{struct_token}{Token}} $>$ tokens)
+\item 
+std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::\+\+Node}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_a7ea19afc016fea904b0c91f245498965}{parse}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+std::\+optional$<$ \doxymbox{\hyperlink{struct_token}{Token}} $>$ \doxymbox{\hyperlink{class_parser_a1cfe459e39f2406a5a240446cdb89c29}{peek}} (int offset=0)
+\item 
+\doxymbox{\hyperlink{struct_token}{Token}} \doxymbox{\hyperlink{class_parser_aa98b3c14c9420a69f5484fee2354ca7b}{consume}} (uint32\+\_\+t count=1)
+\begin{DoxyCompactList}\small\item\em increments m\+\_\+pos but returns current \doxylink{struct_token}{Token} \end{DoxyCompactList}\item 
+std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_exit}{ast::\+\+Exit}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_a1eaf9737bfc737993c25415ef3b70c66}{parse\+Exit}} ()
+\item 
+std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{ast::\+\+Expression}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_ac049300f4f8d62990ba8e5408163be21}{parse\+Expression}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std::\+vector$<$ \doxymbox{\hyperlink{struct_token}{Token}} $>$ \doxymbox{\hyperlink{class_parser_a3e31029db085e07539f2f0cc965bc1b3}{m\+\_\+tokens}} \{\}
+\item 
+size\+\_\+t \doxymbox{\hyperlink{class_parser_ac32ae2673e573063e2433af141d3255a}{m\+\_\+pos}} = 0
+\end{DoxyCompactItemize}
+
+
+\label{class_parser_doc-constructors}
+\Hypertarget{class_parser_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_parser_ac93b3201fac5ebaf8c398054c7fec2b9}\index{Parser@{Parser}!Parser@{Parser}}
+\index{Parser@{Parser}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{Parser()}{Parser()}}
+{\footnotesize\ttfamily \label{class_parser_ac93b3201fac5ebaf8c398054c7fec2b9} 
+Parser::\+\+Parser (\begin{DoxyParamCaption}\item[{std::\+vector$<$ \doxymbox{\hyperlink{struct_token}{Token}} $>$}]{tokens}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+
+
+
+\label{class_parser_doc-func-members}
+\Hypertarget{class_parser_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_parser_aa98b3c14c9420a69f5484fee2354ca7b}\index{Parser@{Parser}!consume@{consume}}
+\index{consume@{consume}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{consume()}{consume()}}
+{\footnotesize\ttfamily \label{class_parser_aa98b3c14c9420a69f5484fee2354ca7b} 
+\doxymbox{\hyperlink{struct_token}{Token}} Parser::\+consume (\begin{DoxyParamCaption}\item[{uint32\+\_\+t}]{count}{ = {\ttfamily 1}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+increments m\+\_\+pos but returns current \doxylink{struct_token}{Token} 
+
+
+\begin{DoxyParams}{Parameters}
+{\em count} & by how much to increment m\+\_\+pos \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+CURRENT \doxylink{struct_token}{Token} 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em runtime\+\_\+error} & if next \doxylink{struct_token}{Token} doesn\textquotesingle{}t exist, so check with \doxylink{class_parser_a1cfe459e39f2406a5a240446cdb89c29}{peek()} before calling \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{class_parser_a7ea19afc016fea904b0c91f245498965}\index{Parser@{Parser}!parse@{parse}}
+\index{parse@{parse}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{parse()}{parse()}}
+{\footnotesize\ttfamily \label{class_parser_a7ea19afc016fea904b0c91f245498965} 
+std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::\+\+Node}}, std::\+string $>$ Parser::\+parse (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_parser_a1eaf9737bfc737993c25415ef3b70c66}\index{Parser@{Parser}!parseExit@{parseExit}}
+\index{parseExit@{parseExit}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{parseExit()}{parseExit()}}
+{\footnotesize\ttfamily \label{class_parser_a1eaf9737bfc737993c25415ef3b70c66} 
+std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_exit}{ast::\+\+Exit}}, std::\+string $>$ Parser::\+parse\+Exit (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\begin{DoxyRefDesc}{Todo}
+\item[\doxymbox{\hyperlink{todo__todo000002}{Todo}}]move to Node classes as static methods \end{DoxyRefDesc}
+\Hypertarget{class_parser_ac049300f4f8d62990ba8e5408163be21}\index{Parser@{Parser}!parseExpression@{parseExpression}}
+\index{parseExpression@{parseExpression}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{parseExpression()}{parseExpression()}}
+{\footnotesize\ttfamily \label{class_parser_ac049300f4f8d62990ba8e5408163be21} 
+std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{ast::\+\+Expression}}, std::\+string $>$ Parser::\+parse\+Expression (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_parser_a1cfe459e39f2406a5a240446cdb89c29}\index{Parser@{Parser}!peek@{peek}}
+\index{peek@{peek}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{peek()}{peek()}}
+{\footnotesize\ttfamily \label{class_parser_a1cfe459e39f2406a5a240446cdb89c29} 
+std::\+optional$<$ \doxymbox{\hyperlink{struct_token}{Token}} $>$ Parser::\+peek (\begin{DoxyParamCaption}\item[{int}]{offset}{ = {\ttfamily 0}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+\label{class_parser_doc-variable-members}
+\Hypertarget{class_parser_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_parser_ac32ae2673e573063e2433af141d3255a}\index{Parser@{Parser}!m\_pos@{m\_pos}}
+\index{m\_pos@{m\_pos}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{m\_pos}{m\_pos}}
+{\footnotesize\ttfamily \label{class_parser_ac32ae2673e573063e2433af141d3255a} 
+size\+\_\+t Parser::\+m\+\_\+pos = 0\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_parser_a3e31029db085e07539f2f0cc965bc1b3}\index{Parser@{Parser}!m\_tokens@{m\_tokens}}
+\index{m\_tokens@{m\_tokens}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{m\_tokens}{m\_tokens}}
+{\footnotesize\ttfamily \label{class_parser_a3e31029db085e07539f2f0cc965bc1b3} 
+std::\+vector$<$\doxymbox{\hyperlink{struct_token}{Token}}$>$ Parser::\+m\+\_\+tokens \{\}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The documentation for this class was generated from the following files:\+\begin{DoxyCompactItemize}
+\item 
+src/\+\doxymbox{\hyperlink{_parser_8h}{Parser.\+h}}\item 
+src/\+\doxymbox{\hyperlink{_parser_8cpp}{Parser.\+cpp}}\end{DoxyCompactItemize}

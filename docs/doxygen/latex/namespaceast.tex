@@ -1,0 +1,45 @@
+\doxysection{ast Namespace Reference}
+\hypertarget{namespaceast}{}\label{namespaceast}\index{ast@{ast}}
+
+
+Abstract Syntax Tree.  
+
+
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_integer_literal}{Integer\+Literal}}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_identifier}{Identifier}}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_exit}{Exit}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{Expression}} = std::\+variant$<$std::\+monostate, \doxymbox{\hyperlink{structast_1_1_integer_literal}{Integer\+Literal}}, \doxymbox{\hyperlink{structast_1_1_identifier}{Identifier}}$>$
+\item 
+using \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{Node}} = \doxymbox{\hyperlink{structast_1_1_exit}{Exit}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Abstract Syntax Tree. 
+
+\label{namespaceast_doc-typedef-members}
+\Hypertarget{namespaceast_doc-typedef-members}
+\doxysubsection{Typedef Documentation}
+\Hypertarget{namespaceast_a49a5437ad5786f465477bacd4dfaccef}\index{ast@{ast}!Expression@{Expression}}
+\index{Expression@{Expression}!ast@{ast}}
+\doxysubsubsection{\texorpdfstring{Expression}{Expression}}
+{\footnotesize\ttfamily \label{namespaceast_a49a5437ad5786f465477bacd4dfaccef} 
+using \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{ast::\+\+Expression}} = std::\+variant$<$std::\+monostate, \doxymbox{\hyperlink{structast_1_1_integer_literal}{Integer\+Literal}}, \doxymbox{\hyperlink{structast_1_1_identifier}{Identifier}}$>$}
+
+\begin{DoxyRefDesc}{Todo}
+\item[\doxymbox{\hyperlink{todo__todo000001}{Todo}}]do we need monostate? \end{DoxyRefDesc}
+\Hypertarget{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}\index{ast@{ast}!Node@{Node}}
+\index{Node@{Node}!ast@{ast}}
+\doxysubsubsection{\texorpdfstring{Node}{Node}}
+{\footnotesize\ttfamily \label{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c} 
+using \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::\+\+Node}} = \doxymbox{\hyperlink{structast_1_1_exit}{Exit}}}
+

@@ -14,6 +14,7 @@
 #include <functional>
 #include <algorithm>
 #include <optional>
+#include <variant>
 #include <ranges>
 
 // Data Containers
