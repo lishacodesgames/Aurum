@@ -34,7 +34,7 @@ cmake --build --preset Release
 
 ### Run
 ```bash
-./build/Release/Aurum gold.or
+./build/Release/Aurum gold.arum
 ```
 
 ### Dependencies
