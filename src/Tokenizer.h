@@ -14,7 +14,6 @@ public:
 private:
    std::string_view m_src;
    size_t m_pos = 0;
-   std::vector<Token> m_tokens{};
 
    /// @todo use a better, lighter data structure than vector
    std::vector<Token> m_tokens{};
