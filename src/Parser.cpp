@@ -43,10 +43,10 @@ std::expected<std::unique_ptr<ast::Expression>, std::string> Parser::parseExpres
    if(!peek())
       return std::unexpected("Expected an expression!");
 
-   if(peek()->type == TokenType::INTEGER_LITERAL)
-      return std::make_unique<ast::IntegerLiteral>(consume().type);
-   else if(peek()->type == TokenType::IDENTIFIER)
-      return std::make_unique<ast::Identifier>(consume().type);
+   if(peek()->type == TokenType::INTEGER_LITERAL && peek()->value.has_value())
+      return std::make_unique<ast::IntegerLiteral>(*consume().value);
+   else if(peek()->type == TokenType::IDENTIFIER && peek()->value.has_value())
+      return std::make_unique<ast::Identifier>(*consume().value);
    else
       return std::unexpected(std::format("Unknown expression type: '{}'!", consume().to_string()));
 }

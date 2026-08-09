@@ -15,13 +15,13 @@ namespace ast {
    struct IntegerLiteral : public Expression {
       Token value = TokenType::INTEGER_LITERAL;
 
-      explicit IntegerLiteral(Token value) : value(value) {}
+      explicit IntegerLiteral(std::string value) { this->value.value = value; }
    };
 
    struct Identifier : public Expression {
       Token name = TokenType::IDENTIFIER;
 
-      explicit Identifier(Token name) : name(name) {}
+      explicit Identifier(std::string name) { this->name.value = name; }
    };
 
    struct Exit : public Node {
