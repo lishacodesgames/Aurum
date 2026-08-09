@@ -7,7 +7,10 @@ std::string Generator::generate() const {
    assembly += "; macOS x86_64, NASM syntax\n\n";
    assembly += "global _main\n";
    assembly += "_main:\n";
-   assembly += std::format("\tmov eax, {}\n", m_root.expression.integerLiteral.value.value()); /// @note m_root here is of exit type but later it might not be
+
+   ast::IntegerLiteral returnValue = *static_cast<ast::IntegerLiteral*>(static_cast<ast::Exit*>(m_root.get())->expression.get());
+   assembly += std::format("\tmov eax, {}\n", *returnValue.value.value); /// @note m_root here is of exit type but later it might not be
+
    assembly += "\tret";
 
    return assembly;

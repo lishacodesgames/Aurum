@@ -3,10 +3,10 @@
 
 class Generator {
 public:
-   explicit Generator(ast::Node root) : m_root(std::move(root)) {}
+   explicit Generator(std::unique_ptr<ast::Node> root) : m_root(std::move(root)) {}
 
    std::string generate() const;
 
 private:
-   const ast::Node m_root;
+   const std::unique_ptr<ast::Node> m_root;
 };

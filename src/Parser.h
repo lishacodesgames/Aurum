@@ -6,7 +6,7 @@ class Parser {
 public:
    explicit Parser(std::vector<Token> tokens) : m_tokens(std::move(tokens)) {}
 
-   std::expected<ast::Node, std::string> parse();
+   std::expected<std::unique_ptr<ast::Node>, std::string> parse();
 
 private:
    std::vector<Token> m_tokens{};
@@ -24,6 +24,6 @@ private:
    Token consume(uint32_t count = 1);
 
    /// @todo move to Node classes as static methods
-   std::expected<ast::Exit, std::string> parseExit();
-   std::expected<ast::Expression, std::string> parseExpression();
+   std::expected<std::unique_ptr<ast::Exit>, std::string> parseExit();
+   std::expected<std::unique_ptr<ast::Expression>, std::string> parseExpression();
 };

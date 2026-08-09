@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
    if(!rootNode)
       throw std::runtime_error(rootNode.error());
 
-   Generator generator(*rootNode);
+   Generator generator(std::move(*rootNode));
    std::string assembly = generator.generate();
 
    // output assembly to assemblyFile

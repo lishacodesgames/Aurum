@@ -3,24 +3,31 @@
 
 /// Abstract Syntax Tree
 namespace ast {
-   // struct Node {
-   //    /// @todo
-   // };
-
-   struct IntegerLiteral {
-      Token integer = TokenType::INTEGER_LITERAL;
+   struct Node {
+      /// @todo maybe a nested NodeKind enum
+      virtual ~Node() = default;
    };
 
-   struct Identifier {
-      Token name;
+   struct Expression : public Node {
+      virtual ~Expression() = default;
    };
 
-   /// @todo do we need monostate?
-   using Expression = std::variant<std::monostate, IntegerLiteral, Identifier>;
+   struct IntegerLiteral : public Expression {
+      Token value = TokenType::INTEGER_LITERAL;
 
-   struct Exit /* : public Node */ {
-      Expression expression;
+      explicit IntegerLiteral(Token value) : value(value) {}
    };
 
-   using Node = Exit; // for now
+   struct Identifier : public Expression {
+      Token name = TokenType::IDENTIFIER;
+
+      explicit Identifier(Token name) : name(name) {}
+   };
+
+   struct Exit : public Node {
+      /// @typedef unique_ptr so we can safely downcast to Expression's children
+      std::unique_ptr<Expression> expression;
+
+      explicit Exit(std::unique_ptr<Expression> expr) : expression(std::move(expr)) {}
+   };
 }

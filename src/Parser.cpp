@@ -1,7 +1,7 @@
 #include <pch/Precompiled.h>
 #include "Parser.h"
 
-std::expected<ast::Node, std::string> Parser::parse() {
+std::expected<std::unique_ptr<ast::Node>, std::string> Parser::parse() {
    // while(peek().has_value()) { // idk if this is needed
       if(peek()->type == TokenType::EXIT) {
          consume();
@@ -29,21 +29,24 @@ Token Parser::consume(uint32_t count) {
    return current;
 }
 
-std::expected<ast::Exit, std::string> Parser::parseExit() {
+std::expected<std::unique_ptr<ast::Exit>, std::string> Parser::parseExit() {
    auto expression = parseExpression(); 
    if(!expression)
       return std::unexpected(expression.error());
    if(!peek() || *peek() != TokenType::SEMICOLON)
       return std::unexpected("Expected `;`!");
 
-   return ast::Exit{ .expression = *expression };
+   return std::make_unique<ast::Exit>(std::move(*expression));
 }
 
-std::expected<ast::Expression, std::string> Parser::parseExpression() {
+std::expected<std::unique_ptr<ast::Expression>, std::string> Parser::parseExpression() {
    if(!peek())
       return std::unexpected("Expected an expression!");
-   if(peek()->type != TokenType::INTEGER_LITERAL)
-      return std::unexpected("Unexpected expression type!");
 
-   return ast::Expression{ .integerLiteral = consume() };
+   if(peek()->type == TokenType::INTEGER_LITERAL)
+      return std::make_unique<ast::IntegerLiteral>(consume().type);
+   else if(peek()->type == TokenType::IDENTIFIER)
+      return std::make_unique<ast::Identifier>(consume().type);
+   else
+      return std::unexpected(std::format("Unknown expression type: '{}'!", consume().to_string()));
 }
