@@ -59,12 +59,12 @@ int main(int argc, char* argv[]) {
    std::println("Successfully compiled to assembly file '{}'", assemblyFile.string());
 
    // compile assembly into executable
-   std::string compileAssemblyCommand = std::format("./scripts/compile_assembly_mac_x64.sh {} ./out", assemblyFile.string()); // check args of the script
+   std::string compileAssemblyCommand = std::format("./scripts/compile_nasm_mac_x64.sh {}", assemblyFile.string()); // check args of the script
    std::string executablePath = (outputDir / fileBaseName).string();
 
    std::println("Compiling assembly file '{}' to executable...", executablePath);
    system(compileAssemblyCommand.c_str()); // compile the assembly file to an executable
-   
+
    // disclaimers for the user
    std::println("\n(Ignore the ld warning)");
    std::println("Successfully compiled to executable '{}'", executablePath);

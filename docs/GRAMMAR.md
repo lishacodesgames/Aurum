@@ -1,16 +1,15 @@
-## Try
+## Language
 ### Program
 - There is no $main$ function, but there is a clear end point where you do $exit\ value;$
 - Semicolons are mandatory
 
 ### Typing
 - We can declare without initialising.
-- $mint\ name = value;$ (immutable variable)
+- $mint\ name = value;$ (immutable variable, can have type annotations for specificity)
 - $bar\ name = value;$ (mutable variable that **can change type**)
-- $bar\ name: type = value;$ (mutable variable that **CANNOT change type**)
-
-### Todo
-- Change variable declaration to include types somehow or change the keyword. *var* is too basic.
+- $bar$<$type$> $\ name = value;$ (mutable variable that **CANNOT change type**)
+- If user declares $“bar\ name;  "$ then its type is $None$
+- User can use type annotations to specify type explicitly ($bar: type$ or $mint: type$)
 
 ## Node Tree
 $$
@@ -23,7 +22,7 @@ $$
       \begin{cases}
          exit\ \text{[expression]}; \\
          bar \text{ name} = \text{[expression]};\ \ \footnotesize{\text{// mutable value}} \\
-         mint \text{ name} = \text{[expression]};\ \ \footnotesize{\text{ // constant value}} \\
+         mint \text{ name} = \text{[expression]};\ \ \footnotesize{\text{// constant value}} \\
       \end{cases}
 \\
    [\text{exit}] &\to exit\ \text{[expression]};

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail # stop if a command fails, if a variable is unset, or if a command in a pipe fails
 
-if [[ ($# -ne 1 && $# -ne 2) || $1 != *.asm ]]; then
+if [[ $# -ne 1 || $1 != *.asm ]]; then
    echo "Incorrect usage!" >&2
    echo "Correct usage: $0 <file.asm> [<output directory> (optional)]" >&2
    exit 1
@@ -11,8 +11,8 @@ filename=$(basename -- "$1") # program.asm
 name=${filename%.asm}        # program
 object="/tmp/$name.o"
 
-output_dir="${2:-.}"          # $2 if given, else current directory
-outpath="$output_dir/$name"
+outdir="./out"
+outpath="$outdir/$name"
 
 # Compile the assembly file into an object file
 nasm -f macho64 -o "$object" "$1"

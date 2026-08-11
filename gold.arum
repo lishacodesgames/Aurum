@@ -1,1 +1,2 @@
-exit 50;
+mint x = 24;
+exit x;
