@@ -41,4 +41,5 @@ private:
    template<> std::expected<ast::Expression, std::string> parse<ast::Expression>();
    template<> std::expected<ast::IntegerLiteral*, std::string> parse<ast::IntegerLiteral>();
    template<> std::expected<ast::Identifier*, std::string> parse<ast::Identifier>();
+   template<> std::expected<ast::Negative*, std::string> parse<ast::Negative>();
 };

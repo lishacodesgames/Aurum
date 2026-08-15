@@ -30,7 +30,16 @@ namespace ast
       explicit Identifier(std::string_view value) : name(value) {}
    };
 
-   using Expression = std::variant<std::monostate, IntegerLiteral*, Identifier*>;
+   // expressions that contain an expression
+   struct Negative;
+
+   using Expression = std::variant<std::monostate, IntegerLiteral*, Identifier*, Negative*>;
+
+   struct Negative {
+      ast::Expression* operand;
+
+      explicit Negative(ast::Expression* operand) : operand(operand) {}
+   };
 
    // --- STATEMENTS ---
 

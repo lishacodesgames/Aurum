@@ -51,6 +51,8 @@ private:
    /// @note MUST call expression first
    template<> std::optional<std::string> generate(const ast::Identifier* identifier);
 
+   template<> std::optional<std::string> generate(const ast::Negative* negative);
+
    // Variant overload
    template<VariantNode V>
    [[nodiscard]] std::optional<std::string> generate(const V* variant) {

@@ -131,6 +131,14 @@ std::expected<ast::Expression, std::string> Parser::parse<ast::Expression>() {
          return ast::Expression(std::in_place_type<ast::Identifier*>, *identifier);
       }
 
+      case TokenType::MINUS: {
+         auto negation = parse<ast::Negative>(); // recursion
+         if(!negation)
+            return std::unexpected(negation.error());
+
+         return ast::Expression(std::in_place_type<ast::Negative*>, *negation);
+      }
+
       default:
          return std::unexpected(std::format("Expected expression! Got: '{}'!", to_string(consume().type)));
    }
@@ -151,4 +159,15 @@ std::expected<ast::Identifier*, std::string> Parser::parse<ast::Identifier>() {
       return std::unexpected("Expected an identifier!");
 
    return m_arena.create<ast::Identifier>(*consume().value);
+}
+
+template<>
+std::expected<ast::Negative*, std::string> Parser::parse<ast::Negative>() {
+   consume(); // consume minus
+
+   auto expression = parse<ast::Expression>(); // recursion
+   if(!expression)
+      return std::unexpected(expression.error());
+
+   return m_arena.create<ast::Negative>(m_arena.create<ast::Expression>(std::move(*expression)));
 }

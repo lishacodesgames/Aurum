@@ -106,3 +106,16 @@ std::optional<std::string> Generator::generate(const ast::Identifier* identifier
 
    return std::nullopt;
 }
+
+template <>
+std::optional<std::string> Generator::generate(const ast::Negative* negative) {
+   auto returnValue = generate<ast::Expression>(negative->operand);
+   if(returnValue)
+      return std::move(returnValue);
+
+   pop("rax");
+   m_output += "\tneg rax\n";
+   push("rax");
+
+   return std::nullopt;
+}

@@ -62,6 +62,10 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
          consume();
          tokens.emplace_back(TokenType::EQUALS);
 
+      } else if(*peek() == '-') {
+         consume();
+         tokens.emplace_back(TokenType::MINUS);
+
       } else if(std::isspace(*peek())) {
          consume();
 

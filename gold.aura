@@ -1,5 +1,2 @@
-mint x = 8;
-mint helloworld = 50;
-mint y;
-
-exit x;
+mint x = -8;
+exit -56;
