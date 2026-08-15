@@ -20,5 +20,5 @@ private:
     * @throws runtime_error if next char doesn't exist, so check with peek() before calling
     */
    char consume(uint32_t count = 1U);
-   std::optional<char> peek(int offset = 0);
+   [[nodiscard]] std::optional<char> peek(int offset = 0) const noexcept;
 };

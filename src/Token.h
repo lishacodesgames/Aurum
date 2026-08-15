@@ -51,7 +51,7 @@ struct Token {
 
    std::string to_string() const;
 
-   bool operator==(TokenType type) const { return type == this->type; }
+   bool operator==(TokenType type) const noexcept { return type == this->type; }
 };
 
 std::string to_string(TokenType type);

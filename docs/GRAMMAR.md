@@ -25,12 +25,16 @@ $$
          mint \text{ name} = \text{[expression]};\ \ \footnotesize{\text{// constant value}} \\
       \end{cases}
 \\
-   [\text{exit}] &\to exit\ \text{[expression]};
-\\
    [\text{expression}] &\to
       \begin{cases}
          integer\ literal \\
-         \text{[identifier]}
+         \text{[identifier]} \\
+         \text{[binary expression]}
+      \end{cases}
+\\
+   [\text{binary expression}] &\to
+      \begin{cases}
+         \text{[expression] + [expression]} \\
       \end{cases}
 \end{align}
 $$

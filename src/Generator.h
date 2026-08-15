@@ -19,6 +19,8 @@ private:
    std::unordered_map<std::string, uint32_t> m_symbolTable;
 
 private:
+   /// @note std::format might throw exception, so these 3 functions cannot be noexcept
+
    /// Increases stack size by 1 and pushes value to the top
    void push(std::string_view value, std::optional<std::string> comment = std::nullopt);
 

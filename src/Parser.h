@@ -19,7 +19,6 @@ private:
     * @brief increments m_pos but returns current Token
     * @param count by how much to increment m_pos
     * @returns CURRENT Token
-    * @throws runtime_error if next Token doesn't exist, so check with peek() before calling
     */ 
    Token consume(uint32_t count = 1);
 

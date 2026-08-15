@@ -40,7 +40,7 @@ namespace ast
 
       explicit Declaration(ast::Identifier identifier) : identifier(std::move(identifier)) {}
 
-      explicit Declaration(ast::Identifier identifier, ast::Expression expression)
+      Declaration(ast::Identifier identifier, ast::Expression expression)
          : identifier(std::move(identifier)), expression(std::move(expression)) {}
    };
 
@@ -58,8 +58,8 @@ namespace ast
       std::vector<ast::Statement> statements;
 
       // for convenience
-      bool empty() const { return statements.empty(); }
-      void push_back(ast::Statement stmt) { statements.push_back(stmt); }
+      [[nodiscard]] bool empty() const noexcept { return statements.empty(); }
+      void push_back(ast::Statement stmt) { statements.push_back(stmt); } // not noexcept bcz push_back might throw bad_alloc()
    };
 }
 

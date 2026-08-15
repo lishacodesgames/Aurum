@@ -6,9 +6,11 @@
 #include <typeinfo>
 #include <stdarg.h>
 #include <cstdint>
+#include <cstddef>
 #include <utility>
 #include <memory>
 #include <tuple>
+#include <new>
 
 // Functional & Logic
 #include <functional>
