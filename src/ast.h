@@ -1,5 +1,6 @@
 #pragma once
 #include "Token.h"
+#include "Errors.h"
 
 /// Abstract Syntax Tree
 namespace ast
@@ -14,9 +15,9 @@ namespace ast
          try {
             this->value = std::stoi(value);
          } catch(const std::invalid_argument& e) {
-            throw std::runtime_error(std::format("Tried to convert {} to an integer literal!", value));
+            FATAL_ERROR("Tried to convert {} to an integer literal!", value);
          } catch(const std::out_of_range& e) {
-            throw std::runtime_error(std::format("'{}' is too large for an integer literal!", value));
+            FATAL_ERROR("'{}' is too large for an integer literal!", value);
          }
       }
 
@@ -29,28 +30,28 @@ namespace ast
       explicit Identifier(std::string_view value) : name(value) {}
    };
 
-   using Expression = std::variant<std::monostate, IntegerLiteral, Identifier>;
+   using Expression = std::variant<std::monostate, IntegerLiteral*, Identifier*>;
 
    // --- STATEMENTS ---
 
    /// @todo mutability & type constraints: mint vs bar vs bar<>
    struct Declaration {
-      ast::Identifier identifier;
-      std::optional<ast::Expression> expression; // declaration without definition = nullopt
+      ast::Identifier* identifier;
+      std::optional<ast::Expression*> expression;
 
-      explicit Declaration(ast::Identifier identifier) : identifier(std::move(identifier)) {}
+      explicit Declaration(ast::Identifier* identifier) : identifier(identifier) {}
 
-      Declaration(ast::Identifier identifier, ast::Expression expression)
-         : identifier(std::move(identifier)), expression(std::move(expression)) {}
+      Declaration(ast::Identifier* identifier, ast::Expression* expression)
+         : identifier(identifier), expression(expression) {}
    };
 
    struct Exit {
-      ast::Expression expression;
+      ast::Expression* expression;
 
-      explicit Exit(ast::Expression expression) : expression(std::move(expression)) {}
+      explicit Exit(ast::Expression* expression) : expression(expression) {}
    };
 
-   using Statement = std::variant<std::monostate, Declaration, Exit>;
+   using Statement = std::variant<std::monostate, Declaration*, Exit*>;
 
    // --- PROGRAM ---
 
@@ -81,7 +82,7 @@ namespace detail // not meant to be used other than to define AstNode (header im
 }
 
 template<typename T>
-concept AstNode = detail::is_variant_alternative_v<T, ast::Expression> || detail::is_variant_alternative_v<T, ast::Statement>;
+concept AstNode = detail::is_variant_alternative_v<T*, ast::Expression> || detail::is_variant_alternative_v<T*, ast::Statement>;
 
 template<typename T>
 concept VariantNode = std::is_same_v<T, ast::Expression> || std::is_same_v<T, ast::Statement>;

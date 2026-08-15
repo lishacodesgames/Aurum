@@ -9,7 +9,7 @@ std::expected<std::string, std::string> Generator::generate() {
    m_output += "\tmov rbp, rsp ; set our base pointer to the current stack pointer\n";
 
    for(const ast::Statement& stmt : m_program.statements) {
-      auto returnValue = generate<ast::Statement>(stmt);
+      auto returnValue = generate<ast::Statement>(&stmt);
       if(returnValue)
          return std::unexpected(*returnValue);
    }
@@ -52,14 +52,14 @@ void Generator::pop(std::string_view reg, std::optional<std::string> comment) {
 
 // statements
 template <>
-inline std::optional<std::string> Generator::generate<ast::Declaration>(const ast::Declaration& declaration) {
-   if(m_symbolTable.contains(declaration.identifier.name))
-      return std::format("Redeclaration of identifier '{}'!", declaration.identifier.name);
+inline std::optional<std::string> Generator::generate(const ast::Declaration* declaration) {
+   if(m_symbolTable.contains(declaration->identifier->name))
+      return std::format("Redeclaration of identifier '{}'!", declaration->identifier->name);
 
-   m_output += std::format("\n\t; declaration of {}\n", declaration.identifier.name);
+   m_output += std::format("\n\t; declaration of {}\n", declaration->identifier->name);
 
-   if(declaration.expression) {
-      auto returnValue = generate<ast::Expression>(*declaration.expression);
+   if(declaration->expression) {
+      auto returnValue = generate<ast::Expression>(*declaration->expression);
       if(returnValue)
          return std::move(returnValue);
    } else { // declaration without definition: identifier points to garbage value
@@ -67,17 +67,17 @@ inline std::optional<std::string> Generator::generate<ast::Declaration>(const as
       m_stackSize++;
    }
 
-   m_symbolTable[declaration.identifier.name] = m_stackSize;
+   m_symbolTable[declaration->identifier->name] = m_stackSize;
 
    return std::nullopt;
 }
 
 /// @todo Expression
 template<>
-std::optional<std::string> Generator::generate<ast::Exit>(const ast::Exit& exit) {
+std::optional<std::string> Generator::generate(const ast::Exit* exit) {
    m_output += "\n\t; Exiting...\n";
 
-   auto returnValue = generate<ast::Expression>(exit.expression);
+   auto returnValue = generate<ast::Expression>(exit->expression);
    if(returnValue)
       return std::move(returnValue);
 
@@ -91,18 +91,18 @@ std::optional<std::string> Generator::generate<ast::Exit>(const ast::Exit& exit)
 // expressions
 
 template<>
-std::optional<std::string> Generator::generate<ast::IntegerLiteral>(const ast::IntegerLiteral& integerLiteral) {
-   push(integerLiteral.to_string());
+std::optional<std::string> Generator::generate(const ast::IntegerLiteral* integerLiteral) {
+   push(integerLiteral->to_string());
 
    return std::nullopt;
 }
 
 template<>
-std::optional<std::string> Generator::generate<ast::Identifier>(const ast::Identifier& identifier) {
-   if(!m_symbolTable.contains(identifier.name))
-      return std::format("Use of undeclared identifier '{}'!", identifier.name);
+std::optional<std::string> Generator::generate(const ast::Identifier* identifier) {
+   if(!m_symbolTable.contains(identifier->name))
+      return std::format("Use of undeclared identifier '{}'!", identifier->name);
 
-   push(std::format("qword [rbp - {}]", m_symbolTable.at(identifier.name) * 8), std::format("'{}'", identifier.name));
+   push(std::format("qword [rbp - {}]", m_symbolTable.at(identifier->name) * 8), std::format("'{}'", identifier->name));
 
    return std::nullopt;
 }

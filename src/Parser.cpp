@@ -22,7 +22,7 @@ std::expected<ast::Program, std::string> Parser::parse() {
 
 Token Parser::peek(int offset) {
    if(m_pos + offset >= m_tokens.size())
-      throw std::runtime_error("Parser tried to access outside tokens!");
+      FATAL_ERROR("Parser tried to access outside tokens!");
 
    return m_tokens.at(m_pos + offset);
 }
@@ -47,7 +47,7 @@ std::expected<ast::Statement, std::string> Parser::parse<ast::Statement>() {
             return std::unexpected(declaration.error());
 
          // must explicitly construct Declaration in Statement bcz 1 implicit conversion to expected<> already happening
-         return ast::Statement(std::in_place_type<ast::Declaration>, std::move(*declaration));
+         return ast::Statement(std::in_place_type<ast::Declaration*>, *declaration);
       }
 
       case TokenType::EXIT: {
@@ -55,7 +55,7 @@ std::expected<ast::Statement, std::string> Parser::parse<ast::Statement>() {
          if(!exit)
             return std::unexpected(exit.error());
 
-         return ast::Statement(std::in_place_type<ast::Exit>, std::move(*exit));
+         return ast::Statement(std::in_place_type<ast::Exit*>, *exit);
       }
 
       default:
@@ -64,14 +64,14 @@ std::expected<ast::Statement, std::string> Parser::parse<ast::Statement>() {
 }
 
 template<>
-std::expected<ast::Declaration, std::string> Parser::parse<ast::Declaration>() {
+std::expected<ast::Declaration*, std::string> Parser::parse<ast::Declaration>() {
    consume(); // consume keyword
 
    auto identifier = parse<ast::Identifier>();
    if(!identifier)
       return std::unexpected(identifier.error());
 
-   std::optional<ast::Expression> expression; // in case it's a Declaration without Definition
+   std::optional<ast::Expression*> expression; // in case it's a Declaration without Definition
 
    if(peek() == TokenType::EQUALS) {
       consume();
@@ -80,7 +80,7 @@ std::expected<ast::Declaration, std::string> Parser::parse<ast::Declaration>() {
       if(!expr)
          return std::unexpected(expr.error());
 
-      expression = std::move(*expr);
+      expression = m_arena.create<ast::Expression>(std::move(*expr));
    }
    
    if(peek() != TokenType::SEMICOLON)
@@ -89,13 +89,13 @@ std::expected<ast::Declaration, std::string> Parser::parse<ast::Declaration>() {
    consume();
 
    if(expression)
-      return ast::Declaration(std::move(*identifier), std::move(*expression));
+      return m_arena.create<ast::Declaration>(*identifier, *expression);
    else
-      return ast::Declaration(std::move(*identifier));
+      return m_arena.create<ast::Declaration>(*identifier);
 }
 
 template<>
-std::expected<ast::Exit, std::string> Parser::parse<ast::Exit>() {
+std::expected<ast::Exit*, std::string> Parser::parse<ast::Exit>() {
    consume(); // consume exit
 
    auto expression = parse<ast::Expression>();
@@ -107,7 +107,7 @@ std::expected<ast::Exit, std::string> Parser::parse<ast::Exit>() {
    else
       consume();
 
-   return ast::Exit(std::move(*expression));
+   return m_arena.create<ast::Exit>(m_arena.create<ast::Expression>(std::move(*expression)));
 }
 
 // expressions
@@ -120,7 +120,7 @@ std::expected<ast::Expression, std::string> Parser::parse<ast::Expression>() {
          if(!integerLiteral)
             return std::unexpected(integerLiteral.error());
 
-         return ast::Expression(std::in_place_type<ast::IntegerLiteral>, *integerLiteral);
+         return ast::Expression(std::in_place_type<ast::IntegerLiteral*>, *integerLiteral);
       }
 
       case TokenType::IDENTIFIER: {
@@ -128,7 +128,7 @@ std::expected<ast::Expression, std::string> Parser::parse<ast::Expression>() {
          if(!identifier)
             return std::unexpected(identifier.error());
 
-         return ast::Expression(std::in_place_type<ast::Identifier>, *identifier);
+         return ast::Expression(std::in_place_type<ast::Identifier*>, *identifier);
       }
 
       default:
@@ -137,18 +137,18 @@ std::expected<ast::Expression, std::string> Parser::parse<ast::Expression>() {
 }
 
 template<>
-std::expected<ast::IntegerLiteral, std::string> Parser::parse<ast::IntegerLiteral>() {
+std::expected<ast::IntegerLiteral*, std::string> Parser::parse<ast::IntegerLiteral>() {
    if(peek() != TokenType::INTEGER_LITERAL || !peek().value)
       return std::unexpected("Expected an integer literal!");
 
-   return ast::IntegerLiteral(*consume().value);
+   return m_arena.create<ast::IntegerLiteral>(*consume().value);
 }
 
 template<>
-std::expected<ast::Identifier, std::string> Parser::parse<ast::Identifier>() {
+std::expected<ast::Identifier*, std::string> Parser::parse<ast::Identifier>() {
    /// @todo remember identifiers thru some sort of map maybe
    if(peek() != TokenType::IDENTIFIER || !peek().value)
       return std::unexpected("Expected an identifier!");
 
-   return ast::Identifier(consume().value.value());
+   return m_arena.create<ast::Identifier>(*consume().value);
 }

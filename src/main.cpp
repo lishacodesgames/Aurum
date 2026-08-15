@@ -7,17 +7,12 @@
 int main(int argc, char* argv[]) {
    // make sure the correct number of arguments is provided
    std::string aurumFile = argv[1]; // is not accessed if it is not provided, so this is safe
-   if(argc != 2 || !aurumFile.ends_with(".aura") || aurumFile.find('/') != std::string::npos) {
-      std::println(stderr, "Incorrect usage!");
-      std::println(stderr, "Correct usage: {} <file.aura>, without any slashes", argv[0]);
-      return EXIT_FAILURE;
-   }
+   if(argc != 2 || !aurumFile.ends_with(".aura") || aurumFile.find('/') != std::string::npos)
+      FATAL_ERROR("Incorrect usage!\nCorrect usage: {} <file.aura>, without any slashes", argv[0]);
 
    // set up output paths
-   if(!std::filesystem::exists("scripts")) {
-      std::println(stderr, "Please run from the root of the project, where the 'scripts' folder is located.");
-      return EXIT_FAILURE;
-   }
+   if(!std::filesystem::exists("scripts"))
+      FATAL_ERROR("Please run from the root of the project, where the 'scripts' folder is located.");
 
    std::string fileBaseName = aurumFile.substr(0, aurumFile.find_last_of('.'));
    std::filesystem::path outputDir("out");
@@ -38,34 +33,26 @@ int main(int argc, char* argv[]) {
       src << srcFile.rdbuf(); // read the entire file into the string stream
       contents = src.str();
 
-      if(contents.empty()) {
-         std::println(stderr, "\033[38:5:161mFATAL ERROR:\033[0m Empty Aurum file!");
-         return EXIT_FAILURE;
-      }
+      if(contents.empty())
+         FATAL_ERROR("Empty Aurum file!");
       // end of scope closes file
    }
 
    // parse & generate assembly
    Tokenizer tokenizer(contents);
    auto tokens = tokenizer.tokenize();
-   if(!tokens) {
-      std::println(stderr, "\033[38:5:161mFATAL ERROR:\033[0m {}", tokens.error());
-      return EXIT_FAILURE;
-   }
+   if(!tokens)
+      FATAL_ERROR(tokens.error());
 
    Parser parser(std::move(*tokens));
    auto program = parser.parse();
-   if(!program) {
-      std::println(stderr, "\033[38:5:161mFATAL ERROR:\033[0m {}", program.error());
-      return EXIT_FAILURE;
-   }
+   if(!program)
+      FATAL_ERROR(program.error());
 
    Generator generator(std::move(*program));
    auto assembly = generator.generate();
-   if(!assembly) {
-      std::println(stderr, "\033[38:5:161mFATAL ERROR:\033[0m {}", assembly.error());
-      return EXIT_FAILURE;
-   }
+   if(!assembly)
+      FATAL_ERROR(assembly.error());
 
    // output assembly to assemblyFile
    {

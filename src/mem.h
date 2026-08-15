@@ -1,4 +1,5 @@
 #pragma once
+#include "Errors.h"
 
 namespace mem
 {
@@ -53,7 +54,7 @@ namespace mem
          const size_t offsetPadding = (alignment - (currentAddress % alignment)) % alignment;
 
          if(m_offset + offsetPadding + bytes > m_capacity)
-            throw std::bad_alloc("Tried to allocate more memory than capacity in Arena!");
+            FATAL_ERROR("Tried to allocate more memory than capacity in Arena!");
 
          m_offset += offsetPadding;
          void* ptr = m_buffer + m_offset;
@@ -67,7 +68,7 @@ namespace mem
       // && implies: deduce whether each was rvalue or lvalue and preserve that so std::forward works
       [[nodiscard]] T* create(Args&&... args) {
          T* p_T = allocate<T>();
-         return ::new (p_T) T(std::forward<Args>(args)); // construct T and put it at p_T instead of wherever new usually puts it
+         return ::new (p_T) T(std::forward<Args>(args)...); // construct T and put it at p_T instead of wherever new usually puts it
       }
 
       void reset() noexcept {

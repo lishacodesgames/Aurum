@@ -1,5 +1,5 @@
-mint x = 80;
+mint x = 8;
 mint helloworld = 50;
 mint y;
 
-exit helloworld;
+exit x;

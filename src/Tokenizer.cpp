@@ -1,10 +1,12 @@
 #include <pch/Precompiled.h>
 #include "Tokenizer.h"
 
+#include "Errors.h"
+
 std::optional<char> Tokenizer::peek(int offset) const noexcept {
    int targetPos = static_cast<int>(m_pos) + offset;
 
-   if(targetPos < 0 && targetPos >= static_cast<int>(m_src.size()))
+   if(targetPos < 0 || targetPos >= static_cast<int>(m_src.size())) // \0 char shouldn't be counted
       return std::nullopt;
 
    return m_src[targetPos]; // use [] when we've checked bounds ourselves to avoid the bounds-checking overhead in .at()
@@ -12,7 +14,7 @@ std::optional<char> Tokenizer::peek(int offset) const noexcept {
 
 char Tokenizer::consume(uint32_t count) {
    if(!peek(count - 1))
-      throw std::runtime_error("Tried to consume end of file character!");
+      FATAL_ERROR("Tried to consume end of file character!");
 
    char current = m_src[m_pos];
    m_pos += count;
