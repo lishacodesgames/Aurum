@@ -3,7 +3,7 @@
 
 class Generator {
 public:
-   explicit Generator(ast::Program program) : m_program(std::move(program))
+   explicit Generator(ast::Program program): m_program(std::move(program))
       { m_output.reserve(4096); } // to avoid constant reallocation as it grows
 
    std::expected<std::string, std::string> generate();
@@ -20,13 +20,13 @@ private:
 
 private:
    /// Increases stack size by 1 and pushes value to the top
-   void push(std::string_view value);
+   void push(std::string_view value, std::optional<std::string> comment = std::nullopt);
 
    /// COPIES value to reg
-   void mov(std::string reg, std::string value);
+   void mov(std::string reg, std::string value, std::optional<std::string> comment = std::nullopt);
 
    /// REMOVES the value from the top of the stack
-   void pop(std::string_view reg);
+   void pop(std::string_view reg, std::optional<std::string> comment = std::nullopt);
 
 private:
    /// @return nullopt if everything went well. string if error (containing error info)

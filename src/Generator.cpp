@@ -17,19 +17,34 @@ std::expected<std::string, std::string> Generator::generate() {
    return m_output;
 }
 
-void Generator::push(std::string_view value) {
+void Generator::push(std::string_view value, std::optional<std::string> comment) {
    // does: rsp -= 8 and mov's value to [rsp] (top of stack)
-   m_output += std::format("\tpush {}\n", value);
+   m_output += std::format("\tpush {}", value);
+
+   if(comment)
+      m_output += std::format(" ; {}", *comment);
+
+   m_output += "\n";
    m_stackSize++;
 }
 
-void Generator::mov(std::string reg, std::string value) {
-   m_output += std::format("\tmov {}, {}\n", reg, value);
+void Generator::mov(std::string reg, std::string value, std::optional<std::string> comment) {
+   m_output += std::format("\tmov {}, {}", reg, value);
+
+   if(comment)
+      m_output += std::format(" ; {}", *comment);
+
+   m_output += "\n";
 }
 
-void Generator::pop(std::string_view reg) {
+void Generator::pop(std::string_view reg, std::optional<std::string> comment) {
    // does: reg = value; rsp += 8
-   m_output += std::format("\tpop {}\n", reg);
+   m_output += std::format("\tpop {}", reg);
+
+   if(comment)
+      m_output += std::format(" ; {}", *comment);
+
+   m_output += "\n";
    m_stackSize--;
 }
 
@@ -40,6 +55,8 @@ template <>
 inline std::optional<std::string> Generator::generate<ast::Declaration>(const ast::Declaration& declaration) {
    if(m_symbolTable.contains(declaration.identifier.name))
       return std::format("Redeclaration of identifier '{}'!", declaration.identifier.name);
+
+   m_output += std::format("\n\t; declaration of {}\n", declaration.identifier.name);
 
    if(declaration.expression) {
       auto returnValue = generate<ast::Expression>(*declaration.expression);
@@ -58,12 +75,14 @@ inline std::optional<std::string> Generator::generate<ast::Declaration>(const as
 /// @todo Expression
 template<>
 std::optional<std::string> Generator::generate<ast::Exit>(const ast::Exit& exit) {
+   m_output += "\n\t; Exiting...\n";
+
    auto returnValue = generate<ast::Expression>(exit.expression);
    if(returnValue)
       return std::move(returnValue);
 
-   pop("rdi"); // store return value
-   mov("rax", "1 | 0x2000000"); // exit syscall number
+   pop("rdi", "store return value");
+   mov("rax", "1 | 0x2000000", "exit syscall number");
    m_output += "\tsyscall\n";
 
    return std::nullopt;
@@ -83,7 +102,7 @@ std::optional<std::string> Generator::generate<ast::Identifier>(const ast::Ident
    if(!m_symbolTable.contains(identifier.name))
       return std::format("Use of undeclared identifier '{}'!", identifier.name);
 
-   push(std::format("qword [rbp - {}]", m_symbolTable.at(identifier.name) * 8));
+   push(std::format("qword [rbp - {}]", m_symbolTable.at(identifier.name) * 8), std::format("'{}'", identifier.name));
 
    return std::nullopt;
 }

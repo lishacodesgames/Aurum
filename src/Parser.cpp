@@ -47,7 +47,7 @@ std::expected<ast::Statement, std::string> Parser::parse<ast::Statement>() {
             return std::unexpected(declaration.error());
 
          // must explicitly construct Declaration in Statement bcz 1 implicit conversion to expected<> already happening
-         return ast::Statement(std::in_place_type<ast::Declaration>, *declaration);
+         return ast::Statement(std::in_place_type<ast::Declaration>, std::move(*declaration));
       }
 
       case TokenType::EXIT: {
@@ -55,7 +55,7 @@ std::expected<ast::Statement, std::string> Parser::parse<ast::Statement>() {
          if(!exit)
             return std::unexpected(exit.error());
 
-         return ast::Statement(std::in_place_type<ast::Exit>, *exit);
+         return ast::Statement(std::in_place_type<ast::Exit>, std::move(*exit));
       }
 
       default:
