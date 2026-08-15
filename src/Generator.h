@@ -6,7 +6,7 @@ public:
    explicit Generator(ast::Program program) : m_program(std::move(program))
       { m_output.reserve(4096); } // to avoid constant reallocation as it grows
 
-   std::string generate();
+   std::expected<std::string, std::string> generate();
 
 private:
    const ast::Program m_program;
@@ -29,32 +29,35 @@ private:
    void pop(std::string_view reg);
 
 private:
+   /// @return nullopt if everything went well. string if error (containing error info)
    template<AstNode T>
-   void generate(const T&);
+   [[nodiscard]] std::optional<std::string> generate(const T&);
 
    // --- EXPLICIT SPECIALISATIONS ---
    // statements
-   template<> void generate<ast::Declaration>(const ast::Declaration& declaration);
-   template<> void generate<ast::Exit>(const ast::Exit& exit);
+   template<> std::optional<std::string> generate<ast::Declaration>(const ast::Declaration& declaration);
+   template<> std::optional<std::string> generate<ast::Exit>(const ast::Exit& exit);
 
    // expression
 
    /// @brief pushes the literal on top of the stack
    /// @param integerLiteral must be popped off the stack and used
-   template<> void generate<ast::IntegerLiteral>(const ast::IntegerLiteral& integerLiteral);
+   template<> std::optional<std::string> generate<ast::IntegerLiteral>(const ast::IntegerLiteral& integerLiteral);
 
    /// @brief assigns m_symbolTable[name] <- m_stackSize (latest pushed value)
    /// @throws runtime_error if symbol already exists in m_symbolTable
    /// @note MUST call expression first
-   template<> void generate<ast::Identifier>(const ast::Identifier& identifier);
+   template<> std::optional<std::string> generate<ast::Identifier>(const ast::Identifier& identifier);
 
    // Variant overload
    template<VariantNode V>
-   void generate(const V& variant) {
-      std::visit([this](auto&& arg) {
+   [[nodiscard]] std::optional<std::string> generate(const V& variant) {
+      return std::visit([this](auto&& arg) -> std::optional<std::string> {
          using T = std::decay_t<decltype(arg)>; // decay_t removes && rvalue reference, const, etc. Only returns pure type
          if constexpr(!std::is_same_v<T, std::monostate>)
-            generate<T>(arg);
+            return generate<T>(arg);
+
+         return "Tried to call generate on monostate!";
       }, variant);
    }
 };

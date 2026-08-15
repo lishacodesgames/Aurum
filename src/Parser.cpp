@@ -41,7 +41,6 @@ Token Parser::consume(uint32_t count) {
 template<>
 std::expected<ast::Statement, std::string> Parser::parse<ast::Statement>() {
    switch(peek().type) {
-      case TokenType::BAR:
       case TokenType::MINT: {
          auto declaration = parse<ast::Declaration>();
          if(!declaration)
@@ -72,22 +71,27 @@ std::expected<ast::Declaration, std::string> Parser::parse<ast::Declaration>() {
    if(!identifier)
       return std::unexpected(identifier.error());
 
-   /// @todo implement declaration without definition
-   if(peek() != TokenType::EQUALS)
-      return std::unexpected("Expected `=`!");
-   else
+   std::optional<ast::Expression> expression; // in case it's a Declaration without Definition
+
+   if(peek() == TokenType::EQUALS) {
       consume();
 
-   auto expression = parse<ast::Expression>();
-   if(!expression)
-      return std::unexpected(expression.error());
+      auto expr = parse<ast::Expression>();
+      if(!expr)
+         return std::unexpected(expr.error());
 
+      expression = std::move(*expr);
+   }
+   
    if(peek() != TokenType::SEMICOLON)
       return std::unexpected("Expected `;`!");
-   else
-      consume();
 
-   return ast::Declaration(std::move(*identifier), std::move(*expression));
+   consume();
+
+   if(expression)
+      return ast::Declaration(std::move(*identifier), std::move(*expression));
+   else
+      return ast::Declaration(std::move(*identifier));
 }
 
 template<>
@@ -128,7 +132,7 @@ std::expected<ast::Expression, std::string> Parser::parse<ast::Expression>() {
       }
 
       default:
-         return std::unexpected(std::format("Unknown token type '{}'!", to_string(consume().type)));
+         return std::unexpected(std::format("Expected expression! Got: '{}'!", to_string(consume().type)));
    }
 }
 

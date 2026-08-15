@@ -61,12 +61,16 @@ int main(int argc, char* argv[]) {
    }
 
    Generator generator(std::move(*program));
-   std::string assembly = generator.generate();
+   auto assembly = generator.generate();
+   if(!assembly) {
+      std::println(stderr, "\033[38:5:161mFATAL ERROR:\033[0m {}", assembly.error());
+      return EXIT_FAILURE;
+   }
 
    // output assembly to assemblyFile
    {
       std::ofstream outAssembly(assemblyFile);
-      outAssembly << assembly;
+      outAssembly << *assembly;
       // end of scope closes file
    }
 

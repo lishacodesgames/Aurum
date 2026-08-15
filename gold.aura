@@ -1,1 +1,5 @@
-exit 24;
+mint x = 80;
+mint helloworld = 50;
+mint y;
+
+exit helloworld;

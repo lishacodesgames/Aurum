@@ -18,8 +18,8 @@ _main:
    ; |  local variable 2  | <- address = rbp - 16
    ; |--------------------| <- rsp (can move up or down based on how much we need). Currently empty
 
-   ; QWORD = 8-byte value, [address] = dereferencing it, 5 = value put in slot
-   mov QWORD [rbp - 8], 5 ; put 5 into first variable slot
+   ; QWORD = 8-byte value, [address] = dereferencing it, then the value put in slot
+   mov QWORD [rbp - 8], 5 ; put value into first variable slot
 
    ; rdi is the "first argument" register, and exit() takes exactly 1 argument, hence we store the exit code in rdi
    ; the arg registers in order are: rdi, rsi, rdx, r10 (not rcx), r8, r9

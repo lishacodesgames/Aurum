@@ -1,13 +1,18 @@
 #include <pch/Precompiled.h>
 #include "Generator.h"
 
-std::string Generator::generate() {
+std::expected<std::string, std::string> Generator::generate() {
    m_output += "; macOS x86_64, NASM syntax\n\n";
    m_output += "global _main\n";
    m_output += "_main:\n";
+   m_output += "\tpush rbp     ; save the caller's base pointer\n";
+   m_output += "\tmov rbp, rsp ; set our base pointer to the current stack pointer\n";
 
-   for(const ast::Statement& stmt : m_program.statements)
-      generate<ast::Statement>(stmt);
+   for(const ast::Statement& stmt : m_program.statements) {
+      auto returnValue = generate<ast::Statement>(stmt);
+      if(returnValue)
+         return std::unexpected(*returnValue);
+   }
 
    return m_output;
 }
@@ -32,32 +37,53 @@ void Generator::pop(std::string_view reg) {
 
 // statements
 template <>
-inline void Generator::generate<ast::Declaration>(const ast::Declaration& declaration) {
+inline std::optional<std::string> Generator::generate<ast::Declaration>(const ast::Declaration& declaration) {
    if(m_symbolTable.contains(declaration.identifier.name))
-      throw std::runtime_error(std::format("Redeclaration of identifier '{}'!", declaration.identifier.name));
+      return std::format("Redeclaration of identifier '{}'!", declaration.identifier.name);
 
-   generate<ast::Expression>(declaration.expression);
-   generate<ast::Identifier>(declaration.identifier);
+   if(declaration.expression) {
+      auto returnValue = generate<ast::Expression>(*declaration.expression);
+      if(returnValue)
+         return std::move(returnValue);
+   } else { // declaration without definition: identifier points to garbage value
+      m_output += "\tsub rsp, 8\n";
+      m_stackSize++;
+   }
+
+   m_symbolTable[declaration.identifier.name] = m_stackSize;
+
+   return std::nullopt;
 }
 
 /// @todo Expression
 template<>
-void Generator::generate<ast::Exit>(const ast::Exit& exit) {
-   generate<ast::Expression>(exit.expression);
+std::optional<std::string> Generator::generate<ast::Exit>(const ast::Exit& exit) {
+   auto returnValue = generate<ast::Expression>(exit.expression);
+   if(returnValue)
+      return std::move(returnValue);
 
    pop("rdi"); // store return value
    mov("rax", "1 | 0x2000000"); // exit syscall number
    m_output += "\tsyscall\n";
+
+   return std::nullopt;
 }
 
 // expressions
 
 template<>
-void Generator::generate<ast::IntegerLiteral>(const ast::IntegerLiteral& integerLiteral) {
-   push(integerLiteral.value);
+std::optional<std::string> Generator::generate<ast::IntegerLiteral>(const ast::IntegerLiteral& integerLiteral) {
+   push(integerLiteral.to_string());
+
+   return std::nullopt;
 }
 
 template<>
-void Generator::generate<ast::Identifier>(const ast::Identifier& identifier) {
-   m_symbolTable[identifier.name] = m_stackSize;
+std::optional<std::string> Generator::generate<ast::Identifier>(const ast::Identifier& identifier) {
+   if(!m_symbolTable.contains(identifier.name))
+      return std::format("Use of undeclared identifier '{}'!", identifier.name);
+
+   push(std::format("qword [rbp - {}]", m_symbolTable.at(identifier.name) * 8));
+
+   return std::nullopt;
 }

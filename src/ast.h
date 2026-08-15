@@ -7,15 +7,26 @@ namespace ast
    // --- EXPRESSIONS ---
 
    struct IntegerLiteral {
-      std::string value;
+      int value;
 
-      explicit IntegerLiteral(std::string value) : value(std::move(value)) {}
+      /// @param value type = string because Token stores value as a string
+      explicit IntegerLiteral(const std::string& value) {
+         try {
+            this->value = std::stoi(value);
+         } catch(const std::invalid_argument& e) {
+            throw std::runtime_error(std::format("Tried to convert {} to an integer literal!", value));
+         } catch(const std::out_of_range& e) {
+            throw std::runtime_error(std::format("'{}' is too large for an integer literal!", value));
+         }
+      }
+
+      std::string to_string() const { return std::to_string(value); }
    };
 
    struct Identifier {
       std::string name;
 
-      explicit Identifier(std::string value) : name(std::move(value)) {}
+      explicit Identifier(std::string_view value) : name(value) {}
    };
 
    using Expression = std::variant<std::monostate, IntegerLiteral, Identifier>;
@@ -25,7 +36,9 @@ namespace ast
    /// @todo mutability & type constraints: mint vs bar vs bar<>
    struct Declaration {
       ast::Identifier identifier;
-      ast::Expression expression;
+      std::optional<ast::Expression> expression; // declaration without definition = nullopt
+
+      explicit Declaration(ast::Identifier identifier) : identifier(std::move(identifier)) {}
 
       explicit Declaration(ast::Identifier identifier, ast::Expression expression)
          : identifier(std::move(identifier)), expression(std::move(expression)) {}
