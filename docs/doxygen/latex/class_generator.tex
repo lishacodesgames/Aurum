@@ -7,52 +7,187 @@
 \doxysubsubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\doxymbox{\hyperlink{class_generator_abab84fab50e78b581bbba32245722f9c}{Generator}} (\doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::\+\+Node}} root)
+\doxymbox{\hyperlink{class_generator_a469b1cb69744d5883455b1e4918665c5}{Generator}} (\doxymbox{\hyperlink{structast_1_1_program}{ast::\+\+Program}} program)
 \item 
-std::\+string \doxymbox{\hyperlink{class_generator_ae38ca57af6b006a762b3900fe4354f14}{generate}} () const
+std::\+string \doxymbox{\hyperlink{class_generator_adb20f94568fe8cce98db24fb593173ef}{generate}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \doxymbox{\hyperlink{class_generator_a6678dd9407b6fc905b30402ac8e363fb}{push}} (std::\+string\+\_\+view value)
+\begin{DoxyCompactList}\small\item\em Increases stack size by 1 and pushes value to the top. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{class_generator_aeae2b9fb26d088dbbffee372c7443332}{mov}} (std::\+string reg, std::\+string value)
+\begin{DoxyCompactList}\small\item\em COPIES value to reg. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{class_generator_a25a86dac2ceef28a36db4fda6e1711c8}{pop}} (std::\+string\+\_\+view reg)
+\begin{DoxyCompactList}\small\item\em REMOVES the value from the top of the stack. \end{DoxyCompactList}\item 
+{\footnotesize template$<$\doxymbox{\hyperlink{concept_ast_node}{Ast\+Node}} T$>$ }\\void \doxymbox{\hyperlink{class_generator_a6fe863e8f73b90f44103f85fae5ff7c0}{generate}} (const T \&)
+\item 
+template$<$$>$ void \doxymbox{\hyperlink{class_generator_a5a28e21d2aac4293235ceb366c29e587}{generate}} (const \doxymbox{\hyperlink{structast_1_1_declaration}{ast::\+\+Declaration}} \&declaration)
+\item 
+template$<$$>$ void \doxymbox{\hyperlink{class_generator_aca62cca7417c42ebf9ad17b285540b4c}{generate}} (const \doxymbox{\hyperlink{structast_1_1_exit}{ast::\+\+Exit}} \&exit)
+\item 
+template$<$$>$ void \doxymbox{\hyperlink{class_generator_a7648c4b4684346ea153a46b5a7d9e508}{generate}} (const \doxymbox{\hyperlink{structast_1_1_integer_literal}{ast::\+\+Integer\+Literal}} \&integer\+Literal)
+\begin{DoxyCompactList}\small\item\em pushes the literal on top of the stack \end{DoxyCompactList}\item 
+template$<$$>$ void \doxymbox{\hyperlink{class_generator_afabf80e1ad63d614b32173e2e333be20}{generate}} (const \doxymbox{\hyperlink{structast_1_1_identifier}{ast::\+\+Identifier}} \&identifier)
+\begin{DoxyCompactList}\small\item\em assigns m\+\_\+symbol\+Table\+[name]\+ \texorpdfstring{$<$}{<}-\/ m\+\_\+stack\+Size (latest pushed value) \end{DoxyCompactList}\item 
+{\footnotesize template$<$\doxymbox{\hyperlink{concept_variant_node}{Variant\+Node}} V$>$ }\\void \doxymbox{\hyperlink{class_generator_a4d65f797aa9ebb86a5b3ec747e9e6bd2}{generate}} (const V \&variant)
 \end{DoxyCompactItemize}
 \doxysubsubsection*{Private Attributes}
 \begin{DoxyCompactItemize}
 \item 
-const \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::\+\+Node}} \doxymbox{\hyperlink{class_generator_a9996a6878e9c1b029b81c65296bd4e16}{m\+\_\+root}}
+const \doxymbox{\hyperlink{structast_1_1_program}{ast::\+\+Program}} \doxymbox{\hyperlink{class_generator_a97bf6bbec3bd13c20df55bf8a4409738}{m\+\_\+program}}
+\item 
+std::\+string \doxymbox{\hyperlink{class_generator_a96d00e29e94915cfda1b40c98c748b30}{m\+\_\+output}}
+\item 
+uint32\+\_\+t \doxymbox{\hyperlink{class_generator_acc41868fff8f8cac0f00148a566a6881}{m\+\_\+stack\+Size}} = 0
+\item 
+std::\+unordered\+\_\+map$<$ std::\+string, uint32\+\_\+t $>$ \doxymbox{\hyperlink{class_generator_acc3facb44cdff1c26e28556b46652369}{m\+\_\+symbol\+Table}}
 \end{DoxyCompactItemize}
 
 
 \label{class_generator_doc-constructors}
 \Hypertarget{class_generator_doc-constructors}
 \doxysubsection{Constructor \& Destructor Documentation}
-\Hypertarget{class_generator_abab84fab50e78b581bbba32245722f9c}\index{Generator@{Generator}!Generator@{Generator}}
+\Hypertarget{class_generator_a469b1cb69744d5883455b1e4918665c5}\index{Generator@{Generator}!Generator@{Generator}}
 \index{Generator@{Generator}!Generator@{Generator}}
 \doxysubsubsection{\texorpdfstring{Generator()}{Generator()}}
-{\footnotesize\ttfamily \label{class_generator_abab84fab50e78b581bbba32245722f9c} 
-Generator::\+\+Generator (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::\+\+Node}}}]{root}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+{\footnotesize\ttfamily \label{class_generator_a469b1cb69744d5883455b1e4918665c5} 
+Generator::\+\+Generator (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{structast_1_1_program}{ast::\+\+Program}}}]{program}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
 
 
 
 \label{class_generator_doc-func-members}
 \Hypertarget{class_generator_doc-func-members}
 \doxysubsection{Member Function Documentation}
-\Hypertarget{class_generator_ae38ca57af6b006a762b3900fe4354f14}\index{Generator@{Generator}!generate@{generate}}
+\Hypertarget{class_generator_adb20f94568fe8cce98db24fb593173ef}\index{Generator@{Generator}!generate@{generate}}
 \index{generate@{generate}!Generator@{Generator}}
-\doxysubsubsection{\texorpdfstring{generate()}{generate()}}
-{\footnotesize\ttfamily \label{class_generator_ae38ca57af6b006a762b3900fe4354f14} 
-std::\+string Generator::\+generate (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+\doxysubsubsection{\texorpdfstring{generate()}{generate()}\hspace{0.1cm}{\footnotesize\ttfamily [1/7]}}
+{\footnotesize\ttfamily \label{class_generator_adb20f94568fe8cce98db24fb593173ef} 
+std::\+string Generator::\+generate (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
 
+\Hypertarget{class_generator_a5a28e21d2aac4293235ceb366c29e587}\index{Generator@{Generator}!generate@{generate}}
+\index{generate@{generate}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{generate()}{generate()}\hspace{0.1cm}{\footnotesize\ttfamily [2/7]}}
+{\footnotesize\ttfamily \label{class_generator_a5a28e21d2aac4293235ceb366c29e587} 
+template$<$$>$ \\
+void Generator::\+generate (\begin{DoxyParamCaption}\item[{const \doxymbox{\hyperlink{structast_1_1_declaration}{ast::\+\+Declaration}} \&}]{declaration}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_generator_aca62cca7417c42ebf9ad17b285540b4c}\index{Generator@{Generator}!generate@{generate}}
+\index{generate@{generate}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{generate()}{generate()}\hspace{0.1cm}{\footnotesize\ttfamily [3/7]}}
+{\footnotesize\ttfamily \label{class_generator_aca62cca7417c42ebf9ad17b285540b4c} 
+template$<$$>$ \\
+void Generator::\+generate (\begin{DoxyParamCaption}\item[{const \doxymbox{\hyperlink{structast_1_1_exit}{ast::\+\+Exit}} \&}]{exit}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_generator_afabf80e1ad63d614b32173e2e333be20}\index{Generator@{Generator}!generate@{generate}}
+\index{generate@{generate}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{generate()}{generate()}\hspace{0.1cm}{\footnotesize\ttfamily [4/7]}}
+{\footnotesize\ttfamily \label{class_generator_afabf80e1ad63d614b32173e2e333be20} 
+template$<$$>$ \\
+void Generator::\+generate (\begin{DoxyParamCaption}\item[{const \doxymbox{\hyperlink{structast_1_1_identifier}{ast::\+\+Identifier}} \&}]{identifier}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+assigns m\+\_\+symbol\+Table\+[name]\+ \texorpdfstring{$<$}{<}-\/ m\+\_\+stack\+Size (latest pushed value) 
+
+
+\begin{DoxyExceptions}{Exceptions}
+{\em runtime\+\_\+error} & if symbol already exists in m\+\_\+symbol\+Table \\
+\hline
+\end{DoxyExceptions}
 \begin{DoxyNote}{Note}
-m\+\_\+root here is of exit type but later it might not be
+MUST call expression first 
 \end{DoxyNote}
+\Hypertarget{class_generator_a7648c4b4684346ea153a46b5a7d9e508}\index{Generator@{Generator}!generate@{generate}}
+\index{generate@{generate}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{generate()}{generate()}\hspace{0.1cm}{\footnotesize\ttfamily [5/7]}}
+{\footnotesize\ttfamily \label{class_generator_a7648c4b4684346ea153a46b5a7d9e508} 
+template$<$$>$ \\
+void Generator::\+generate (\begin{DoxyParamCaption}\item[{const \doxymbox{\hyperlink{structast_1_1_integer_literal}{ast::\+\+Integer\+Literal}} \&}]{integer\+Literal}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+pushes the literal on top of the stack 
+
+
+\begin{DoxyParams}{Parameters}
+{\em integer\+Literal} & must be popped off the stack and used \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_generator_a6fe863e8f73b90f44103f85fae5ff7c0}\index{Generator@{Generator}!generate@{generate}}
+\index{generate@{generate}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{generate()}{generate()}\hspace{0.1cm}{\footnotesize\ttfamily [6/7]}}
+{\footnotesize\ttfamily \label{class_generator_a6fe863e8f73b90f44103f85fae5ff7c0} 
+template$<$\doxymbox{\hyperlink{concept_ast_node}{Ast\+Node}} T$>$ \\
+void Generator::\+generate (\begin{DoxyParamCaption}\item[{const T \&}]{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_generator_a4d65f797aa9ebb86a5b3ec747e9e6bd2}\index{Generator@{Generator}!generate@{generate}}
+\index{generate@{generate}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{generate()}{generate()}\hspace{0.1cm}{\footnotesize\ttfamily [7/7]}}
+{\footnotesize\ttfamily \label{class_generator_a4d65f797aa9ebb86a5b3ec747e9e6bd2} 
+template$<$\doxymbox{\hyperlink{concept_variant_node}{Variant\+Node}} V$>$ \\
+void Generator::\+generate (\begin{DoxyParamCaption}\item[{const V \&}]{variant}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+\Hypertarget{class_generator_aeae2b9fb26d088dbbffee372c7443332}\index{Generator@{Generator}!mov@{mov}}
+\index{mov@{mov}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{mov()}{mov()}}
+{\footnotesize\ttfamily \label{class_generator_aeae2b9fb26d088dbbffee372c7443332} 
+void Generator::\+mov (\begin{DoxyParamCaption}\item[{std::\+string}]{reg}{, }\item[{std::\+string}]{value}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+COPIES value to reg. 
+
+\Hypertarget{class_generator_a25a86dac2ceef28a36db4fda6e1711c8}\index{Generator@{Generator}!pop@{pop}}
+\index{pop@{pop}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{pop()}{pop()}}
+{\footnotesize\ttfamily \label{class_generator_a25a86dac2ceef28a36db4fda6e1711c8} 
+void Generator::\+pop (\begin{DoxyParamCaption}\item[{std::\+string\+\_\+view}]{reg}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+REMOVES the value from the top of the stack. 
+
+\Hypertarget{class_generator_a6678dd9407b6fc905b30402ac8e363fb}\index{Generator@{Generator}!push@{push}}
+\index{push@{push}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{push()}{push()}}
+{\footnotesize\ttfamily \label{class_generator_a6678dd9407b6fc905b30402ac8e363fb} 
+void Generator::\+push (\begin{DoxyParamCaption}\item[{std::\+string\+\_\+view}]{value}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Increases stack size by 1 and pushes value to the top. 
+
 
 
 \label{class_generator_doc-variable-members}
 \Hypertarget{class_generator_doc-variable-members}
 \doxysubsection{Member Data Documentation}
-\Hypertarget{class_generator_a9996a6878e9c1b029b81c65296bd4e16}\index{Generator@{Generator}!m\_root@{m\_root}}
-\index{m\_root@{m\_root}!Generator@{Generator}}
-\doxysubsubsection{\texorpdfstring{m\_root}{m\_root}}
-{\footnotesize\ttfamily \label{class_generator_a9996a6878e9c1b029b81c65296bd4e16} 
-const \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::\+\+Node}} Generator::\+m\+\_\+root\hspace{0.3cm}{\ttfamily [private]}}
+\Hypertarget{class_generator_a96d00e29e94915cfda1b40c98c748b30}\index{Generator@{Generator}!m\_output@{m\_output}}
+\index{m\_output@{m\_output}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{m\_output}{m\_output}}
+{\footnotesize\ttfamily \label{class_generator_a96d00e29e94915cfda1b40c98c748b30} 
+std::\+string Generator::\+m\+\_\+output\hspace{0.3cm}{\ttfamily [private]}}
 
+\Hypertarget{class_generator_a97bf6bbec3bd13c20df55bf8a4409738}\index{Generator@{Generator}!m\_program@{m\_program}}
+\index{m\_program@{m\_program}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{m\_program}{m\_program}}
+{\footnotesize\ttfamily \label{class_generator_a97bf6bbec3bd13c20df55bf8a4409738} 
+const \doxymbox{\hyperlink{structast_1_1_program}{ast::\+\+Program}} Generator::\+m\+\_\+program\hspace{0.3cm}{\ttfamily [private]}}
 
+\Hypertarget{class_generator_acc41868fff8f8cac0f00148a566a6881}\index{Generator@{Generator}!m\_stackSize@{m\_stackSize}}
+\index{m\_stackSize@{m\_stackSize}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{m\_stackSize}{m\_stackSize}}
+{\footnotesize\ttfamily \label{class_generator_acc41868fff8f8cac0f00148a566a6881} 
+uint32\+\_\+t Generator::\+m\+\_\+stack\+Size = 0\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_generator_acc3facb44cdff1c26e28556b46652369}\index{Generator@{Generator}!m\_symbolTable@{m\_symbolTable}}
+\index{m\_symbolTable@{m\_symbolTable}!Generator@{Generator}}
+\doxysubsubsection{\texorpdfstring{m\_symbolTable}{m\_symbolTable}}
+{\footnotesize\ttfamily \label{class_generator_acc3facb44cdff1c26e28556b46652369} 
+std::\+unordered\+\_\+map$<$std::\+string, uint32\+\_\+t$>$ Generator::\+m\+\_\+symbol\+Table\hspace{0.3cm}{\ttfamily [private]}}
+
+Key Type:\+ string, name of the variable Value Type:\+ uint32\+\_\+t, offset from rbp 
 
 The documentation for this class was generated from the following files:\+\begin{DoxyCompactItemize}
 \item 

@@ -3,16 +3,54 @@
 \doxymbox{\hyperlink{_generator_8h}{Go to the documentation of this file.}}
 \begin{DoxyCode}{0}
 \DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
-\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{_nodes_8h}{Nodes.h}}"{}}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{ast_8h}{ast.h}}"{}}}
 \DoxyCodeLine{00003\ }
-\DoxyCodeLine{00004\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_generator_abab84fab50e78b581bbba32245722f9c}{Generator}}\ \{}
+\DoxyCodeLine{00004\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_generator_a469b1cb69744d5883455b1e4918665c5}{Generator}}\ \{}
 \DoxyCodeLine{00005\ \textcolor{keyword}{public}:}
-\DoxyCodeLine{00006\ \ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{class_generator_abab84fab50e78b581bbba32245722f9c}{Generator}}(\doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::Node}}\ root)\ :\ \doxymbox{\hyperlink{class_generator_a9996a6878e9c1b029b81c65296bd4e16}{m\_root}}(std::move(root))\ \{\}}
-\DoxyCodeLine{00007\ }
-\DoxyCodeLine{00008\ \ \ \ std::string\ \doxymbox{\hyperlink{class_generator_ae38ca57af6b006a762b3900fe4354f14}{generate}}()\ \textcolor{keyword}{const};}
-\DoxyCodeLine{00009\ }
-\DoxyCodeLine{00010\ \textcolor{keyword}{private}:}
-\DoxyCodeLine{00011\ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::Node}}\ \doxymbox{\hyperlink{class_generator_a9996a6878e9c1b029b81c65296bd4e16}{m\_root}};}
-\DoxyCodeLine{00012\ \};}
+\DoxyCodeLine{00006\ \ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{class_generator_a469b1cb69744d5883455b1e4918665c5}{Generator}}(\doxymbox{\hyperlink{structast_1_1_program}{ast::Program}}\ program)\ :\ \doxymbox{\hyperlink{class_generator_a97bf6bbec3bd13c20df55bf8a4409738}{m\_program}}(std::move(program))}
+\DoxyCodeLine{00007\ \ \ \ \ \ \ \{\ \doxymbox{\hyperlink{class_generator_a96d00e29e94915cfda1b40c98c748b30}{m\_output}}.reserve(4096);\ \}\ \textcolor{comment}{//\ to\ avoid\ constant\ reallocation\ as\ it\ grows}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \ \ \ std::string\ \doxymbox{\hyperlink{class_generator_adb20f94568fe8cce98db24fb593173ef}{generate}}();}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00012\ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structast_1_1_program}{ast::Program}}\ \doxymbox{\hyperlink{class_generator_a97bf6bbec3bd13c20df55bf8a4409738}{m\_program}};}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \ \ \ std::string\ \doxymbox{\hyperlink{class_generator_a96d00e29e94915cfda1b40c98c748b30}{m\_output}};}
+\DoxyCodeLine{00015\ \ \ \ uint32\_t\ \doxymbox{\hyperlink{class_generator_acc41868fff8f8cac0f00148a566a6881}{m\_stackSize}}\ =\ 0;}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00019\ \ \ \ std::unordered\_map<std::string,\ uint32\_t>\ \doxymbox{\hyperlink{class_generator_acc3facb44cdff1c26e28556b46652369}{m\_symbolTable}};}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00023\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_generator_a6678dd9407b6fc905b30402ac8e363fb}{push}}(std::string\_view\ value);}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00026\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_generator_aeae2b9fb26d088dbbffee372c7443332}{mov}}(std::string\ reg,\ std::string\ value);}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00029\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_generator_a25a86dac2ceef28a36db4fda6e1711c8}{pop}}(std::string\_view\ reg);}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00032\ \ \ \ \textcolor{keyword}{template}<AstNode\ T>}
+\DoxyCodeLine{00033\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_generator_a6fe863e8f73b90f44103f85fae5ff7c0}{generate}}(\textcolor{keyword}{const}\ T\&);}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \ \ \ \textcolor{comment}{//\ -\/-\/-\/\ EXPLICIT\ SPECIALISATIONS\ -\/-\/-\/}}
+\DoxyCodeLine{00036\ \ \ \ \textcolor{comment}{//\ statements}}
+\DoxyCodeLine{00037\ \ \ \ \textcolor{keyword}{template}<>\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{_generator_8cpp_a9f9a1e3322a219322c0ffb4d718ad334}{generate<ast::Declaration>}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structast_1_1_declaration}{ast::Declaration}}\&\ declaration);}
+\DoxyCodeLine{00038\ \ \ \ \textcolor{keyword}{template}<>\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{_generator_8cpp_afc8e0ff085e39fb1db21128f8679ba7f}{generate<ast::Exit>}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structast_1_1_exit}{ast::Exit}}\&\ exit);}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \textcolor{comment}{//\ expression}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00044\ \ \ \ \textcolor{keyword}{template}<>\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{_generator_8cpp_ad9c2b824efea8e8785e14d4322133dc2}{generate<ast::IntegerLiteral>}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structast_1_1_integer_literal}{ast::IntegerLiteral}}\&\ integerLiteral);}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00049\ \ \ \ \textcolor{keyword}{template}<>\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{_generator_8cpp_a90a89ebd2e4f761b36c0a83b2cc71efc}{generate<ast::Identifier>}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structast_1_1_identifier}{ast::Identifier}}\&\ identifier);}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \ \textcolor{comment}{//\ Variant\ overload}}
+\DoxyCodeLine{00052\ \ \ \ \textcolor{keyword}{template}<VariantNode\ V>}
+\DoxyCodeLine{00053\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_generator_a4d65f797aa9ebb86a5b3ec747e9e6bd2}{generate}}(\textcolor{keyword}{const}\ V\&\ variant)\ \{}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ std::visit([\textcolor{keyword}{this}](\textcolor{keyword}{auto}\&\&\ arg)\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }T\ =\ std::decay\_t<\textcolor{keyword}{decltype}(arg)>;\ \textcolor{comment}{//\ decay\_t\ removes\ \&\&\ rvalue\ reference,\ const,\ etc.\ Only\ returns\ pure\ type}}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ \textcolor{keyword}{constexpr}(!std::is\_same\_v<T,\ std::monostate>)}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_generator_adb20f94568fe8cce98db24fb593173ef}{generate<T>}}(arg);}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \},\ variant);}
+\DoxyCodeLine{00059\ \ \ \ \}}
+\DoxyCodeLine{00060\ \};}
 
 \end{DoxyCode}

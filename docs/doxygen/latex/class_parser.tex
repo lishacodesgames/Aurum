@@ -9,18 +9,29 @@
 \item 
 \doxymbox{\hyperlink{class_parser_ac93b3201fac5ebaf8c398054c7fec2b9}{Parser}} (std::\+vector$<$ \doxymbox{\hyperlink{struct_token}{Token}} $>$ tokens)
 \item 
-std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::\+\+Node}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_a7ea19afc016fea904b0c91f245498965}{parse}} ()
+std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_program}{ast::\+\+Program}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_abcc294ff161e0f07472f54b27fa68092}{parse}} ()
 \end{DoxyCompactItemize}
 \doxysubsubsection*{Private Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-std::\+optional$<$ \doxymbox{\hyperlink{struct_token}{Token}} $>$ \doxymbox{\hyperlink{class_parser_a1cfe459e39f2406a5a240446cdb89c29}{peek}} (int offset=0)
+\doxymbox{\hyperlink{struct_token}{Token}} \doxymbox{\hyperlink{class_parser_ad0e335245b14c34b6ac2a6db0cae172b}{peek}} (int offset=0)
 \item 
 \doxymbox{\hyperlink{struct_token}{Token}} \doxymbox{\hyperlink{class_parser_aa98b3c14c9420a69f5484fee2354ca7b}{consume}} (uint32\+\_\+t count=1)
 \begin{DoxyCompactList}\small\item\em increments m\+\_\+pos but returns current \doxylink{struct_token}{Token} \end{DoxyCompactList}\item 
-std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_exit}{ast::\+\+Exit}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_a1eaf9737bfc737993c25415ef3b70c66}{parse\+Exit}} ()
+{\footnotesize template$<$typename T$>$ \newline
+requires \doxymbox{\hyperlink{concept_ast_node}{Ast\+Node}}$<$T$>$ \texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|} \doxymbox{\hyperlink{concept_variant_node}{Variant\+Node}}$<$T$>$}\\std::\+expected$<$ T, std::\+string $>$ \doxymbox{\hyperlink{class_parser_ad4e982fe38e9d7882d0ca12d92b48adb}{parse}} ()
 \item 
-std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{ast::\+\+Expression}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_ac049300f4f8d62990ba8e5408163be21}{parse\+Expression}} ()
+template$<$$>$ std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_aaed583ec47d9adbea0fe6fd5d879272f}{ast::\+\+Statement}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_add20e789231264fa471aa961774e9920}{parse}} ()
+\item 
+template$<$$>$ std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_declaration}{ast::\+\+Declaration}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_aba2384f51fa66d7d391eab61a16756eb}{parse}} ()
+\item 
+template$<$$>$ std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_exit}{ast::\+\+Exit}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_ac39a84d0c7703547e970160bb5120e32}{parse}} ()
+\item 
+template$<$$>$ std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{ast::\+\+Expression}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_aad17a255cf8f26978dc88274e446f766}{parse}} ()
+\item 
+template$<$$>$ std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_integer_literal}{ast::\+\+Integer\+Literal}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_abdad0aaea9dfb91c0d440fc2aa72d824}{parse}} ()
+\item 
+template$<$$>$ std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_identifier}{ast::\+\+Identifier}}, std::\+string $>$ \doxymbox{\hyperlink{class_parser_a37d94fb4613f95262e7c32b0d9f1dc53}{parse}} ()
 \end{DoxyCompactItemize}
 \doxysubsubsection*{Private Attributes}
 \begin{DoxyCompactItemize}
@@ -65,34 +76,70 @@ CURRENT \doxylink{struct_token}{Token}
 \end{DoxyReturn}
 
 \begin{DoxyExceptions}{Exceptions}
-{\em runtime\+\_\+error} & if next \doxylink{struct_token}{Token} doesn\textquotesingle{}t exist, so check with \doxylink{class_parser_a1cfe459e39f2406a5a240446cdb89c29}{peek()} before calling \\
+{\em runtime\+\_\+error} & if next \doxylink{struct_token}{Token} doesn\textquotesingle{}t exist, so check with \doxylink{class_parser_ad0e335245b14c34b6ac2a6db0cae172b}{peek()} before calling \\
 \hline
 \end{DoxyExceptions}
-\Hypertarget{class_parser_a7ea19afc016fea904b0c91f245498965}\index{Parser@{Parser}!parse@{parse}}
+\Hypertarget{class_parser_ad4e982fe38e9d7882d0ca12d92b48adb}\index{Parser@{Parser}!parse@{parse}}
 \index{parse@{parse}!Parser@{Parser}}
-\doxysubsubsection{\texorpdfstring{parse()}{parse()}}
-{\footnotesize\ttfamily \label{class_parser_a7ea19afc016fea904b0c91f245498965} 
-std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::\+\+Node}}, std::\+string $>$ Parser::\+parse (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+\doxysubsubsection{\texorpdfstring{parse()}{parse()}\hspace{0.1cm}{\footnotesize\ttfamily [1/8]}}
+{\footnotesize\ttfamily \label{class_parser_ad4e982fe38e9d7882d0ca12d92b48adb} 
+template$<$typename T$>$ \newline
+requires \doxymbox{\hyperlink{concept_ast_node}{Ast\+Node}}$<$T$>$ \texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|} \doxymbox{\hyperlink{concept_variant_node}{Variant\+Node}}$<$T$>$\\
+std::\+expected$<$ T, std::\+string $>$ Parser::\+parse (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
-\Hypertarget{class_parser_a1eaf9737bfc737993c25415ef3b70c66}\index{Parser@{Parser}!parseExit@{parseExit}}
-\index{parseExit@{parseExit}!Parser@{Parser}}
-\doxysubsubsection{\texorpdfstring{parseExit()}{parseExit()}}
-{\footnotesize\ttfamily \label{class_parser_a1eaf9737bfc737993c25415ef3b70c66} 
-std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_exit}{ast::\+\+Exit}}, std::\+string $>$ Parser::\+parse\+Exit (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+\Hypertarget{class_parser_add20e789231264fa471aa961774e9920}\index{Parser@{Parser}!parse@{parse}}
+\index{parse@{parse}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{parse()}{parse()}\hspace{0.1cm}{\footnotesize\ttfamily [2/8]}}
+{\footnotesize\ttfamily \label{class_parser_add20e789231264fa471aa961774e9920} 
+template$<$$>$ \\
+std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_aaed583ec47d9adbea0fe6fd5d879272f}{ast::\+\+Statement}}, std::\+string $>$ Parser::\+parse (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
-\begin{DoxyRefDesc}{Todo}
-\item[\doxymbox{\hyperlink{todo__todo000002}{Todo}}]move to Node classes as static methods \end{DoxyRefDesc}
-\Hypertarget{class_parser_ac049300f4f8d62990ba8e5408163be21}\index{Parser@{Parser}!parseExpression@{parseExpression}}
-\index{parseExpression@{parseExpression}!Parser@{Parser}}
-\doxysubsubsection{\texorpdfstring{parseExpression()}{parseExpression()}}
-{\footnotesize\ttfamily \label{class_parser_ac049300f4f8d62990ba8e5408163be21} 
-std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{ast::\+\+Expression}}, std::\+string $>$ Parser::\+parse\+Expression (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+\Hypertarget{class_parser_aba2384f51fa66d7d391eab61a16756eb}\index{Parser@{Parser}!parse@{parse}}
+\index{parse@{parse}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{parse()}{parse()}\hspace{0.1cm}{\footnotesize\ttfamily [3/8]}}
+{\footnotesize\ttfamily \label{class_parser_aba2384f51fa66d7d391eab61a16756eb} 
+template$<$$>$ \\
+std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_declaration}{ast::\+\+Declaration}}, std::\+string $>$ Parser::\+parse (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
-\Hypertarget{class_parser_a1cfe459e39f2406a5a240446cdb89c29}\index{Parser@{Parser}!peek@{peek}}
+\Hypertarget{class_parser_ac39a84d0c7703547e970160bb5120e32}\index{Parser@{Parser}!parse@{parse}}
+\index{parse@{parse}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{parse()}{parse()}\hspace{0.1cm}{\footnotesize\ttfamily [4/8]}}
+{\footnotesize\ttfamily \label{class_parser_ac39a84d0c7703547e970160bb5120e32} 
+template$<$$>$ \\
+std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_exit}{ast::\+\+Exit}}, std::\+string $>$ Parser::\+parse (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_parser_aad17a255cf8f26978dc88274e446f766}\index{Parser@{Parser}!parse@{parse}}
+\index{parse@{parse}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{parse()}{parse()}\hspace{0.1cm}{\footnotesize\ttfamily [5/8]}}
+{\footnotesize\ttfamily \label{class_parser_aad17a255cf8f26978dc88274e446f766} 
+template$<$$>$ \\
+std::\+expected$<$ \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{ast::\+\+Expression}}, std::\+string $>$ Parser::\+parse (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_parser_abdad0aaea9dfb91c0d440fc2aa72d824}\index{Parser@{Parser}!parse@{parse}}
+\index{parse@{parse}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{parse()}{parse()}\hspace{0.1cm}{\footnotesize\ttfamily [6/8]}}
+{\footnotesize\ttfamily \label{class_parser_abdad0aaea9dfb91c0d440fc2aa72d824} 
+template$<$$>$ \\
+std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_integer_literal}{ast::\+\+Integer\+Literal}}, std::\+string $>$ Parser::\+parse (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_parser_a37d94fb4613f95262e7c32b0d9f1dc53}\index{Parser@{Parser}!parse@{parse}}
+\index{parse@{parse}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{parse()}{parse()}\hspace{0.1cm}{\footnotesize\ttfamily [7/8]}}
+{\footnotesize\ttfamily \label{class_parser_a37d94fb4613f95262e7c32b0d9f1dc53} 
+template$<$$>$ \\
+std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_identifier}{ast::\+\+Identifier}}, std::\+string $>$ Parser::\+parse (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+\Hypertarget{class_parser_abcc294ff161e0f07472f54b27fa68092}\index{Parser@{Parser}!parse@{parse}}
+\index{parse@{parse}!Parser@{Parser}}
+\doxysubsubsection{\texorpdfstring{parse()}{parse()}\hspace{0.1cm}{\footnotesize\ttfamily [8/8]}}
+{\footnotesize\ttfamily \label{class_parser_abcc294ff161e0f07472f54b27fa68092} 
+std::\+expected$<$ \doxymbox{\hyperlink{structast_1_1_program}{ast::\+\+Program}}, std::\+string $>$ Parser::\+parse (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_parser_ad0e335245b14c34b6ac2a6db0cae172b}\index{Parser@{Parser}!peek@{peek}}
 \index{peek@{peek}!Parser@{Parser}}
 \doxysubsubsection{\texorpdfstring{peek()}{peek()}}
-{\footnotesize\ttfamily \label{class_parser_a1cfe459e39f2406a5a240446cdb89c29} 
-std::\+optional$<$ \doxymbox{\hyperlink{struct_token}{Token}} $>$ Parser::\+peek (\begin{DoxyParamCaption}\item[{int}]{offset}{ = {\ttfamily 0}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+{\footnotesize\ttfamily \label{class_parser_ad0e335245b14c34b6ac2a6db0cae172b} 
+\doxymbox{\hyperlink{struct_token}{Token}} Parser::\+peek (\begin{DoxyParamCaption}\item[{int}]{offset}{ = {\ttfamily 0}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
 
 
 

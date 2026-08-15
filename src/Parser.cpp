@@ -1,52 +1,150 @@
 #include <pch/Precompiled.h>
 #include "Parser.h"
 
-std::expected<std::unique_ptr<ast::Node>, std::string> Parser::parse() {
-   // while(peek().has_value()) { // idk if this is needed
-      if(peek()->type == TokenType::EXIT) {
-         consume();
-         return parseExit();
-      } else {
-         return std::unexpected("Unknown root node!");
-      }
-   // }
+std::expected<ast::Program, std::string> Parser::parse() {
+   if(peek() == TokenType::END_OF_FILE)
+      return std::unexpected("Unexpected end of file!");
+
+   ast::Program program;
+   while(peek() != TokenType::END_OF_FILE) {
+      auto statement = parse<ast::Statement>();
+      if(!statement)
+         return std::unexpected(statement.error());
+
+      program.push_back(std::move(*statement));
+   }
+
+   if(program.empty())
+      return std::unexpected("Program parsed to be empty!");
+
+   return program;
 }
 
-std::optional<Token> Parser::peek(int offset) {
+Token Parser::peek(int offset) {
    if(m_pos + offset >= m_tokens.size())
-      return std::nullopt;
-   else
-      return m_tokens.at(m_pos + offset);
+      throw std::runtime_error("Parser tried to access outside tokens!");
+
+   return m_tokens.at(m_pos + offset);
 }
 
 Token Parser::consume(uint32_t count) {
-   if(!peek())
-      throw std::runtime_error("Tried to consume out-of-bounds Token!");
-
    Token current = m_tokens.at(m_pos);
    m_pos += count;
 
    return current;
 }
 
-std::expected<std::unique_ptr<ast::Exit>, std::string> Parser::parseExit() {
-   auto expression = parseExpression(); 
-   if(!expression)
-      return std::unexpected(expression.error());
-   if(!peek() || *peek() != TokenType::SEMICOLON)
-      return std::unexpected("Expected `;`!");
+// PARSE OVERLOADS
 
-   return std::make_unique<ast::Exit>(std::move(*expression));
+// statements
+
+template<>
+std::expected<ast::Statement, std::string> Parser::parse<ast::Statement>() {
+   switch(peek().type) {
+      case TokenType::BAR:
+      case TokenType::MINT: {
+         auto declaration = parse<ast::Declaration>();
+         if(!declaration)
+            return std::unexpected(declaration.error());
+
+         // must explicitly construct Declaration in Statement bcz 1 implicit conversion to expected<> already happening
+         return ast::Statement(std::in_place_type<ast::Declaration>, *declaration);
+      }
+
+      case TokenType::EXIT: {
+         auto exit = parse<ast::Exit>();
+         if(!exit)
+            return std::unexpected(exit.error());
+
+         return ast::Statement(std::in_place_type<ast::Exit>, *exit);
+      }
+
+      default:
+         return std::unexpected(std::format("Expected statement! Got: {}", to_string(consume().type)));
+   }
 }
 
-std::expected<std::unique_ptr<ast::Expression>, std::string> Parser::parseExpression() {
-   if(!peek())
-      return std::unexpected("Expected an expression!");
+template<>
+std::expected<ast::Declaration, std::string> Parser::parse<ast::Declaration>() {
+   consume(); // consume keyword
 
-   if(peek()->type == TokenType::INTEGER_LITERAL && peek()->value.has_value())
-      return std::make_unique<ast::IntegerLiteral>(*consume().value);
-   else if(peek()->type == TokenType::IDENTIFIER && peek()->value.has_value())
-      return std::make_unique<ast::Identifier>(*consume().value);
+   auto identifier = parse<ast::Identifier>();
+   if(!identifier)
+      return std::unexpected(identifier.error());
+
+   /// @todo implement declaration without definition
+   if(peek() != TokenType::EQUALS)
+      return std::unexpected("Expected `=`!");
    else
-      return std::unexpected(std::format("Unknown expression type: '{}'!", consume().to_string()));
+      consume();
+
+   auto expression = parse<ast::Expression>();
+   if(!expression)
+      return std::unexpected(expression.error());
+
+   if(peek() != TokenType::SEMICOLON)
+      return std::unexpected("Expected `;`!");
+   else
+      consume();
+
+   return ast::Declaration(std::move(*identifier), std::move(*expression));
+}
+
+template<>
+std::expected<ast::Exit, std::string> Parser::parse<ast::Exit>() {
+   consume(); // consume exit
+
+   auto expression = parse<ast::Expression>();
+   if(!expression)
+      return std::unexpected(expression.error());
+
+   if(peek() != TokenType::SEMICOLON)
+      return std::unexpected("Expected `;`!");
+   else
+      consume();
+
+   return ast::Exit(std::move(*expression));
+}
+
+// expressions
+
+template<>
+std::expected<ast::Expression, std::string> Parser::parse<ast::Expression>() {
+   switch(peek().type) {
+      case TokenType::INTEGER_LITERAL: {
+         auto integerLiteral = parse<ast::IntegerLiteral>();
+         if(!integerLiteral)
+            return std::unexpected(integerLiteral.error());
+
+         return ast::Expression(std::in_place_type<ast::IntegerLiteral>, *integerLiteral);
+      }
+
+      case TokenType::IDENTIFIER: {
+         auto identifier = parse<ast::Identifier>();
+         if(!identifier)
+            return std::unexpected(identifier.error());
+
+         return ast::Expression(std::in_place_type<ast::Identifier>, *identifier);
+      }
+
+      default:
+         return std::unexpected(std::format("Unknown token type '{}'!", to_string(consume().type)));
+   }
+}
+
+template<>
+std::expected<ast::IntegerLiteral, std::string> Parser::parse<ast::IntegerLiteral>() {
+   if(peek() != TokenType::INTEGER_LITERAL || !peek().value)
+      return std::unexpected("Expected an integer literal!");
+
+   return ast::IntegerLiteral(*consume().value);
+}
+
+template<>
+std::expected<ast::Identifier, std::string> Parser::parse<ast::Identifier>() {
+   /// @todo remember identifiers thru some sort of map maybe
+   if(peek() != TokenType::IDENTIFIER || !peek().value)
+      return std::unexpected("Expected an identifier!");
+
+   return ast::Identifier(consume().value.value());
 }

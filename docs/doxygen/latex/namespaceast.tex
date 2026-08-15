@@ -12,14 +12,18 @@ struct \doxymbox{\hyperlink{structast_1_1_integer_literal}{Integer\+Literal}}
 \item 
 struct \doxymbox{\hyperlink{structast_1_1_identifier}{Identifier}}
 \item 
+struct \doxymbox{\hyperlink{structast_1_1_declaration}{Declaration}}
+\item 
 struct \doxymbox{\hyperlink{structast_1_1_exit}{Exit}}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_program}{Program}}
 \end{DoxyCompactItemize}
 \doxysubsubsection*{Typedefs}
 \begin{DoxyCompactItemize}
 \item 
 using \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{Expression}} = std::\+variant$<$std::\+monostate, \doxymbox{\hyperlink{structast_1_1_integer_literal}{Integer\+Literal}}, \doxymbox{\hyperlink{structast_1_1_identifier}{Identifier}}$>$
 \item 
-using \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{Node}} = \doxymbox{\hyperlink{structast_1_1_exit}{Exit}}
+using \doxymbox{\hyperlink{namespaceast_aaed583ec47d9adbea0fe6fd5d879272f}{Statement}} = std::\+variant$<$std::\+monostate, \doxymbox{\hyperlink{structast_1_1_declaration}{Declaration}}, \doxymbox{\hyperlink{structast_1_1_exit}{Exit}}$>$
 \end{DoxyCompactItemize}
 
 
@@ -35,11 +39,9 @@ Abstract Syntax Tree.
 {\footnotesize\ttfamily \label{namespaceast_a49a5437ad5786f465477bacd4dfaccef} 
 using \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{ast::\+\+Expression}} = std::\+variant$<$std::\+monostate, \doxymbox{\hyperlink{structast_1_1_integer_literal}{Integer\+Literal}}, \doxymbox{\hyperlink{structast_1_1_identifier}{Identifier}}$>$}
 
-\begin{DoxyRefDesc}{Todo}
-\item[\doxymbox{\hyperlink{todo__todo000001}{Todo}}]do we need monostate? \end{DoxyRefDesc}
-\Hypertarget{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}\index{ast@{ast}!Node@{Node}}
-\index{Node@{Node}!ast@{ast}}
-\doxysubsubsection{\texorpdfstring{Node}{Node}}
-{\footnotesize\ttfamily \label{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c} 
-using \doxymbox{\hyperlink{namespaceast_a7dad54cac3fa544bade91bdadf3fe22c}{ast::\+\+Node}} = \doxymbox{\hyperlink{structast_1_1_exit}{Exit}}}
+\Hypertarget{namespaceast_aaed583ec47d9adbea0fe6fd5d879272f}\index{ast@{ast}!Statement@{Statement}}
+\index{Statement@{Statement}!ast@{ast}}
+\doxysubsubsection{\texorpdfstring{Statement}{Statement}}
+{\footnotesize\ttfamily \label{namespaceast_aaed583ec47d9adbea0fe6fd5d879272f} 
+using \doxymbox{\hyperlink{namespaceast_aaed583ec47d9adbea0fe6fd5d879272f}{ast::\+\+Statement}} = std::\+variant$<$std::\+monostate, \doxymbox{\hyperlink{structast_1_1_declaration}{Declaration}}, \doxymbox{\hyperlink{structast_1_1_exit}{Exit}}$>$}
 

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['token_0',['Token',['../struct_token.html',1,'']]],
-  ['tokenizer_1',['Tokenizer',['../class_tokenizer.html',1,'']]]
+  ['parser_0',['Parser',['../class_parser.html',1,'']]],
+  ['program_1',['Program',['../structast_1_1_program.html',1,'ast']]]
 ];

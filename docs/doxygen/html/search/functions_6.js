@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['releasetokens_0',['releaseTokens',['../class_tokenizer.html#a2125eb289f9fac6965aea99989965eaf',1,'Tokenizer']]]
+  ['operator_3d_3d_0',['operator==',['../struct_token.html#ac1f7576d366118af3938a8f34b44fbe1',1,'Token']]]
 ];

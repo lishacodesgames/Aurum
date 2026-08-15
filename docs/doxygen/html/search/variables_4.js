@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['type_0',['type',['../struct_token.html#a67919af9f3a80dc0b28a0ab1e6d5bf8a',1,'Token']]]
+  ['statements_0',['statements',['../structast_1_1_program.html#a0a1d31e12ecab1e463ee645d6daba8be',1,'ast::Program']]]
 ];

@@ -7,26 +7,17 @@
 \DoxyCodeLine{00003\ }
 \DoxyCodeLine{00005\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_tokenizer_a248bd309221958cc6843f61bc69dbeb7}{Tokenizer}}\ \{}
 \DoxyCodeLine{00006\ \textcolor{keyword}{public}:}
-\DoxyCodeLine{00007\ \ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{class_tokenizer_a248bd309221958cc6843f61bc69dbeb7}{Tokenizer}}(std::string\_view\ src)\ :\ \doxymbox{\hyperlink{class_tokenizer_a46976e30ab7cc5b7753aeb376accf7f6}{m\_src}}(src)\ \{}
-\DoxyCodeLine{00008\ \ \ \ \ \ \ \doxymbox{\hyperlink{class_tokenizer_a40933c274107d75b504bc7ee1bfaeecf}{tokenize}}();}
-\DoxyCodeLine{00009\ \ \ \ \}}
+\DoxyCodeLine{00007\ \ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{class_tokenizer_a248bd309221958cc6843f61bc69dbeb7}{Tokenizer}}(std::string\_view\ src)\ :\ \doxymbox{\hyperlink{class_tokenizer_a46976e30ab7cc5b7753aeb376accf7f6}{m\_src}}(src)\ \{\}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \ \ \ std::expected<std::vector<Token>,\ std::string>\ \doxymbox{\hyperlink{class_tokenizer_ab19d916cbacd6203c6e1782a3cbddaf8}{tokenize}}();}
 \DoxyCodeLine{00010\ }
-\DoxyCodeLine{00013\ \ \ \ std::vector<Token>\ \doxymbox{\hyperlink{class_tokenizer_a2125eb289f9fac6965aea99989965eaf}{releaseTokens}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ std::move(\doxymbox{\hyperlink{class_tokenizer_adbc785a0937a47b89135c0d8698a3588}{m\_tokens}});\ \}}
+\DoxyCodeLine{00011\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00012\ \ \ \ std::string\_view\ \doxymbox{\hyperlink{class_tokenizer_a46976e30ab7cc5b7753aeb376accf7f6}{m\_src}};}
+\DoxyCodeLine{00013\ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{class_tokenizer_a82d18884339f5f4b8b9c1cfb05ddafbf}{m\_pos}}\ =\ 0;}
 \DoxyCodeLine{00014\ }
 \DoxyCodeLine{00015\ \textcolor{keyword}{private}:}
-\DoxyCodeLine{00016\ \ \ \ std::string\_view\ \doxymbox{\hyperlink{class_tokenizer_a46976e30ab7cc5b7753aeb376accf7f6}{m\_src}};}
-\DoxyCodeLine{00017\ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{class_tokenizer_a82d18884339f5f4b8b9c1cfb05ddafbf}{m\_pos}}\ =\ 0;}
-\DoxyCodeLine{00018\ }
-\DoxyCodeLine{00020\ \ \ \ std::vector<Token>\ \doxymbox{\hyperlink{class_tokenizer_adbc785a0937a47b89135c0d8698a3588}{m\_tokens}}\{\};}
-\DoxyCodeLine{00021\ }
-\DoxyCodeLine{00022\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00022\ \ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{class_tokenizer_a3f0be12abc1c42f462a02844f0107634}{consume}}(uint32\_t\ count\ =\ 1U);}
 \DoxyCodeLine{00023\ \ \ \ std::optional<char>\ \doxymbox{\hyperlink{class_tokenizer_affbbc933798a0e474e210f9f1320fd28}{peek}}(\textcolor{keywordtype}{int}\ offset\ =\ 0);}
-\DoxyCodeLine{00024\ \ }
-\DoxyCodeLine{00031\ \ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{class_tokenizer_ae496d3fc6e8641a0daf3bcc2efe3ecdb}{consume}}(uint32\_t\ count\ =\ 1);}
-\DoxyCodeLine{00032\ }
-\DoxyCodeLine{00033\ \ \ \ \doxymbox{\hyperlink{struct_token}{Token}}\ \doxymbox{\hyperlink{class_tokenizer_a4fca4fd6feb69ad6033ce0f6cab38637}{next}}();\ \textcolor{comment}{//\ needed?}}
-\DoxyCodeLine{00034\ }
-\DoxyCodeLine{00036\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_tokenizer_a40933c274107d75b504bc7ee1bfaeecf}{tokenize}}();}
-\DoxyCodeLine{00037\ \};}
+\DoxyCodeLine{00024\ \};}
 
 \end{DoxyCode}

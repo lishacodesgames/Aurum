@@ -1,0 +1,13 @@
+\doxysection{Variant\+Node Concept Reference}
+\hypertarget{concept_variant_node}{}\label{concept_variant_node}\index{VariantNode@{VariantNode}}
+
+
+{\ttfamily \+\#include $<$ast.\+h$>$}
+
+\doxysubsection{Concept definition}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{\textcolor{keyword}{concept\ }\doxymbox{\hyperlink{concept_variant_node}{VariantNode}}\ =\ std::is\_same\_v<T,\ ast::Expression>\ ||\ std::is\_same\_v<T,\ ast::Statement>}
+
+\end{DoxyCode}

@@ -1,0 +1,13 @@
+\doxysection{Ast\+Node Concept Reference}
+\hypertarget{concept_ast_node}{}\label{concept_ast_node}\index{AstNode@{AstNode}}
+
+
+{\ttfamily \+\#include $<$ast.\+h$>$}
+
+\doxysubsection{Concept definition}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{\textcolor{keyword}{concept\ }\doxymbox{\hyperlink{concept_ast_node}{AstNode}}\ =\ \doxymbox{\hyperlink{namespacedetail_a0272b29721761c61dc5fdde4e5c852fd}{detail::is\_variant\_alternative\_v<T,\ ast::Expression>}}\ ||\ \doxymbox{\hyperlink{namespacedetail_a0272b29721761c61dc5fdde4e5c852fd}{detail::is\_variant\_alternative\_v<T,\ ast::Statement>}}}
+
+\end{DoxyCode}

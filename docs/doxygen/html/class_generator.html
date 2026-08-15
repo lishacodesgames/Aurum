@@ -124,16 +124,42 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('class_generato
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:abab84fab50e78b581bbba32245722f9c" id="r_abab84fab50e78b581bbba32245722f9c"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#abab84fab50e78b581bbba32245722f9c">Generator</a> (<a class="el" href="namespaceast.html#a7dad54cac3fa544bade91bdadf3fe22c">ast::Node</a> root)</td></tr>
-<tr class="memitem:ae38ca57af6b006a762b3900fe4354f14" id="r_ae38ca57af6b006a762b3900fe4354f14"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#ae38ca57af6b006a762b3900fe4354f14">generate</a> () const</td></tr>
+<tr class="memitem:a469b1cb69744d5883455b1e4918665c5" id="r_a469b1cb69744d5883455b1e4918665c5"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a469b1cb69744d5883455b1e4918665c5">Generator</a> (<a class="el" href="structast_1_1_program.html">ast::Program</a> program)</td></tr>
+<tr class="memitem:adb20f94568fe8cce98db24fb593173ef" id="r_adb20f94568fe8cce98db24fb593173ef"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#adb20f94568fe8cce98db24fb593173ef">generate</a> ()</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pri-methods" class="groupheader"><a id="pri-methods" name="pri-methods"></a>
+Private Member Functions</h2></td></tr>
+<tr class="memitem:a6678dd9407b6fc905b30402ac8e363fb" id="r_a6678dd9407b6fc905b30402ac8e363fb"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a6678dd9407b6fc905b30402ac8e363fb">push</a> (std::string_view value)</td></tr>
+<tr class="memdesc:a6678dd9407b6fc905b30402ac8e363fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increases stack size by 1 and pushes value to the top.  <br /></td></tr>
+<tr class="memitem:aeae2b9fb26d088dbbffee372c7443332" id="r_aeae2b9fb26d088dbbffee372c7443332"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aeae2b9fb26d088dbbffee372c7443332">mov</a> (std::string reg, std::string value)</td></tr>
+<tr class="memdesc:aeae2b9fb26d088dbbffee372c7443332"><td class="mdescLeft">&#160;</td><td class="mdescRight">COPIES value to reg.  <br /></td></tr>
+<tr class="memitem:a25a86dac2ceef28a36db4fda6e1711c8" id="r_a25a86dac2ceef28a36db4fda6e1711c8"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a25a86dac2ceef28a36db4fda6e1711c8">pop</a> (std::string_view reg)</td></tr>
+<tr class="memdesc:a25a86dac2ceef28a36db4fda6e1711c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">REMOVES the value from the top of the stack.  <br /></td></tr>
+<tr class="memitem:a6fe863e8f73b90f44103f85fae5ff7c0" id="r_a6fe863e8f73b90f44103f85fae5ff7c0"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="concept_ast_node.html">AstNode</a> T&gt; </td></tr>
+<tr class="memitem:a6fe863e8f73b90f44103f85fae5ff7c0 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a6fe863e8f73b90f44103f85fae5ff7c0">generate</a> (const T &amp;)</td></tr>
+<tr class="memitem:a5a28e21d2aac4293235ceb366c29e587" id="r_a5a28e21d2aac4293235ceb366c29e587"><td class="memItemLeft">template&lt;&gt; </td></tr>
+<tr class="memitem:a5a28e21d2aac4293235ceb366c29e587 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5a28e21d2aac4293235ceb366c29e587">generate</a> (const <a class="el" href="structast_1_1_declaration.html">ast::Declaration</a> &amp;declaration)</td></tr>
+<tr class="memitem:aca62cca7417c42ebf9ad17b285540b4c" id="r_aca62cca7417c42ebf9ad17b285540b4c"><td class="memItemLeft">template&lt;&gt; </td></tr>
+<tr class="memitem:aca62cca7417c42ebf9ad17b285540b4c template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aca62cca7417c42ebf9ad17b285540b4c">generate</a> (const <a class="el" href="structast_1_1_exit.html">ast::Exit</a> &amp;exit)</td></tr>
+<tr class="memitem:a7648c4b4684346ea153a46b5a7d9e508" id="r_a7648c4b4684346ea153a46b5a7d9e508"><td class="memItemLeft">template&lt;&gt; </td></tr>
+<tr class="memitem:a7648c4b4684346ea153a46b5a7d9e508 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a7648c4b4684346ea153a46b5a7d9e508">generate</a> (const <a class="el" href="structast_1_1_integer_literal.html">ast::IntegerLiteral</a> &amp;integerLiteral)</td></tr>
+<tr class="memdesc:a7648c4b4684346ea153a46b5a7d9e508"><td class="mdescLeft">&#160;</td><td class="mdescRight">pushes the literal on top of the stack  <br /></td></tr>
+<tr class="memitem:afabf80e1ad63d614b32173e2e333be20" id="r_afabf80e1ad63d614b32173e2e333be20"><td class="memItemLeft">template&lt;&gt; </td></tr>
+<tr class="memitem:afabf80e1ad63d614b32173e2e333be20 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#afabf80e1ad63d614b32173e2e333be20">generate</a> (const <a class="el" href="structast_1_1_identifier.html">ast::Identifier</a> &amp;identifier)</td></tr>
+<tr class="memdesc:afabf80e1ad63d614b32173e2e333be20"><td class="mdescLeft">&#160;</td><td class="mdescRight">assigns m_symbolTable[name] &lt;- m_stackSize (latest pushed value)  <br /></td></tr>
+<tr class="memitem:a4d65f797aa9ebb86a5b3ec747e9e6bd2" id="r_a4d65f797aa9ebb86a5b3ec747e9e6bd2"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="concept_variant_node.html">VariantNode</a> V&gt; </td></tr>
+<tr class="memitem:a4d65f797aa9ebb86a5b3ec747e9e6bd2 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a4d65f797aa9ebb86a5b3ec747e9e6bd2">generate</a> (const V &amp;variant)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pri-attribs" class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
-<tr class="memitem:a9996a6878e9c1b029b81c65296bd4e16" id="r_a9996a6878e9c1b029b81c65296bd4e16"><td class="memItemLeft">const <a class="el" href="namespaceast.html#a7dad54cac3fa544bade91bdadf3fe22c">ast::Node</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9996a6878e9c1b029b81c65296bd4e16">m_root</a></td></tr>
+<tr class="memitem:a97bf6bbec3bd13c20df55bf8a4409738" id="r_a97bf6bbec3bd13c20df55bf8a4409738"><td class="memItemLeft">const <a class="el" href="structast_1_1_program.html">ast::Program</a>&#160;</td><td class="memItemRight"><a class="el" href="#a97bf6bbec3bd13c20df55bf8a4409738">m_program</a></td></tr>
+<tr class="memitem:a96d00e29e94915cfda1b40c98c748b30" id="r_a96d00e29e94915cfda1b40c98c748b30"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a96d00e29e94915cfda1b40c98c748b30">m_output</a></td></tr>
+<tr class="memitem:acc41868fff8f8cac0f00148a566a6881" id="r_acc41868fff8f8cac0f00148a566a6881"><td class="memItemLeft">uint32_t&#160;</td><td class="memItemRight"><a class="el" href="#acc41868fff8f8cac0f00148a566a6881">m_stackSize</a> = 0</td></tr>
+<tr class="memitem:acc3facb44cdff1c26e28556b46652369" id="r_acc3facb44cdff1c26e28556b46652369"><td class="memItemLeft">std::unordered_map&lt; std::string, uint32_t &gt;&#160;</td><td class="memItemRight"><a class="el" href="#acc3facb44cdff1c26e28556b46652369">m_symbolTable</a></td></tr>
 </table>
 <a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="abab84fab50e78b581bbba32245722f9c" name="abab84fab50e78b581bbba32245722f9c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abab84fab50e78b581bbba32245722f9c">&#9670;&#160;</a></span>Generator()</h2>
+<a id="a469b1cb69744d5883455b1e4918665c5" name="a469b1cb69744d5883455b1e4918665c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a469b1cb69744d5883455b1e4918665c5">&#9670;&#160;</a></span>Generator()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -144,7 +170,7 @@ Private Attributes</h2></td></tr>
         <tr>
           <td class="memname">Generator::Generator </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceast.html#a7dad54cac3fa544bade91bdadf3fe22c">ast::Node</a></td>          <td class="paramname"><span class="paramname"><em>root</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="structast_1_1_program.html">ast::Program</a></td>          <td class="paramname"><span class="paramname"><em>program</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -158,8 +184,8 @@ Private Attributes</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="ae38ca57af6b006a762b3900fe4354f14" name="ae38ca57af6b006a762b3900fe4354f14"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae38ca57af6b006a762b3900fe4354f14">&#9670;&#160;</a></span>generate()</h2>
+<a id="adb20f94568fe8cce98db24fb593173ef" name="adb20f94568fe8cce98db24fb593173ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb20f94568fe8cce98db24fb593173ef">&#9670;&#160;</a></span>generate() <span class="overload">[1/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -168,26 +194,29 @@ Private Attributes</h2></td></tr>
           <td class="memname">std::string Generator::generate </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section note"><dt>Note</dt><dd>m_root here is of exit type but later it might not be</dd></dl>
 
 </div>
 </div>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
-<a id="a9996a6878e9c1b029b81c65296bd4e16" name="a9996a6878e9c1b029b81c65296bd4e16"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9996a6878e9c1b029b81c65296bd4e16">&#9670;&#160;</a></span>m_root</h2>
+<a id="a5a28e21d2aac4293235ceb366c29e587" name="a5a28e21d2aac4293235ceb366c29e587"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a28e21d2aac4293235ceb366c29e587">&#9670;&#160;</a></span>generate() <span class="overload">[2/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="namespaceast.html#a7dad54cac3fa544bade91bdadf3fe22c">ast::Node</a> Generator::m_root</td>
+          <td class="memname">void Generator::generate </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structast_1_1_declaration.html">ast::Declaration</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>declaration</em></span></td><td>)</td>
+          <td></td>
         </tr>
       </table>
   </td>
@@ -196,6 +225,333 @@ Private Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="aca62cca7417c42ebf9ad17b285540b4c" name="aca62cca7417c42ebf9ad17b285540b4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aca62cca7417c42ebf9ad17b285540b4c">&#9670;&#160;</a></span>generate() <span class="overload">[3/7]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Generator::generate </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structast_1_1_exit.html">ast::Exit</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>exit</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="afabf80e1ad63d614b32173e2e333be20" name="afabf80e1ad63d614b32173e2e333be20"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afabf80e1ad63d614b32173e2e333be20">&#9670;&#160;</a></span>generate() <span class="overload">[4/7]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Generator::generate </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structast_1_1_identifier.html">ast::Identifier</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>identifier</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>assigns m_symbolTable[name] &lt;- m_stackSize (latest pushed value) </p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">runtime_error</td><td>if symbol already exists in m_symbolTable </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>MUST call expression first </dd></dl>
+
+</div>
+</div>
+<a id="a7648c4b4684346ea153a46b5a7d9e508" name="a7648c4b4684346ea153a46b5a7d9e508"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7648c4b4684346ea153a46b5a7d9e508">&#9670;&#160;</a></span>generate() <span class="overload">[5/7]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Generator::generate </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structast_1_1_integer_literal.html">ast::IntegerLiteral</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>integerLiteral</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>pushes the literal on top of the stack </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">integerLiteral</td><td>must be popped off the stack and used </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a6fe863e8f73b90f44103f85fae5ff7c0" name="a6fe863e8f73b90f44103f85fae5ff7c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fe863e8f73b90f44103f85fae5ff7c0">&#9670;&#160;</a></span>generate() <span class="overload">[6/7]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="concept_ast_node.html">AstNode</a> T&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Generator::generate </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4d65f797aa9ebb86a5b3ec747e9e6bd2" name="a4d65f797aa9ebb86a5b3ec747e9e6bd2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d65f797aa9ebb86a5b3ec747e9e6bd2">&#9670;&#160;</a></span>generate() <span class="overload">[7/7]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="concept_variant_node.html">VariantNode</a> V&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Generator::generate </td>
+          <td>(</td>
+          <td class="paramtype">const V &amp;</td>          <td class="paramname"><span class="paramname"><em>variant</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aeae2b9fb26d088dbbffee372c7443332" name="aeae2b9fb26d088dbbffee372c7443332"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeae2b9fb26d088dbbffee372c7443332">&#9670;&#160;</a></span>mov()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Generator::mov </td>
+          <td>(</td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>reg</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>COPIES value to reg. </p>
+
+</div>
+</div>
+<a id="a25a86dac2ceef28a36db4fda6e1711c8" name="a25a86dac2ceef28a36db4fda6e1711c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25a86dac2ceef28a36db4fda6e1711c8">&#9670;&#160;</a></span>pop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Generator::pop </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>reg</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>REMOVES the value from the top of the stack. </p>
+
+</div>
+</div>
+<a id="a6678dd9407b6fc905b30402ac8e363fb" name="a6678dd9407b6fc905b30402ac8e363fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6678dd9407b6fc905b30402ac8e363fb">&#9670;&#160;</a></span>push()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Generator::push </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Increases stack size by 1 and pushes value to the top. </p>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a96d00e29e94915cfda1b40c98c748b30" name="a96d00e29e94915cfda1b40c98c748b30"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96d00e29e94915cfda1b40c98c748b30">&#9670;&#160;</a></span>m_output</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string Generator::m_output</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a97bf6bbec3bd13c20df55bf8a4409738" name="a97bf6bbec3bd13c20df55bf8a4409738"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a97bf6bbec3bd13c20df55bf8a4409738">&#9670;&#160;</a></span>m_program</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structast_1_1_program.html">ast::Program</a> Generator::m_program</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acc41868fff8f8cac0f00148a566a6881" name="acc41868fff8f8cac0f00148a566a6881"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc41868fff8f8cac0f00148a566a6881">&#9670;&#160;</a></span>m_stackSize</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t Generator::m_stackSize = 0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acc3facb44cdff1c26e28556b46652369" name="acc3facb44cdff1c26e28556b46652369"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc3facb44cdff1c26e28556b46652369">&#9670;&#160;</a></span>m_symbolTable</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unordered_map&lt;std::string, uint32_t&gt; Generator::m_symbolTable</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Key Type: string, name of the variable Value Type: uint32_t, offset from rbp </p>
 
 </div>
 </div>

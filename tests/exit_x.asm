@@ -13,7 +13,6 @@ _main:
 
    ; (stack grows downwards, so we subtract from rsp to allocate space)
    ; current stack:
-   ;
    ; |--------------------| <- rbp (stays constant in this entire function scope)
    ; |  local variable 1  | <- address = rbp - 8
    ; |  local variable 2  | <- address = rbp - 16

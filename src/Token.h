@@ -1,21 +1,40 @@
 #pragma once
 
 #define TOKEN_TYPES \
+   /* Keywords */ \
+   X(MINT) \
+   X(BAR) \
    X(EXIT) \
-   X(SEMICOLON) \
-   X(END_OF_FILE) \
 \
+   /* Literals & identifiers */ \
    X(INTEGER_LITERAL) \
-\
-   /* variable name */ \
    X(IDENTIFIER) \
 \
-   /* [] */ \
-   X(OPEN_BRACKET) X(CLOSE_BRACKET) \
-   /* () */ \
-   X(OPEN_PAREN) X(CLOSE_PAREN) \
-   /* {} */ \
-   X(OPEN_CURLY) X(CLOSE_CURLY) \
+   /* Punctuation */ \
+   X(EQUALS) \
+   X(COLON) \
+   X(SEMICOLON) \
+\
+   /* Brackets */ \
+   X(OPEN_PAREN)   X(CLOSE_PAREN)   /* () */ \
+   X(OPEN_BRACKET) X(CLOSE_BRACKET) /* [] */ \
+   X(OPEN_CURLY)   X(CLOSE_CURLY)   /* {} */ \
+   X(LESS_THAN)    X(GREATER_THAN)  /* <> */ \
+\
+   /* Operators */ \
+   X(PLUS) X(MINUS) X(STAR) X(SLASH) X(PERCENT) /* (+ - * / %) */ \
+   X(EQUALITY) X(INEQUALITY) X(LESS_EQUALS) X(GREATER_EQUALS) /* (== != <= >=) */ \
+   X(LOGICAL_AND) X(LOGICAL_OR) X(LOGICAL_NOT) /* (&& || !) */ \
+\
+   /* Compound assignment (+= -= *= /= %=) */ \
+   X(PLUS_EQUALS) X(MINUS_EQUALS) X(STAR_EQUALS) X(SLASH_EQUALS) X(PERCENT_EQUALS) \
+\
+   /* Not sure abt but do exist */ \
+   X(BITWISE_AND) X(BITWISE_OR) X(BITWISE_NOT) X(BITWISE_XOR) \
+   X(LEFT_SHIFT) X(RIGHT_SHIFT) \
+\
+   /* Special */ \
+   X(END_OF_FILE) /* @todo implement end of file */
 
 enum class TokenType {
    #define X(name) name,

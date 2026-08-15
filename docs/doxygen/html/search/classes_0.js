@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['exit_0',['Exit',['../structast_1_1_exit.html',1,'ast']]]
+  ['declaration_0',['Declaration',['../structast_1_1_declaration.html',1,'ast']]]
 ];

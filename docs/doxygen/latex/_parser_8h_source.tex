@@ -4,25 +4,38 @@
 \begin{DoxyCode}{0}
 \DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
 \DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{_token_8h}{Token.h}}"{}}}
-\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{_nodes_8h}{Nodes.h}}"{}}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{ast_8h}{ast.h}}"{}}}
 \DoxyCodeLine{00004\ }
 \DoxyCodeLine{00005\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_parser_ac93b3201fac5ebaf8c398054c7fec2b9}{Parser}}\ \{}
 \DoxyCodeLine{00006\ \textcolor{keyword}{public}:}
 \DoxyCodeLine{00007\ \ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{class_parser_ac93b3201fac5ebaf8c398054c7fec2b9}{Parser}}(std::vector<Token>\ tokens)\ :\ \doxymbox{\hyperlink{class_parser_a3e31029db085e07539f2f0cc965bc1b3}{m\_tokens}}(std::move(tokens))\ \{\}}
 \DoxyCodeLine{00008\ }
-\DoxyCodeLine{00009\ \ \ \ std::expected<ast::Node,\ std::string>\ \doxymbox{\hyperlink{class_parser_a7ea19afc016fea904b0c91f245498965}{parse}}();}
+\DoxyCodeLine{00009\ \ \ \ std::expected<ast::Program,\ std::string>\ \doxymbox{\hyperlink{class_parser_abcc294ff161e0f07472f54b27fa68092}{parse}}();}
 \DoxyCodeLine{00010\ }
 \DoxyCodeLine{00011\ \textcolor{keyword}{private}:}
 \DoxyCodeLine{00012\ \ \ \ std::vector<Token>\ \doxymbox{\hyperlink{class_parser_a3e31029db085e07539f2f0cc965bc1b3}{m\_tokens}}\{\};}
 \DoxyCodeLine{00013\ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{class_parser_ac32ae2673e573063e2433af141d3255a}{m\_pos}}\ =\ 0;}
 \DoxyCodeLine{00014\ }
 \DoxyCodeLine{00015\ \textcolor{keyword}{private}:}
-\DoxyCodeLine{00016\ \ \ \ std::optional<Token>\ \doxymbox{\hyperlink{class_parser_a1cfe459e39f2406a5a240446cdb89c29}{peek}}(\textcolor{keywordtype}{int}\ offset\ =\ 0);}
+\DoxyCodeLine{00016\ \ \ \ \doxymbox{\hyperlink{struct_token}{Token}}\ \doxymbox{\hyperlink{class_parser_ad0e335245b14c34b6ac2a6db0cae172b}{peek}}(\textcolor{keywordtype}{int}\ offset\ =\ 0);}
 \DoxyCodeLine{00017\ \ }
 \DoxyCodeLine{00024\ \ \ \ \doxymbox{\hyperlink{struct_token}{Token}}\ \doxymbox{\hyperlink{class_parser_aa98b3c14c9420a69f5484fee2354ca7b}{consume}}(uint32\_t\ count\ =\ 1);}
 \DoxyCodeLine{00025\ }
-\DoxyCodeLine{00027\ \ \ \ std::expected<ast::Exit,\ std::string>\ \doxymbox{\hyperlink{class_parser_a1eaf9737bfc737993c25415ef3b70c66}{parseExit}}();}
-\DoxyCodeLine{00028\ \ \ \ std::expected<ast::Expression,\ std::string>\ \doxymbox{\hyperlink{class_parser_ac049300f4f8d62990ba8e5408163be21}{parseExpression}}();}
-\DoxyCodeLine{00029\ \};}
+\DoxyCodeLine{00026\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00027\ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00028\ \ \ \ \textcolor{keyword}{requires}\ \doxymbox{\hyperlink{concept_ast_node}{AstNode<T>}}\ ||\ \doxymbox{\hyperlink{concept_variant_node}{VariantNode<T>}}}
+\DoxyCodeLine{00029\ \ \ \ std::expected<T,\ std::string>\ \doxymbox{\hyperlink{class_parser_ad4e982fe38e9d7882d0ca12d92b48adb}{parse}}();}
+\DoxyCodeLine{00030\ \ \ \ }
+\DoxyCodeLine{00031\ \ \ \ \textcolor{comment}{//\ -\/-\/-\/\ EXPLICIT\ SPECIALISATIONS\ -\/-\/-\/}}
+\DoxyCodeLine{00032\ \ \ \ \textcolor{comment}{//\ statements}}
+\DoxyCodeLine{00033\ \ \ \ \textcolor{keyword}{template}<>\ std::expected<ast::Statement,\ std::string>\ \doxymbox{\hyperlink{_parser_8cpp_a327f236f52bd0d8a37f3a70f970054e0}{parse<ast::Statement>}}();}
+\DoxyCodeLine{00034\ \ \ \ \textcolor{keyword}{template}<>\ std::expected<ast::Declaration,\ std::string>\ \doxymbox{\hyperlink{_parser_8cpp_a24d36e725abb80c9fd72b3e3bd4be7c2}{parse<ast::Declaration>}}();}
+\DoxyCodeLine{00035\ \ \ \ \textcolor{keyword}{template}<>\ std::expected<ast::Exit,\ std::string>\ \doxymbox{\hyperlink{_parser_8cpp_ad92542843d8ccc48e4c46d8e7f7fb483}{parse<ast::Exit>}}();}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \ \textcolor{comment}{//\ expressions}}
+\DoxyCodeLine{00038\ \ \ \ \textcolor{keyword}{template}<>\ std::expected<ast::Expression,\ std::string>\ \doxymbox{\hyperlink{_parser_8cpp_ad4e666eb59ab7d9873fd4503b9f05a5f}{parse<ast::Expression>}}();}
+\DoxyCodeLine{00039\ \ \ \ \textcolor{keyword}{template}<>\ std::expected<ast::IntegerLiteral,\ std::string>\ \doxymbox{\hyperlink{_parser_8cpp_a418e5bcaae8c3e466b21159934fd9011}{parse<ast::IntegerLiteral>}}();}
+\DoxyCodeLine{00040\ \ \ \ \textcolor{keyword}{template}<>\ std::expected<ast::Identifier,\ std::string>\ \doxymbox{\hyperlink{_parser_8cpp_aac1258672c51c3ab2a16cb32d9f8c728}{parse<ast::Identifier>}}();}
+\DoxyCodeLine{00041\ \};}
 
 \end{DoxyCode}

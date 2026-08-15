@@ -5,40 +5,59 @@
 \DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
 \DoxyCodeLine{00002\ }
 \DoxyCodeLine{00003\ \textcolor{preprocessor}{\#define\ TOKEN\_TYPES\ \(\backslash\)}}
-\DoxyCodeLine{00004\ \textcolor{preprocessor}{\ \ \ X(EXIT)\ \(\backslash\)}}
-\DoxyCodeLine{00005\ \textcolor{preprocessor}{\ \ \ X(SEMICOLON)\ \(\backslash\)}}
-\DoxyCodeLine{00006\ \textcolor{preprocessor}{\ \ \ X(END\_OF\_FILE)\ \(\backslash\)}}
-\DoxyCodeLine{00007\ \textcolor{preprocessor}{\(\backslash\)}}
-\DoxyCodeLine{00008\ \textcolor{preprocessor}{\ \ \ X(INTEGER\_LITERAL)\ \(\backslash\)}}
-\DoxyCodeLine{00009\ \textcolor{preprocessor}{\(\backslash\)}}
-\DoxyCodeLine{00010\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ variable\ name\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ Keywords\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\ \ \ X(MINT)\ \(\backslash\)}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\ \ \ X(BAR)\ \(\backslash\)}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\ \ \ X(EXIT)\ \(\backslash\)}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\(\backslash\)}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ Literals\ \&\ identifiers\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\ \ \ X(INTEGER\_LITERAL)\ \(\backslash\)}}
 \DoxyCodeLine{00011\ \textcolor{preprocessor}{\ \ \ X(IDENTIFIER)\ \(\backslash\)}}
 \DoxyCodeLine{00012\ \textcolor{preprocessor}{\(\backslash\)}}
-\DoxyCodeLine{00013\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ []\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
-\DoxyCodeLine{00014\ \textcolor{preprocessor}{\ \ \ X(OPEN\_BRACKET)\ X(CLOSE\_BRACKET)\ \(\backslash\)}}
-\DoxyCodeLine{00015\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ ()\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
-\DoxyCodeLine{00016\ \textcolor{preprocessor}{\ \ \ X(OPEN\_PAREN)\ X(CLOSE\_PAREN)\ \(\backslash\)}}
-\DoxyCodeLine{00017\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ \{\}\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
-\DoxyCodeLine{00018\ \textcolor{preprocessor}{\ \ \ X(OPEN\_CURLY)\ X(CLOSE\_CURLY)\ \(\backslash\)}}
-\DoxyCodeLine{00019\ \textcolor{preprocessor}{}}
-\DoxyCodeLine{00020\ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ \{}
-\DoxyCodeLine{00021\ \textcolor{preprocessor}{\ \ \ \#define\ X(name)\ name,}}
-\DoxyCodeLine{00022\ \ \ \ \ \ \ \doxymbox{\hyperlink{_token_8h_abc7a9d01b7ddc94b6ba8fb09cdea2461}{TOKEN\_TYPES}}}
-\DoxyCodeLine{00023\ \textcolor{preprocessor}{\ \ \ \#undef\ X}}
-\DoxyCodeLine{00024\ \};}
-\DoxyCodeLine{00025\ }
-\DoxyCodeLine{00026\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_token_afd199ae9910ff4935f77a88b8d53cdd3}{Token}}\ \{}
-\DoxyCodeLine{00027\ \ \ \ \doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}};}
-\DoxyCodeLine{00028\ \ \ \ std::optional<std::string>\ \doxymbox{\hyperlink{struct_token_a6ca6a4384dcdf275ca319c9cc7043746}{value}}\ =\ std::nullopt;\ }
-\DoxyCodeLine{00029\ }
-\DoxyCodeLine{00030\ \ \ \ \doxymbox{\hyperlink{struct_token_afd199ae9910ff4935f77a88b8d53cdd3}{Token}}(\doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}})\ :\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}}(\doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}})\ \{\}\ \textcolor{comment}{//\ for\ implicit\ conversion}}
-\DoxyCodeLine{00031\ \ \ \ \doxymbox{\hyperlink{struct_token_a46324edc3351443f4b2edc20069b544a}{Token}}(\doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}},\ std::string\ \doxymbox{\hyperlink{struct_token_a6ca6a4384dcdf275ca319c9cc7043746}{value}})\ :\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}}(\doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}}),\ \doxymbox{\hyperlink{struct_token_a6ca6a4384dcdf275ca319c9cc7043746}{value}}(\doxymbox{\hyperlink{struct_token_a6ca6a4384dcdf275ca319c9cc7043746}{value}})\ \{\}}
-\DoxyCodeLine{00032\ }
-\DoxyCodeLine{00033\ \ \ \ std::string\ \doxymbox{\hyperlink{struct_token_a602aa1415de3415044205333495e72f5}{to\_string}}()\ \textcolor{keyword}{const};}
-\DoxyCodeLine{00034\ }
-\DoxyCodeLine{00035\ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{struct_token_ac1f7576d366118af3938a8f34b44fbe1}{operator==}}(\doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}})\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}}\ ==\ this-\/>type;\ \}}
-\DoxyCodeLine{00036\ \};}
-\DoxyCodeLine{00037\ }
-\DoxyCodeLine{00038\ std::string\ \doxymbox{\hyperlink{_token_8h_a4ce491a3042631c6edb73ef6e38c7bef}{to\_string}}(\doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ type);}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ Punctuation\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\ \ \ X(EQUALS)\ \(\backslash\)}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\ \ \ X(COLON)\ \(\backslash\)}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\ \ \ X(SEMICOLON)\ \(\backslash\)}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\(\backslash\)}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ Brackets\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\ \ \ X(OPEN\_PAREN)\ \ \ X(CLOSE\_PAREN)\ \ \ }\textcolor{comment}{/*\ ()\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\ \ \ X(OPEN\_BRACKET)\ X(CLOSE\_BRACKET)\ }\textcolor{comment}{/*\ []\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\ \ \ X(OPEN\_CURLY)\ \ \ X(CLOSE\_CURLY)\ \ \ }\textcolor{comment}{/*\ \{\}\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\ \ \ X(LESS\_THAN)\ \ \ \ X(GREATER\_THAN)\ \ }\textcolor{comment}{/*\ <>\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\(\backslash\)}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ Operators\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\ \ \ X(PLUS)\ X(MINUS)\ X(STAR)\ X(SLASH)\ X(PERCENT)\ }\textcolor{comment}{/*\ (+\ -\/\ *\ /\ \%)\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\ \ \ X(EQUALITY)\ X(INEQUALITY)\ X(LESS\_EQUALS)\ X(GREATER\_EQUALS)\ }\textcolor{comment}{/*\ (==\ !=\ <=\ >=)\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\ \ \ X(LOGICAL\_AND)\ X(LOGICAL\_OR)\ X(LOGICAL\_NOT)\ }\textcolor{comment}{/*\ (\&\&\ ||\ !)\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\(\backslash\)}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ Compound\ assignment\ (+=\ -\/=\ *=\ /=\ \%=)\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\ \ \ X(PLUS\_EQUALS)\ X(MINUS\_EQUALS)\ X(STAR\_EQUALS)\ X(SLASH\_EQUALS)\ X(PERCENT\_EQUALS)\ \(\backslash\)}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\(\backslash\)}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ Not\ sure\ abt\ but\ do\ exist\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\ \ \ X(BITWISE\_AND)\ X(BITWISE\_OR)\ X(BITWISE\_NOT)\ X(BITWISE\_XOR)\ \(\backslash\)}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\ \ \ X(LEFT\_SHIFT)\ X(RIGHT\_SHIFT)\ \(\backslash\)}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\(\backslash\)}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\ \ \ }\textcolor{comment}{/*\ Special\ */}\textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\ \ \ X(END\_OF\_FILE)\ }\textcolor{comment}{/*\ @todo\ implement\ end\ of\ file\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ \{}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\ \ \ \#define\ X(name)\ name,}}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \doxymbox{\hyperlink{_token_8h_abc7a9d01b7ddc94b6ba8fb09cdea2461}{TOKEN\_TYPES}}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\ \ \ \#undef\ X}}
+\DoxyCodeLine{00043\ \};}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_token_afd199ae9910ff4935f77a88b8d53cdd3}{Token}}\ \{}
+\DoxyCodeLine{00046\ \ \ \ \doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}};}
+\DoxyCodeLine{00047\ \ \ \ std::optional<std::string>\ \doxymbox{\hyperlink{struct_token_a6ca6a4384dcdf275ca319c9cc7043746}{value}}\ =\ std::nullopt;\ }
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \ \doxymbox{\hyperlink{struct_token_afd199ae9910ff4935f77a88b8d53cdd3}{Token}}(\doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}})\ :\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}}(\doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}})\ \{\}\ \textcolor{comment}{//\ for\ implicit\ conversion}}
+\DoxyCodeLine{00050\ \ \ \ \doxymbox{\hyperlink{struct_token_a46324edc3351443f4b2edc20069b544a}{Token}}(\doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}},\ std::string\ \doxymbox{\hyperlink{struct_token_a6ca6a4384dcdf275ca319c9cc7043746}{value}})\ :\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}}(\doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}}),\ \doxymbox{\hyperlink{struct_token_a6ca6a4384dcdf275ca319c9cc7043746}{value}}(\doxymbox{\hyperlink{struct_token_a6ca6a4384dcdf275ca319c9cc7043746}{value}})\ \{\}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ std::string\ \doxymbox{\hyperlink{struct_token_a602aa1415de3415044205333495e72f5}{to\_string}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{struct_token_ac1f7576d366118af3938a8f34b44fbe1}{operator==}}(\doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}})\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{struct_token_a67919af9f3a80dc0b28a0ab1e6d5bf8a}{type}}\ ==\ this-\/>type;\ \}}
+\DoxyCodeLine{00055\ \};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ std::string\ \doxymbox{\hyperlink{_token_8h_a4ce491a3042631c6edb73ef6e38c7bef}{to\_string}}(\doxymbox{\hyperlink{_token_8h_aa520fbf142ba1e7e659590c07da31921}{TokenType}}\ type);}
 
 \end{DoxyCode}

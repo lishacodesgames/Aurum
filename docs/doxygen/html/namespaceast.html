@@ -127,12 +127,14 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('namespaceast.h
 Classes</h2></td></tr>
 <tr class="memitem:IntegerLiteral" id="r_IntegerLiteral"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structast_1_1_integer_literal.html">IntegerLiteral</a></td></tr>
 <tr class="memitem:Identifier" id="r_Identifier"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structast_1_1_identifier.html">Identifier</a></td></tr>
+<tr class="memitem:Declaration" id="r_Declaration"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structast_1_1_declaration.html">Declaration</a></td></tr>
 <tr class="memitem:Exit" id="r_Exit"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structast_1_1_exit.html">Exit</a></td></tr>
+<tr class="memitem:Program" id="r_Program"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structast_1_1_program.html">Program</a></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:a49a5437ad5786f465477bacd4dfaccef" id="r_a49a5437ad5786f465477bacd4dfaccef"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a49a5437ad5786f465477bacd4dfaccef">Expression</a> = std::variant&lt;std::monostate, <a class="el" href="structast_1_1_integer_literal.html">IntegerLiteral</a>, <a class="el" href="structast_1_1_identifier.html">Identifier</a>&gt;</td></tr>
-<tr class="memitem:a7dad54cac3fa544bade91bdadf3fe22c" id="r_a7dad54cac3fa544bade91bdadf3fe22c"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a7dad54cac3fa544bade91bdadf3fe22c">Node</a> = <a class="el" href="structast_1_1_exit.html">Exit</a></td></tr>
+<tr class="memitem:aaed583ec47d9adbea0fe6fd5d879272f" id="r_aaed583ec47d9adbea0fe6fd5d879272f"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#aaed583ec47d9adbea0fe6fd5d879272f">Statement</a> = std::variant&lt;std::monostate, <a class="el" href="structast_1_1_declaration.html">Declaration</a>, <a class="el" href="structast_1_1_exit.html">Exit</a>&gt;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Abstract Syntax Tree. </p>
@@ -148,18 +150,17 @@ Typedefs</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo</a></b></dt><dd>do we need monostate? </dd></dl>
 
 </div>
 </div>
-<a id="a7dad54cac3fa544bade91bdadf3fe22c" name="a7dad54cac3fa544bade91bdadf3fe22c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7dad54cac3fa544bade91bdadf3fe22c">&#9670;&#160;</a></span>Node</h2>
+<a id="aaed583ec47d9adbea0fe6fd5d879272f" name="aaed583ec47d9adbea0fe6fd5d879272f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaed583ec47d9adbea0fe6fd5d879272f">&#9670;&#160;</a></span>Statement</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="#a7dad54cac3fa544bade91bdadf3fe22c">ast::Node</a> = <a class="el" href="structast_1_1_exit.html">Exit</a></td>
+          <td class="memname">using <a class="el" href="#aaed583ec47d9adbea0fe6fd5d879272f">ast::Statement</a> = std::variant&lt;std::monostate, <a class="el" href="structast_1_1_declaration.html">Declaration</a>, <a class="el" href="structast_1_1_exit.html">Exit</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">

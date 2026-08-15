@@ -12,7 +12,7 @@
       "cmake.useCMakePresets": "always",
       "cmake.debugConfig": {
          "args": [
-            "gold.arum"
+            "gold.aura"
          ],
          "cwd": "${workspaceFolder}"
       },
@@ -34,7 +34,7 @@
             "type": "lldb",
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
-            "args": ["gold.arum"],
+            "args": ["gold.aura"],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "CMake: build",
             "console": "internalConsole",

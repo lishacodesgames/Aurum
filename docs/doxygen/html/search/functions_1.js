@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['generate_0',['generate',['../class_generator.html#ae38ca57af6b006a762b3900fe4354f14',1,'Generator']]],
-  ['generator_1',['Generator',['../class_generator.html#abab84fab50e78b581bbba32245722f9c',1,'Generator']]]
+  ['declaration_0',['Declaration',['../structast_1_1_declaration.html#a5de4c0f021584b469353df49500a10da',1,'ast::Declaration']]]
 ];

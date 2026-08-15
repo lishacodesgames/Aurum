@@ -14,7 +14,7 @@ The programming language is called Aurum, inspired by the latin word for Gold
 ## Syntax
 I code in C++, Java and Python, so I want to mix all the best syntax features (in my humble opinion, of course) from them into this language
 
-- File extension: `.arum`
+- File extension: `.aura`
 - Semicolon based
 
 ## Architecture
@@ -34,7 +34,7 @@ cmake --build --preset Release
 
 ### Run
 ```bash
-./build/Release/Aurum gold.arum
+./build/Release/Aurum gold.aura
 ```
 
 ### Dependencies

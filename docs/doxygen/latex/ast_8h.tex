@@ -1,0 +1,44 @@
+\doxysection{src/\+ast.h File Reference}
+\hypertarget{ast_8h}{}\label{ast_8h}\index{src/ast.h@{src/ast.h}}
+{\ttfamily \+\#include "{}Token.\+h"{}}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_integer_literal}{ast::\+\+Integer\+Literal}}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_identifier}{ast::\+\+Identifier}}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_declaration}{ast::\+\+Declaration}}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_exit}{ast::\+\+Exit}}
+\item 
+struct \doxymbox{\hyperlink{structast_1_1_program}{ast::\+\+Program}}
+\item 
+struct \doxymbox{\hyperlink{structdetail_1_1is__variant__alternative_3_01_t_00_01std_1_1variant_3_01_ts_8_8_8_01_4_01_4}{detail::\+is\+\_\+variant\+\_\+alternative$<$ T, std::\+variant$<$ Ts... $>$ $>$}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+namespace \doxymbox{\hyperlink{namespaceast}{ast}}
+\begin{DoxyCompactList}\small\item\em Abstract Syntax Tree. \end{DoxyCompactList}\item 
+namespace \doxymbox{\hyperlink{namespacedetail}{detail}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Concepts}
+\begin{DoxyCompactItemize}
+\item 
+concept \doxymbox{\hyperlink{concept_ast_node}{Ast\+Node}}
+\item 
+concept \doxymbox{\hyperlink{concept_variant_node}{Variant\+Node}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \doxymbox{\hyperlink{namespaceast_a49a5437ad5786f465477bacd4dfaccef}{ast::\+\+Expression}} = std::\+variant$<$std::\+monostate, \doxymbox{\hyperlink{structast_1_1_integer_literal}{Integer\+Literal}}, \doxymbox{\hyperlink{structast_1_1_identifier}{Identifier}}$>$
+\item 
+using \doxymbox{\hyperlink{namespaceast_aaed583ec47d9adbea0fe6fd5d879272f}{ast::\+\+Statement}} = std::\+variant$<$std::\+monostate, \doxymbox{\hyperlink{structast_1_1_declaration}{Declaration}}, \doxymbox{\hyperlink{structast_1_1_exit}{Exit}}$>$
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename T, typename Variant$>$ }\\constexpr bool \doxymbox{\hyperlink{namespacedetail_a0272b29721761c61dc5fdde4e5c852fd}{detail::\+is\+\_\+variant\+\_\+alternative\+\_\+v}} = \doxymbox{\hyperlink{structdetail_1_1is__variant__alternative}{is\+\_\+variant\+\_\+alternative}}$<$T, Variant$>$::\+value
+\end{DoxyCompactItemize}

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['node_0',['Node',['../namespaceast.html#a7dad54cac3fa544bade91bdadf3fe22c',1,'ast']]]
+  ['statement_0',['Statement',['../namespaceast.html#aaed583ec47d9adbea0fe6fd5d879272f',1,'ast']]]
 ];

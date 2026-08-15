@@ -125,15 +125,28 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('class_parser.h
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ac93b3201fac5ebaf8c398054c7fec2b9" id="r_ac93b3201fac5ebaf8c398054c7fec2b9"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ac93b3201fac5ebaf8c398054c7fec2b9">Parser</a> (std::vector&lt; <a class="el" href="struct_token.html">Token</a> &gt; tokens)</td></tr>
-<tr class="memitem:a7ea19afc016fea904b0c91f245498965" id="r_a7ea19afc016fea904b0c91f245498965"><td class="memItemLeft">std::expected&lt; <a class="el" href="namespaceast.html#a7dad54cac3fa544bade91bdadf3fe22c">ast::Node</a>, std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a7ea19afc016fea904b0c91f245498965">parse</a> ()</td></tr>
+<tr class="memitem:abcc294ff161e0f07472f54b27fa68092" id="r_abcc294ff161e0f07472f54b27fa68092"><td class="memItemLeft">std::expected&lt; <a class="el" href="structast_1_1_program.html">ast::Program</a>, std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#abcc294ff161e0f07472f54b27fa68092">parse</a> ()</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pri-methods" class="groupheader"><a id="pri-methods" name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
-<tr class="memitem:a1cfe459e39f2406a5a240446cdb89c29" id="r_a1cfe459e39f2406a5a240446cdb89c29"><td class="memItemLeft">std::optional&lt; <a class="el" href="struct_token.html">Token</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1cfe459e39f2406a5a240446cdb89c29">peek</a> (int offset=0)</td></tr>
+<tr class="memitem:ad0e335245b14c34b6ac2a6db0cae172b" id="r_ad0e335245b14c34b6ac2a6db0cae172b"><td class="memItemLeft"><a class="el" href="struct_token.html">Token</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad0e335245b14c34b6ac2a6db0cae172b">peek</a> (int offset=0)</td></tr>
 <tr class="memitem:aa98b3c14c9420a69f5484fee2354ca7b" id="r_aa98b3c14c9420a69f5484fee2354ca7b"><td class="memItemLeft"><a class="el" href="struct_token.html">Token</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa98b3c14c9420a69f5484fee2354ca7b">consume</a> (uint32_t count=1)</td></tr>
 <tr class="memdesc:aa98b3c14c9420a69f5484fee2354ca7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">increments m_pos but returns current <a class="el" href="struct_token.html">Token</a>  <br /></td></tr>
-<tr class="memitem:a1eaf9737bfc737993c25415ef3b70c66" id="r_a1eaf9737bfc737993c25415ef3b70c66"><td class="memItemLeft">std::expected&lt; <a class="el" href="structast_1_1_exit.html">ast::Exit</a>, std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1eaf9737bfc737993c25415ef3b70c66">parseExit</a> ()</td></tr>
-<tr class="memitem:ac049300f4f8d62990ba8e5408163be21" id="r_ac049300f4f8d62990ba8e5408163be21"><td class="memItemLeft">std::expected&lt; <a class="el" href="namespaceast.html#a49a5437ad5786f465477bacd4dfaccef">ast::Expression</a>, std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ac049300f4f8d62990ba8e5408163be21">parseExpression</a> ()</td></tr>
+<tr class="memitem:ad4e982fe38e9d7882d0ca12d92b48adb" id="r_ad4e982fe38e9d7882d0ca12d92b48adb"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; <br />
+requires <a class="el" href="concept_ast_node.html">AstNode</a>&lt;T&gt; || <a class="el" href="concept_variant_node.html">VariantNode</a>&lt;T&gt;</td></tr>
+<tr class="memitem:ad4e982fe38e9d7882d0ca12d92b48adb template"><td class="memItemLeft">std::expected&lt; T, std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad4e982fe38e9d7882d0ca12d92b48adb">parse</a> ()</td></tr>
+<tr class="memitem:add20e789231264fa471aa961774e9920" id="r_add20e789231264fa471aa961774e9920"><td class="memItemLeft">template&lt;&gt; </td></tr>
+<tr class="memitem:add20e789231264fa471aa961774e9920 template"><td class="memItemLeft">std::expected&lt; <a class="el" href="namespaceast.html#aaed583ec47d9adbea0fe6fd5d879272f">ast::Statement</a>, std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#add20e789231264fa471aa961774e9920">parse</a> ()</td></tr>
+<tr class="memitem:aba2384f51fa66d7d391eab61a16756eb" id="r_aba2384f51fa66d7d391eab61a16756eb"><td class="memItemLeft">template&lt;&gt; </td></tr>
+<tr class="memitem:aba2384f51fa66d7d391eab61a16756eb template"><td class="memItemLeft">std::expected&lt; <a class="el" href="structast_1_1_declaration.html">ast::Declaration</a>, std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aba2384f51fa66d7d391eab61a16756eb">parse</a> ()</td></tr>
+<tr class="memitem:ac39a84d0c7703547e970160bb5120e32" id="r_ac39a84d0c7703547e970160bb5120e32"><td class="memItemLeft">template&lt;&gt; </td></tr>
+<tr class="memitem:ac39a84d0c7703547e970160bb5120e32 template"><td class="memItemLeft">std::expected&lt; <a class="el" href="structast_1_1_exit.html">ast::Exit</a>, std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ac39a84d0c7703547e970160bb5120e32">parse</a> ()</td></tr>
+<tr class="memitem:aad17a255cf8f26978dc88274e446f766" id="r_aad17a255cf8f26978dc88274e446f766"><td class="memItemLeft">template&lt;&gt; </td></tr>
+<tr class="memitem:aad17a255cf8f26978dc88274e446f766 template"><td class="memItemLeft">std::expected&lt; <a class="el" href="namespaceast.html#a49a5437ad5786f465477bacd4dfaccef">ast::Expression</a>, std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aad17a255cf8f26978dc88274e446f766">parse</a> ()</td></tr>
+<tr class="memitem:abdad0aaea9dfb91c0d440fc2aa72d824" id="r_abdad0aaea9dfb91c0d440fc2aa72d824"><td class="memItemLeft">template&lt;&gt; </td></tr>
+<tr class="memitem:abdad0aaea9dfb91c0d440fc2aa72d824 template"><td class="memItemLeft">std::expected&lt; <a class="el" href="structast_1_1_integer_literal.html">ast::IntegerLiteral</a>, std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#abdad0aaea9dfb91c0d440fc2aa72d824">parse</a> ()</td></tr>
+<tr class="memitem:a37d94fb4613f95262e7c32b0d9f1dc53" id="r_a37d94fb4613f95262e7c32b0d9f1dc53"><td class="memItemLeft">template&lt;&gt; </td></tr>
+<tr class="memitem:a37d94fb4613f95262e7c32b0d9f1dc53 template"><td class="memItemLeft">std::expected&lt; <a class="el" href="structast_1_1_identifier.html">ast::Identifier</a>, std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a37d94fb4613f95262e7c32b0d9f1dc53">parse</a> ()</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pri-attribs" class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
@@ -200,67 +213,27 @@ Private Attributes</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>CURRENT <a class="el" href="struct_token.html">Token</a> </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">runtime_error</td><td>if next <a class="el" href="struct_token.html">Token</a> doesn't exist, so check with <a class="el" href="#a1cfe459e39f2406a5a240446cdb89c29">peek()</a> before calling </td></tr>
+    <tr><td class="paramname">runtime_error</td><td>if next <a class="el" href="struct_token.html">Token</a> doesn't exist, so check with <a class="el" href="#ad0e335245b14c34b6ac2a6db0cae172b">peek()</a> before calling </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a7ea19afc016fea904b0c91f245498965" name="a7ea19afc016fea904b0c91f245498965"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7ea19afc016fea904b0c91f245498965">&#9670;&#160;</a></span>parse()</h2>
+<a id="ad4e982fe38e9d7882d0ca12d92b48adb" name="ad4e982fe38e9d7882d0ca12d92b48adb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad4e982fe38e9d7882d0ca12d92b48adb">&#9670;&#160;</a></span>parse() <span class="overload">[1/8]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::expected&lt; <a class="el" href="namespaceast.html#a7dad54cac3fa544bade91bdadf3fe22c">ast::Node</a>, std::string &gt; Parser::parse </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a1eaf9737bfc737993c25415ef3b70c66" name="a1eaf9737bfc737993c25415ef3b70c66"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1eaf9737bfc737993c25415ef3b70c66">&#9670;&#160;</a></span>parseExit()</h2>
-
-<div class="memitem">
-<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; <br />
+requires <a class="el" href="concept_ast_node.html">AstNode</a>&lt;T&gt; || <a class="el" href="concept_variant_node.html">VariantNode</a>&lt;T&gt;</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::expected&lt; <a class="el" href="structast_1_1_exit.html">ast::Exit</a>, std::string &gt; Parser::parseExit </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo</a></b></dt><dd>move to Node classes as static methods </dd></dl>
-
-</div>
-</div>
-<a id="ac049300f4f8d62990ba8e5408163be21" name="ac049300f4f8d62990ba8e5408163be21"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac049300f4f8d62990ba8e5408163be21">&#9670;&#160;</a></span>parseExpression()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::expected&lt; <a class="el" href="namespaceast.html#a49a5437ad5786f465477bacd4dfaccef">ast::Expression</a>, std::string &gt; Parser::parseExpression </td>
+          <td class="memname">std::expected&lt; T, std::string &gt; Parser::parse </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -275,8 +248,187 @@ Private Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a1cfe459e39f2406a5a240446cdb89c29" name="a1cfe459e39f2406a5a240446cdb89c29"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1cfe459e39f2406a5a240446cdb89c29">&#9670;&#160;</a></span>peek()</h2>
+<a id="add20e789231264fa471aa961774e9920" name="add20e789231264fa471aa961774e9920"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add20e789231264fa471aa961774e9920">&#9670;&#160;</a></span>parse() <span class="overload">[2/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; <a class="el" href="namespaceast.html#aaed583ec47d9adbea0fe6fd5d879272f">ast::Statement</a>, std::string &gt; Parser::parse </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aba2384f51fa66d7d391eab61a16756eb" name="aba2384f51fa66d7d391eab61a16756eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba2384f51fa66d7d391eab61a16756eb">&#9670;&#160;</a></span>parse() <span class="overload">[3/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; <a class="el" href="structast_1_1_declaration.html">ast::Declaration</a>, std::string &gt; Parser::parse </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac39a84d0c7703547e970160bb5120e32" name="ac39a84d0c7703547e970160bb5120e32"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac39a84d0c7703547e970160bb5120e32">&#9670;&#160;</a></span>parse() <span class="overload">[4/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; <a class="el" href="structast_1_1_exit.html">ast::Exit</a>, std::string &gt; Parser::parse </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aad17a255cf8f26978dc88274e446f766" name="aad17a255cf8f26978dc88274e446f766"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad17a255cf8f26978dc88274e446f766">&#9670;&#160;</a></span>parse() <span class="overload">[5/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; <a class="el" href="namespaceast.html#a49a5437ad5786f465477bacd4dfaccef">ast::Expression</a>, std::string &gt; Parser::parse </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="abdad0aaea9dfb91c0d440fc2aa72d824" name="abdad0aaea9dfb91c0d440fc2aa72d824"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abdad0aaea9dfb91c0d440fc2aa72d824">&#9670;&#160;</a></span>parse() <span class="overload">[6/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; <a class="el" href="structast_1_1_integer_literal.html">ast::IntegerLiteral</a>, std::string &gt; Parser::parse </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a37d94fb4613f95262e7c32b0d9f1dc53" name="a37d94fb4613f95262e7c32b0d9f1dc53"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a37d94fb4613f95262e7c32b0d9f1dc53">&#9670;&#160;</a></span>parse() <span class="overload">[7/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; <a class="el" href="structast_1_1_identifier.html">ast::Identifier</a>, std::string &gt; Parser::parse </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="abcc294ff161e0f07472f54b27fa68092" name="abcc294ff161e0f07472f54b27fa68092"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abcc294ff161e0f07472f54b27fa68092">&#9670;&#160;</a></span>parse() <span class="overload">[8/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::expected&lt; <a class="el" href="structast_1_1_program.html">ast::Program</a>, std::string &gt; Parser::parse </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad0e335245b14c34b6ac2a6db0cae172b" name="ad0e335245b14c34b6ac2a6db0cae172b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad0e335245b14c34b6ac2a6db0cae172b">&#9670;&#160;</a></span>peek()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -285,7 +437,7 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::optional&lt; <a class="el" href="struct_token.html">Token</a> &gt; Parser::peek </td>
+          <td class="memname"><a class="el" href="struct_token.html">Token</a> Parser::peek </td>
           <td>(</td>
           <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>offset</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span></td><td>)</td>
           <td></td>
