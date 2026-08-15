@@ -54,6 +54,32 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
          tokens.emplace_back(TokenType::INTEGER_LITERAL, buffer);
          buffer.clear();
 
+      } else if(*peek() == '$') { // comments. ignored in compilation completely
+         consume();
+
+         if(peek() && *peek() == '$') { // inline comment "$$ .."
+            consume();
+            while(peek() && *peek() != '\n') {
+               consume();
+            }
+
+         } else if(peek() && *peek() == '~') { // multi-line comment "$~ ... ~$"
+            consume();
+            while(*peek() != '~') {
+               consume();
+
+               if(!peek()) // unexpected end of file
+                  return std::unexpected("Unexpected end of file!\nExpected a `~`!");
+            }
+
+            if(!peek(1) || *peek(1) != '$')
+               return std::unexpected("Expected a `$`!");
+            consume(2);
+
+         } else {
+            return std::unexpected("Expected a `$` or `~`!");
+         }
+
       } else if(*peek() == ';') {
          consume();
          tokens.emplace_back(TokenType::SEMICOLON);

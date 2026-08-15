@@ -67,6 +67,7 @@ template<>
 std::expected<ast::Declaration*, std::string> Parser::parse<ast::Declaration>() {
    consume(); // consume keyword
 
+   /// @todo prevent identifier from being a keyword
    auto identifier = parse<ast::Identifier>();
    if(!identifier)
       return std::unexpected(identifier.error());

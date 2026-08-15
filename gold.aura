@@ -1,2 +1,4 @@
-mint x = -8;
-exit -56;
+mint x = -8; $~ comment
+
+~$
+exit ---x; $$ +8
