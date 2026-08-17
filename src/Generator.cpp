@@ -14,6 +14,12 @@ std::expected<std::string, std::string> Generator::generate() {
          return std::unexpected(*returnValue);
    }
 
+   // won't get executed if user exits explicitly, just as a safety net
+   m_output += "\n\n; default exit statement in case user hasn't exited explicitly\n";
+   m_output += "\tmov rax, 1 | 0x2000000\n";
+   m_output += "\tmov rdi, 0\n";
+   m_output += "\tsyscall\n";
+
    return m_output;
 }
 

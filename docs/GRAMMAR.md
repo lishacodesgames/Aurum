@@ -1,6 +1,7 @@
 ## Language
 ### Program
-- There is no $main$ function, but there is a clear end point where you do $exit\ value;$
+- There is no $main$ function
+- If user wants to exit explicitly with an exit code, they can, otherwise it exits with 0
 - Semicolons are mandatory
 
 ### Typing
