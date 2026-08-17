@@ -42,4 +42,8 @@ private:
    template<> std::expected<ast::IntegerLiteral*, std::string> parse<ast::IntegerLiteral>();
    template<> std::expected<ast::Identifier*, std::string> parse<ast::Identifier>();
    template<> std::expected<ast::Negative*, std::string> parse<ast::Negative>();
+      // BinaryExpr is not a template type. Unnecessary
+
+   // helpers
+   std::expected<ast::Expression, std::string> parseTerm();
 };

@@ -36,7 +36,7 @@ Token Parser::consume(uint32_t count) {
 
 // PARSE OVERLOADS
 
-// statements
+#pragma region Statements
 
 template<>
 std::expected<ast::Statement, std::string> Parser::parse<ast::Statement>() {
@@ -111,10 +111,11 @@ std::expected<ast::Exit*, std::string> Parser::parse<ast::Exit>() {
    return m_arena.create<ast::Exit>(m_arena.create<ast::Expression>(std::move(*expression)));
 }
 
-// expressions
+#pragma endregion
 
-template<>
-std::expected<ast::Expression, std::string> Parser::parse<ast::Expression>() {
+#pragma region Expressions
+
+std::expected<ast::Expression, std::string> Parser::parseTerm() {
    switch(peek().type) {
       case TokenType::INTEGER_LITERAL: {
          auto integerLiteral = parse<ast::IntegerLiteral>();
@@ -146,6 +147,29 @@ std::expected<ast::Expression, std::string> Parser::parse<ast::Expression>() {
 }
 
 template<>
+std::expected<ast::Expression, std::string> Parser::parse<ast::Expression>() {
+   /// @todo what if it's another binary expression
+   auto expression = parseTerm();
+   if(!expression)
+      return std::unexpected(expression.error());
+
+   /// @todo implement precendence
+   while(peek() == TokenType::PLUS) {
+      TokenType op = consume().type;
+
+      auto term = parseTerm();
+      if(!term)
+         return std::unexpected(term.error());
+
+      ast::BinaryExpr* binaryExpr = m_arena.create<ast::BinaryExpr>(m_arena.create<ast::Expression>(*expression), op, m_arena.create<ast::Expression>(*term));
+
+      expression = ast::Expression(std::in_place_type<ast::BinaryExpr*>, binaryExpr);
+   }
+
+   return expression;
+}
+
+template<>
 std::expected<ast::IntegerLiteral*, std::string> Parser::parse<ast::IntegerLiteral>() {
    if(peek() != TokenType::INTEGER_LITERAL || !peek().value)
       return std::unexpected("Expected an integer literal!");
@@ -172,3 +196,5 @@ std::expected<ast::Negative*, std::string> Parser::parse<ast::Negative>() {
 
    return m_arena.create<ast::Negative>(m_arena.create<ast::Expression>(std::move(*expression)));
 }
+
+#pragma endregion

@@ -32,32 +32,42 @@ namespace ast
 
    // expressions that contain an expression
    struct Negative;
+   struct BinaryExpr;
 
-   using Expression = std::variant<std::monostate, IntegerLiteral*, Identifier*, Negative*>;
+   using Expression = std::variant<std::monostate, IntegerLiteral*, Identifier*, Negative*, BinaryExpr*>;
 
    struct Negative {
-      ast::Expression* operand;
+      Expression* operand;
 
-      explicit Negative(ast::Expression* operand) : operand(operand) {}
+      explicit Negative(Expression* operand) : operand(operand) {}
+   };
+
+   /// @todo maybe make into a variant of BinExprAdd, Sub, Mult, Div, Mod, etc.
+   struct BinaryExpr {
+      Expression* left, *right;
+      TokenType op;
+
+      explicit BinaryExpr(Expression* left, TokenType op, Expression* right)
+         : left(left), right(right), op(op) {}
    };
 
    // --- STATEMENTS ---
 
    /// @todo mutability & type constraints: mint vs bar vs bar<>
    struct Declaration {
-      ast::Identifier* identifier;
-      std::optional<ast::Expression*> expression;
+      Identifier* identifier;
+      std::optional<Expression*> expression;
 
-      explicit Declaration(ast::Identifier* identifier) : identifier(identifier) {}
+      explicit Declaration(Identifier* identifier) : identifier(identifier) {}
 
-      Declaration(ast::Identifier* identifier, ast::Expression* expression)
+      explicit Declaration(Identifier* identifier, Expression* expression)
          : identifier(identifier), expression(expression) {}
    };
 
    struct Exit {
-      ast::Expression* expression;
+      Expression* expression;
 
-      explicit Exit(ast::Expression* expression) : expression(expression) {}
+      explicit Exit(Expression* expression) : expression(expression) {}
    };
 
    using Statement = std::variant<std::monostate, Declaration*, Exit*>;
@@ -65,11 +75,11 @@ namespace ast
    // --- PROGRAM ---
 
    struct Program {
-      std::vector<ast::Statement> statements;
+      std::vector<Statement> statements;
 
       // for convenience
       [[nodiscard]] bool empty() const noexcept { return statements.empty(); }
-      void push_back(ast::Statement stmt) { statements.push_back(stmt); } // not noexcept bcz push_back might throw bad_alloc()
+      void push_back(Statement stmt) { statements.push_back(stmt); } // not noexcept bcz push_back might throw bad_alloc()
    };
 }
 

@@ -119,3 +119,29 @@ std::optional<std::string> Generator::generate(const ast::Negative* negative) {
 
    return std::nullopt;
 }
+
+template <>
+std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr) {
+   auto leftReturnValue = generate<ast::Expression>(binaryExpr->left);
+   if(leftReturnValue)
+      return leftReturnValue;
+
+   auto rightReturnValue = generate<ast::Expression>(binaryExpr->right);
+   if(rightReturnValue)
+      return rightReturnValue;
+
+   pop("rbx", "rhs"); // right was pushed last so that pops to reg B first
+   pop("rax", "lhs");
+
+   switch(binaryExpr->op) {
+      case TokenType::PLUS:
+         m_output += "\tadd rax, rbx\n"; // stores value in rax
+         break;
+      default:
+         return std::format("Unsupported binary operator: '{}'!", to_string(binaryExpr->op));
+   }
+
+   push("rax", "binary expression result");
+
+   return std::nullopt;
+}

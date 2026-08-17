@@ -16,25 +16,35 @@ $$
 \begin{align}
    \text{[NODE]} &\to representation\ /\ type
 \\ \\
-   \text{[program]} &\to \text{[statement]}^*
+   \text{[program]} &\to [statement]^*
 \\
-   \text{[statement]} &\to \text{(syntactically):}
+   \text{[statement]} &\to
       \begin{cases}
-         exit\ \text{[expression]}; \\
-         bar \text{ name} = \text{[expression]};\ \ \footnotesize{\text{// mutable value}} \\
-         mint \text{ name} = \text{[expression]};\ \ \footnotesize{\text{// constant value}} \\
+         exit\ [expression]; \\
+         bar \text{ name} = [expression];\ \ \footnotesize{\text{// mutable value}} \\
+         mint \text{ name} = [expression];\ \ \footnotesize{\text{// constant value}} \\
       \end{cases}
 \\
    [\text{expression}] &\to
       \begin{cases}
-         integer\ literal \\
-         \text{[identifier]} \\
-         \text{[binary expression]}
-      \end{cases}
-\\
-   [\text{binary expression}] &\to
-      \begin{cases}
-         \text{[expression] + [expression]} \\
+         [term]
+            \begin{cases}
+               integer\ literal \\
+               [identifier] \\
+               [unary\ expression]
+                  \begin{cases}
+                     -[expression] \\
+                     +[expression]
+                  \end{cases} \\
+            \end{cases} \\
+      \\
+         [binary\ expression]
+            \begin{cases}
+               [expression] &*&\ [expression] - prec. = 3 \\
+               [expression] &/&\ [expression] - prec. = 2 \\
+               [expression] &+&\ [expression] - prec. = 1 \\
+               [expression] &-&\ [expression] - prec. = 0 \\
+            \end{cases}
       \end{cases}
 \end{align}
 $$

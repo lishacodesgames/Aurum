@@ -88,9 +88,14 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
          consume();
          tokens.emplace_back(TokenType::EQUALS);
 
+      /// @todo increment & decrement operators
       } else if(*peek() == '-') {
          consume();
          tokens.emplace_back(TokenType::MINUS);
+
+      } else if(*peek() == '+') {
+         consume();
+         tokens.emplace_back(TokenType::PLUS);
 
       } else if(std::isspace(*peek())) {
          consume();

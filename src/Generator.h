@@ -52,7 +52,9 @@ private:
    template<> std::optional<std::string> generate(const ast::Identifier* identifier);
 
    template<> std::optional<std::string> generate(const ast::Negative* negative);
+   template<> std::optional<std::string> generate(const ast::BinaryExpr* binaryExpr);
 
+private:
    // Variant overload
    template<VariantNode V>
    [[nodiscard]] std::optional<std::string> generate(const V* variant) {

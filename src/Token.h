@@ -25,6 +25,7 @@
    X(PLUS) X(MINUS) X(STAR) X(SLASH) X(PERCENT) /* (+ - * / %) */ \
    X(EQUALITY) X(INEQUALITY) X(LESS_EQUALS) X(GREATER_EQUALS) /* (== != <= >=) */ \
    X(LOGICAL_AND) X(LOGICAL_OR) X(LOGICAL_NOT) /* (&& || !) */ \
+   X(INCREMENT) X(DECREMENT) /* (++ --) */ \
 \
    /* Compound assignment (+= -= *= /= %=) */ \
    X(PLUS_EQUALS) X(MINUS_EQUALS) X(STAR_EQUALS) X(SLASH_EQUALS) X(PERCENT_EQUALS) \
@@ -42,6 +43,10 @@ enum class TokenType {
    #undef X
 };
 
+std::string to_string(TokenType type);
+bool isBinaryOperator(TokenType type);
+bool isUnaryOperator(TokenType type);
+
 struct Token {
    TokenType type;
    std::optional<std::string> value = std::nullopt; /// @todo change type. Template it maybe
@@ -53,5 +58,3 @@ struct Token {
 
    bool operator==(TokenType type) const noexcept { return type == this->type; }
 };
-
-std::string to_string(TokenType type);
