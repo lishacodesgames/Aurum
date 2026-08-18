@@ -78,7 +78,7 @@ namespace ast
       std::vector<Statement> statements;
 
       // for convenience
-      [[nodiscard]] bool empty() const noexcept { return statements.empty(); }
+      bool empty() const noexcept { return statements.empty(); }
       void push_back(Statement stmt) { statements.push_back(stmt); } // not noexcept bcz push_back might throw bad_alloc()
    };
 }

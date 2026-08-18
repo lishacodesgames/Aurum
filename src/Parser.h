@@ -5,7 +5,8 @@
 
 class Parser {
 public:
-   explicit Parser(std::vector<Token> tokens) : m_tokens(std::move(tokens)), m_arena(4 * 1024 * 1024) {} // 4MB for now
+   explicit Parser(std::vector<Token> tokens)
+      : m_tokens(std::move(tokens)), m_arena(4 * 1024 * 1024) {} // 4MB stack frame (for now)
 
    std::expected<ast::Program, std::string> parse();
 
@@ -15,14 +16,14 @@ private:
    mem::ArenaAllocator m_arena;
 
 private:
-   Token peek(int offset = 0);
+   Token peek(int offset = 0) const noexcept; // exit(1) doesn't count as an exception
 
    /** 
     * @brief increments m_pos but returns current Token
     * @param count by how much to increment m_pos
     * @returns CURRENT Token
     */ 
-   Token consume(uint32_t count = 1);
+   Token consume(uint32_t count = 1) noexcept;
 
 private:
    template<AstNode T>
@@ -42,7 +43,7 @@ private:
    template<> std::expected<ast::IntegerLiteral*, std::string> parse<ast::IntegerLiteral>();
    template<> std::expected<ast::Identifier*, std::string> parse<ast::Identifier>();
    template<> std::expected<ast::Negative*, std::string> parse<ast::Negative>();
-      // BinaryExpr is not a template type. Unnecessary
+   // BinaryExpr is not a template type. Unnecessary
 
    // helpers
    std::expected<ast::Expression, std::string> parseTerm();

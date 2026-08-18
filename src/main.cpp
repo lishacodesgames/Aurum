@@ -24,17 +24,15 @@ int main(int argc, char* argv[]) {
    std::string contents;
    {
       std::ifstream srcFile(aurumFile);
-      if(!srcFile) {
-         std::println(stderr, "Could not open file '{}'!", aurumFile);
-         return EXIT_FAILURE;
-      }
+      if(!srcFile)
+         FATAL_ERROR("Could not open file '{}'!", aurumFile);
 
       std::ostringstream src; // osstream because we only want to store, not read
       src << srcFile.rdbuf(); // read the entire file into the string stream
       contents = src.str();
 
       if(contents.empty())
-         FATAL_ERROR("Empty Aurum file!");
+         FATAL_ERROR("Empty Aurum file: {}!", aurumFile);
       // end of scope closes file
    }
 

@@ -26,10 +26,10 @@ namespace mem
       ArenaAllocator& operator=(const ArenaAllocator&) = delete;
       ArenaAllocator& operator=(ArenaAllocator&& other) {
          if(this != &other) {
-            ::operator delete(m_buffer);
-            m_buffer = other.m_buffer;
-            m_capacity = other.m_capacity;
-            m_offset = other.m_offset;
+            ::operator delete(this->m_buffer);
+            this->m_buffer = other.m_buffer;
+            this->m_capacity = other.m_capacity;
+            this->m_offset = other.m_offset;
 
             other.m_buffer = nullptr;
             other.m_capacity = 0;

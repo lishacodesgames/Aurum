@@ -2,7 +2,7 @@
 #include "Token.h"
 
 std::string Token::to_string() const {
-   return std::format("{{type: {}, value: {}}}", ::to_string(type), value ? value.value() : "nullopt");
+   return std::format("{{ type: {}, value: {} }}", ::to_string(type), value ? value.value() : "nullopt");
 }
 
 bool isBinaryOperator(TokenType type) {
@@ -46,5 +46,5 @@ std::string to_string(TokenType type) {
       TOKEN_TYPES
    #undef X
 
-   return "to_string(TokenType) messed up!"; // should never run
+   return "bye world"; // should never run
 }

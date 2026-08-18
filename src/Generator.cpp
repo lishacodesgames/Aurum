@@ -6,7 +6,8 @@ std::expected<std::string, std::string> Generator::generate() {
    m_output += "global _main\n";
    m_output += "_main:\n";
    m_output += "\tpush rbp     ; save the caller's base pointer\n";
-   m_output += "\tmov rbp, rsp ; set our base pointer to the current stack pointer\n";
+   m_output += "\tmov rbp, rsp ; mov our stack pointer to the current base pointer\n";
+   m_output += "\t; rbp doesn't move for this entire function\n\n";
 
    for(const ast::Statement& stmt : m_program.statements) {
       auto returnValue = generate<ast::Statement>(&stmt);
@@ -15,7 +16,7 @@ std::expected<std::string, std::string> Generator::generate() {
    }
 
    // won't get executed if user exits explicitly, just as a safety net
-   m_output += "\n\n; default exit statement in case user hasn't exited explicitly\n";
+   m_output += "\n\t; default exit statement in case user hasn't exited explicitly\n";
    m_output += "\tmov rax, 1 | 0x2000000\n";
    m_output += "\tmov rdi, 0\n";
    m_output += "\tsyscall\n";
@@ -23,7 +24,7 @@ std::expected<std::string, std::string> Generator::generate() {
    return m_output;
 }
 
-void Generator::push(std::string_view value, std::optional<std::string> comment) {
+void Generator::push(std::string_view value, std::optional<std::string_view> comment) {
    // does: rsp -= 8 and mov's value to [rsp] (top of stack)
    m_output += std::format("\tpush {}", value);
 
@@ -34,7 +35,7 @@ void Generator::push(std::string_view value, std::optional<std::string> comment)
    m_stackSize++;
 }
 
-void Generator::mov(std::string reg, std::string value, std::optional<std::string> comment) {
+void Generator::mov(std::string reg, std::string value, std::optional<std::string_view> comment) {
    m_output += std::format("\tmov {}, {}", reg, value);
 
    if(comment)
@@ -43,7 +44,7 @@ void Generator::mov(std::string reg, std::string value, std::optional<std::strin
    m_output += "\n";
 }
 
-void Generator::pop(std::string_view reg, std::optional<std::string> comment) {
+void Generator::pop(std::string_view reg, std::optional<std::string_view> comment) {
    // does: reg = value; rsp += 8
    m_output += std::format("\tpop {}", reg);
 
@@ -62,7 +63,7 @@ inline std::optional<std::string> Generator::generate(const ast::Declaration* de
    if(m_symbolTable.contains(declaration->identifier->name))
       return std::format("Redeclaration of identifier '{}'!", declaration->identifier->name);
 
-   m_output += std::format("\n\t; declaration of {}\n", declaration->identifier->name);
+   m_output += std::format("\t; declaration of {}\n", declaration->identifier->name);
 
    if(declaration->expression) {
       auto returnValue = generate<ast::Expression>(*declaration->expression);
@@ -72,6 +73,7 @@ inline std::optional<std::string> Generator::generate(const ast::Declaration* de
       m_output += "\tsub rsp, 8\n";
       m_stackSize++;
    }
+   m_output += "\t; end of declaration\n\n";
 
    m_symbolTable[declaration->identifier->name] = m_stackSize;
 
@@ -87,8 +89,8 @@ std::optional<std::string> Generator::generate(const ast::Exit* exit) {
    if(returnValue)
       return std::move(returnValue);
 
-   pop("rdi", "store return value");
    mov("rax", "1 | 0x2000000", "exit syscall number");
+   pop("rdi", "store return value");
    m_output += "\tsyscall\n";
 
    return std::nullopt;
@@ -130,11 +132,11 @@ template <>
 std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr) {
    auto leftReturnValue = generate<ast::Expression>(binaryExpr->left);
    if(leftReturnValue)
-      return leftReturnValue;
+      return std::move(leftReturnValue);
 
    auto rightReturnValue = generate<ast::Expression>(binaryExpr->right);
    if(rightReturnValue)
-      return rightReturnValue;
+      return std::move(rightReturnValue);
 
    pop("rbx", "rhs"); // right was pushed last so that pops to reg B first
    pop("rax", "lhs");

@@ -15,20 +15,20 @@ private:
    uint32_t m_stackSize = 0;
 
    /// Key Type: string, name of the variable
-   /// Value Type: uint32_t, offset from rbp
+   /// Value Type: uint32_t, offset from stack
    std::unordered_map<std::string, uint32_t> m_symbolTable;
 
 private:
    /// @note std::format might throw exception, so these 3 functions cannot be noexcept
 
    /// Increases stack size by 1 and pushes value to the top
-   void push(std::string_view value, std::optional<std::string> comment = std::nullopt);
+   void push(std::string_view value, std::optional<std::string_view> comment = std::nullopt);
 
    /// COPIES value to reg
-   void mov(std::string reg, std::string value, std::optional<std::string> comment = std::nullopt);
+   void mov(std::string reg, std::string value, std::optional<std::string_view> comment = std::nullopt);
 
-   /// REMOVES the value from the top of the stack
-   void pop(std::string_view reg, std::optional<std::string> comment = std::nullopt);
+   /// REMOVES the value from the top of the stack and decreases stack size by 1
+   void pop(std::string_view reg, std::optional<std::string_view> comment = std::nullopt);
 
 private:
    /// @return nullopt if everything went well. string if error (containing error info)

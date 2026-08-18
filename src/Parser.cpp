@@ -2,9 +2,6 @@
 #include "Parser.h"
 
 std::expected<ast::Program, std::string> Parser::parse() {
-   if(peek() == TokenType::END_OF_FILE)
-      return std::unexpected("Unexpected end of file!");
-
    ast::Program program;
    while(peek() != TokenType::END_OF_FILE) {
       auto statement = parse<ast::Statement>();
@@ -20,14 +17,14 @@ std::expected<ast::Program, std::string> Parser::parse() {
    return program;
 }
 
-Token Parser::peek(int offset) {
+Token Parser::peek(int offset) const noexcept {
    if(m_pos + offset >= m_tokens.size())
       FATAL_ERROR("Parser tried to access outside tokens!");
 
    return m_tokens.at(m_pos + offset);
 }
 
-Token Parser::consume(uint32_t count) {
+Token Parser::consume(uint32_t count) noexcept {
    Token current = m_tokens.at(m_pos);
    m_pos += count;
 
