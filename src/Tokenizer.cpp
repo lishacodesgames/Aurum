@@ -56,9 +56,6 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
 
       } else if(*peek() == '$') { // comments. ignored in compilation completely
          consume();
-         if(!peek())
-            return std::unexpected("Unexpected end of file!");
-
          if(*peek() == '$') { // inline comment "$$ .."
             consume();
             while(peek() && *peek() != '\n') {
@@ -82,28 +79,36 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
             return std::unexpected("Expected a `$` or `~`!");
          }
 
-      } else if(*peek() == ';') {
-         consume();
-         tokens.emplace_back(TokenType::SEMICOLON);
-
-      } else if(*peek() == '=') {
-         consume();
-         tokens.emplace_back(TokenType::EQUALS);
-
-      /// @todo increment & decrement operators
-      } else if(*peek() == '-') {
-         consume();
-         tokens.emplace_back(TokenType::MINUS);
-
-      } else if(*peek() == '+') {
-         consume();
-         tokens.emplace_back(TokenType::PLUS);
-
-      } else if(std::isspace(*peek())) {
+      } else if(std::isspace(static_cast<unsigned char>(*peek()))) {
          consume();
 
       } else {
-         return std::unexpected(std::format("Unknown character '{}'!", consume()));
+         char next = consume();
+
+         switch(next) {
+            case ';':
+               tokens.emplace_back(TokenType::SEMICOLON);
+               break;
+
+            case '=':
+               tokens.emplace_back(TokenType::EQUALS);
+               break;
+
+            case '-':
+               tokens.emplace_back(TokenType::MINUS);
+               break;
+
+            case '+':
+               tokens.emplace_back(TokenType::PLUS);
+               break;
+
+            case '*':
+               tokens.emplace_back(TokenType::STAR);
+               break;
+
+            default:
+               return std::unexpected(std::format("Unknown character '{}'!", next));
+         }
       }
    }
 

@@ -1,2 +1,2 @@
 mint x = 8 + 4 + 6; $$ 18
-mint y = 1 + -x; $$ -17
+exit x;
