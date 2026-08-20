@@ -3,6 +3,11 @@
 #include "ast.h"
 #include "mem.h"
 
+// Atoms are either numbers or parenthesized expressions.
+// Expressions consist of atoms connected by binary operators.
+// Note how these two terms are mutually dependent
+// For precedence climbing I used: https://eli.thegreenplace.net/2012/08/02/parsing-expressions-by-precedence-climbing
+
 class Parser {
 public:
    explicit Parser(std::vector<Token> tokens)
@@ -29,22 +34,22 @@ private:
    template<AstNode T>
    std::expected<T*, std::string> parse();
 
-   template<VariantNode T>
-   std::expected<T, std::string> parse(); // by value because there's no circular dependencies here and we don't want them in the arena
-   
+   // by value because there's no circular dependencies here and we don't want them in the arena
+
    // --- EXPLICIT SPECIALISATIONS ---
    // statements
-   template<> std::expected<ast::Statement, std::string> parse<ast::Statement>();
+   std::expected<ast::Statement, std::string> parseStatement();
    template<> std::expected<ast::Declaration*, std::string> parse<ast::Declaration>();
    template<> std::expected<ast::Exit*, std::string> parse<ast::Exit>();
 
    // expressions
-   template<> std::expected<ast::Expression, std::string> parse<ast::Expression>();
+   /// @param minPrec the minimum precedence that has to be parsed from the expression
+   std::expected<ast::Expression, std::string> parseExpression(int minPrec = 0);
    template<> std::expected<ast::IntegerLiteral*, std::string> parse<ast::IntegerLiteral>();
    template<> std::expected<ast::Identifier*, std::string> parse<ast::Identifier>();
    template<> std::expected<ast::Negative*, std::string> parse<ast::Negative>();
    // BinaryExpr is not a template type. Unnecessary
 
    // helpers
-   std::expected<ast::Expression, std::string> parseTerm();
+   std::expected<ast::Expression, std::string> parseAtom();
 };

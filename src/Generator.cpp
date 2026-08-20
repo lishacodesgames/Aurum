@@ -145,6 +145,11 @@ std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr
       case TokenType::PLUS:
          m_output += "\tadd rax, rbx\n"; // stores value in rax
          break;
+
+      case TokenType::STAR:
+         m_output += "\timul rax, rbx\n";
+         break;
+
       default:
          return std::format("Unsupported binary operator: '{}'!", to_string(binaryExpr->op));
    }

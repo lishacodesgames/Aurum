@@ -4,7 +4,7 @@
 std::expected<ast::Program, std::string> Parser::parse() {
    ast::Program program;
    while(peek() != TokenType::END_OF_FILE) {
-      auto statement = parse<ast::Statement>();
+      auto statement = parseStatement();
       if(!statement)
          return std::unexpected(statement.error());
 
@@ -35,8 +35,7 @@ Token Parser::consume(uint32_t count) noexcept {
 
 #pragma region Statements
 
-template<>
-std::expected<ast::Statement, std::string> Parser::parse<ast::Statement>() {
+std::expected<ast::Statement, std::string> Parser::parseStatement() {
    switch(peek().type) {
       case TokenType::MINT: {
          auto declaration = parse<ast::Declaration>();
@@ -74,7 +73,7 @@ std::expected<ast::Declaration*, std::string> Parser::parse<ast::Declaration>() 
    if(peek() == TokenType::EQUALS) {
       consume();
 
-      auto expr = parse<ast::Expression>();
+      auto expr = parseExpression();
       if(!expr)
          return std::unexpected(expr.error());
 
@@ -96,7 +95,7 @@ template<>
 std::expected<ast::Exit*, std::string> Parser::parse<ast::Exit>() {
    consume(); // consume exit
 
-   auto expression = parse<ast::Expression>();
+   auto expression = parseExpression();
    if(!expression)
       return std::unexpected(expression.error());
 
@@ -112,7 +111,7 @@ std::expected<ast::Exit*, std::string> Parser::parse<ast::Exit>() {
 
 #pragma region Expressions
 
-std::expected<ast::Expression, std::string> Parser::parseTerm() {
+std::expected<ast::Expression, std::string> Parser::parseAtom() {
    switch(peek().type) {
       case TokenType::INTEGER_LITERAL: {
          auto integerLiteral = parse<ast::IntegerLiteral>();
@@ -138,27 +137,28 @@ std::expected<ast::Expression, std::string> Parser::parseTerm() {
          return ast::Expression(std::in_place_type<ast::Negative*>, *negation);
       }
 
+      /// @todo implement parenthesized expressions
+
       default:
          return std::unexpected(std::format("Expected expression! Got: '{}'!", to_string(consume().type)));
    }
 }
 
-template<>
-std::expected<ast::Expression, std::string> Parser::parse<ast::Expression>() {
-   /// @todo what if it's another binary expression
-   auto expression = parseTerm();
+std::expected<ast::Expression, std::string> Parser::parseExpression(int minPrec) {
+   auto expression = parseAtom();
    if(!expression)
       return std::unexpected(expression.error());
 
-   /// @todo implement precendence
-   while(peek() == TokenType::PLUS) {
+   while(isBinaryOperator(peek().type) && getPrecedence(peek().type) >= minPrec) {
       TokenType op = consume().type;
+      int precedence = getPrecedence(op);
+      int next_minPrec = precedence + 1; // only if associativity is left. If right (eg. x ^ y ^ z) then just precedence
 
-      auto term = parseTerm();
-      if(!term)
-         return std::unexpected(term.error());
+      auto rhs = parseExpression(next_minPrec);
+      if(!rhs)
+         return std::unexpected(rhs.error());
 
-      ast::BinaryExpr* binaryExpr = m_arena.create<ast::BinaryExpr>(m_arena.create<ast::Expression>(*expression), op, m_arena.create<ast::Expression>(*term));
+      ast::BinaryExpr* binaryExpr = m_arena.create<ast::BinaryExpr>(m_arena.create<ast::Expression>(*expression), op, m_arena.create<ast::Expression>(*rhs));
 
       expression = ast::Expression(std::in_place_type<ast::BinaryExpr*>, binaryExpr);
    }
@@ -187,7 +187,7 @@ template<>
 std::expected<ast::Negative*, std::string> Parser::parse<ast::Negative>() {
    consume(); // consume minus
 
-   auto expression = parse<ast::Expression>(); // recursion
+   auto expression = parseExpression(); // recursion
    if(!expression)
       return std::unexpected(expression.error());
 

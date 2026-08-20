@@ -1,6 +1,8 @@
 #include <pch/Precompiled.h>
 #include "Token.h"
 
+#include "Errors.h"
+
 std::string Token::to_string() const {
    return std::format("{{ type: {}, value: {} }}", ::to_string(type), value ? value.value() : "nullopt");
 }
@@ -34,6 +36,22 @@ bool isUnaryOperator(TokenType type) {
 
       default:
          return false;
+   }
+}
+
+int getPrecedence(TokenType type) {
+   switch(type) {
+      case TokenType::PLUS:
+      case TokenType::MINUS:
+         return 0;
+
+      case TokenType::STAR:
+      case TokenType::SLASH:
+         return 1;
+
+      default:
+         LOG_ERROR("Unknown token '{}'. Can't find precedence!", to_string(type));
+         return -1;
    }
 }
 

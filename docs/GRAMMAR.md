@@ -1,16 +1,34 @@
 ## Language
 ### Program
-- There is no $main$ function
-- If user wants to exit explicitly with an exit code, they can, otherwise it exits with 0
+- There is no `main` function
+- If user wants to exit explicitly with an `exit code;`, they can, otherwise it exits with 0
 - Semicolons are mandatory
 
 ### Typing
 - We can declare without initialising.
-- $mint\ name = value;$ (immutable variable, can have type annotations for specificity)
-- $bar\ name = value;$ (mutable variable that **can change type**)
-- $bar$<$type$> $\ name = value;$ (mutable variable that **CANNOT change type**)
-- If user declares $“bar\ name;  "$ then its type is $None$
-- User can use type annotations to specify type explicitly ($bar: type$ or $mint: type$)
+- `mint name = value;` (immutable variable, can have type annotations for specificity)
+- `bar name = value;` (mutable variable that **can change type**)
+- `bar<type> name = value;` (mutable variable that **CANNOT change type**)
+- If user declares `bar name;` then its type is $None$
+- User can use type annotations to specify type explicitly (`bar: type` or `mint: type`)
+
+### If Statements
+```
+if condition: {
+   call this(); $$ void function
+} elif otherCondition: {
+   mint x = call that(); $$ not void function
+} else: {
+   call doThat(); $$ NOT void function, just ignored return value;
+}
+```
+
+### While loops
+```
+while True: {
+   yada yada yada
+}
+```
 
 ## Node Tree
 $$
@@ -41,9 +59,9 @@ $$
       \\
          [binary\ expression]
             \begin{cases}
-               [expression] &*&\ [expression] - prec. = 3 \\
-               [expression] &/&\ [expression] - prec. = 2 \\
-               [expression] &+&\ [expression] - prec. = 1 \\
+               [expression] &*&\ [expression] - prec. = 1 \\
+               [expression] &/&\ [expression] - prec. = 1 \\
+               [expression] &+&\ [expression] - prec. = 0 \\
                [expression] &-&\ [expression] - prec. = 0 \\
             \end{cases}
       \end{cases}

@@ -46,6 +46,7 @@ enum class TokenType {
 std::string to_string(TokenType type);
 bool isBinaryOperator(TokenType type);
 bool isUnaryOperator(TokenType type);
+int getPrecedence(TokenType type);
 
 struct Token {
    TokenType type;
