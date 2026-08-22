@@ -11,6 +11,13 @@ section .bss
 section .text
 print_int:
    ; --- assumes number is already in rax ---
+   
+   ; save all registers cuz this function shouldn't change anything once its over
+   push rax
+   push rcx
+   push rdx
+   push rdi
+   push rsi
 
    lea rdi, [rel buffer + 20] ; lea ("load effective address") computes an address without dereferencing it — unlike mov reg, [addr] (which would read memory), lea just does the arithmetic and stores the resulting address into rdi.
    ; So rdi now holds the address of the buffer's last byte (buffer+20, since the buffer spans buffer+0 through buffer+20, 21 bytes total).
@@ -61,5 +68,12 @@ print_int:
    mov rdi, 1 ; store the stdout file descriptor in arg1
    mov rax, 4 | 0x2000000 ; write syscall id for mac
    syscall ; write it to the terminal
+
+   ; restore registers
+   pop rsi
+   pop rdi
+   pop rdx
+   pop rcx
+   pop rax
 
    ret ; go back to caller

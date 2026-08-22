@@ -7,6 +7,7 @@ public:
       { m_output.reserve(4096); } // to avoid constant reallocation as it grows
 
    std::expected<std::string, std::string> generate();
+   std::vector<std::string> getRequiredLibs() const;
 
 private:
    const ast::Program m_program;
@@ -17,6 +18,7 @@ private:
    /// Key Type: string, name of the variable
    /// Value Type: uint32_t, offset from stack
    std::unordered_map<std::string, uint32_t> m_symbolTable;
+   std::set<std::string> m_requiredExterns; // required pre-built asm functions our program actually uses
 
 private:
    /// @note std::format might throw exception, so these 3 functions cannot be noexcept

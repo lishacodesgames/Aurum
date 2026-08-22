@@ -2,13 +2,6 @@
 #include "Generator.h"
 
 std::expected<std::string, std::string> Generator::generate() {
-   m_output += "; macOS x86_64, NASM syntax\n\n";
-   m_output += "global _main\n";
-   m_output += "_main:\n";
-   write("push rbp", "    ; save the caller's base pointer");
-   write("mov rbp, rsp", "; mov our stack pointer to the current base pointer");
-   comment("rbp doesn't move for this entire function\n"); // extra \n is intentional
-
    for(const ast::Statement& stmt : m_program.statements) {
       auto returnValue = generate<ast::Statement>(&stmt);
       if(returnValue)
@@ -22,7 +15,26 @@ std::expected<std::string, std::string> Generator::generate() {
    write("mov rdi, 0");
    write("syscall");
 
-   return m_output;
+   std::string header;
+   header += "; macOS x86_64, NASM syntax\n\n";
+   for(const std::string& func : m_requiredExterns)
+      header += std::format("extern {}\n", func);
+   header += "\nglobal _main\n";
+   header += "_main:\n";
+   header += "\tpush rbp      ; save the caller's base pointer\n";
+   header += "\tmov rbp, rsp  ; mov our stack pointer to the current base pointer\n";
+   header += "\t; rbp doesn't move for this entire function\n\n";
+
+   return header + m_output;
+}
+
+std::vector<std::string> Generator::getRequiredLibs() const {
+   std::vector<std::string> files{};
+
+   for(const std::string& lib : m_requiredExterns)
+      files.push_back(std::format("vault/{}.asm", lib));
+
+   return files;
 }
 
 void Generator::comment(std::string_view comment) {
@@ -128,7 +140,7 @@ std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr
    if(rightReturnValue)
       return std::move(rightReturnValue);
 
-   pop("rbx", "; rhs"); // right was pushed last so that pops to reg B first
+   pop("rbx", "; rhs");
    pop("rax", "; lhs");
 
    switch(binaryExpr->op) {
@@ -156,11 +168,18 @@ std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr
          write("mov rax, rdx", "; store remainder");
          break;
 
+      case TokenType::CARET:
+         m_requiredExterns.insert("exponentiate");
+         write("call exponentiate");
+         write("call print_int"); // temp
+         m_requiredExterns.insert("print_int");
+         break;
+
       default:
          return std::format("Unsupported binary operator: '{}'!", to_string(binaryExpr->op));
    }
 
-   push("rax", "; binary expression result");
+   push("rax", std::format("; result of binary operation '{}'", to_string(binaryExpr->op)));
 
    return std::nullopt;
 }

@@ -59,20 +59,18 @@ int main(int argc, char* argv[]) {
       // end of scope closes file
    }
 
-   std::println("Successfully compiled to assembly file '{}'", assemblyFile.string());
+   std::println("Successfully compiled to assembly file '{}'!\n", assemblyFile.string());
 
    // compile assembly into executable
+   std::vector<std::string> libArgs = generator.getRequiredLibs();
    std::string compileAssemblyCommand = "./scripts/compile_nasm_mac_x64.sh " + assemblyFile.string(); // check args of the script
+   for(const std::string& file : libArgs)
+      compileAssemblyCommand += std::format(" {}", file);
    std::string executablePath = (outputDir / fileBaseName).string();
 
    std::println("Compiling assembly file '{}' to executable...", executablePath);
    system(compileAssemblyCommand.c_str()); // compile the assembly file to an executable
-
-   // disclaimers for the user
-   std::println("\n(Ignore the ld warning)");
-   std::println("Successfully compiled to executable '{}'", executablePath);
-   std::println("\nCurrently, our cute little Aurum file does nothing except exit with an integer value.");
-   std::println("To confirm this, run the executable ('./{}') and check the exit code with 'echo $?'", executablePath);
+   std::println("Successfully compiled to executable '{}'!", executablePath);
 
    return EXIT_SUCCESS;
 }

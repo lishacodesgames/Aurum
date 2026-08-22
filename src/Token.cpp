@@ -14,11 +14,16 @@ bool isBinaryOperator(TokenType type) {
       case TokenType::STAR:
       case TokenType::SLASH:
       case TokenType::PERCENT:
+      case TokenType::CARET:
+
       case TokenType::PLUS_EQUALS:
       case TokenType::MINUS_EQUALS:
       case TokenType::STAR_EQUALS:
       case TokenType::SLASH_EQUALS:
       case TokenType::PERCENT_EQUALS:
+
+      case TokenType::LOGICAL_AND:
+      case TokenType::LOGICAL_OR:
          return true;
 
       default:
@@ -28,6 +33,7 @@ bool isBinaryOperator(TokenType type) {
 
 bool isUnaryOperator(TokenType type) {
    switch(type) {
+      case TokenType::LOGICAL_NOT:
       case TokenType::INCREMENT:
       case TokenType::DECREMENT:
       case TokenType::MINUS:
@@ -43,8 +49,8 @@ bool isUnaryOperator(TokenType type) {
  * eventually want to get to this
  * 
  * General Order of Operations
- * 8: Parentheses (()): Evaluated first
- * 7: Unary/Postfix (++, --, !): Increments, decrements, and logical NOT
+ * 8: Unary/Postfix (++, --, !): Increments, decrements, and logical NOT
+ * 7: Exponent (^)
  * 6: Multiplicative (*, /, %): Multiplication, division, and remainder
  * 5: Additive (+, -): Addition and subtraction
  * 4: Relational (<, >, <=, >=): Comparisons
@@ -64,9 +70,22 @@ int getPrecedence(TokenType type) {
       case TokenType::PERCENT:
          return 1;
 
+      case TokenType::CARET:
+         return 2;
+
       default:
          LOG_ERROR("Unknown token '{}'. Can't find precedence!", to_string(type));
          return -1;
+   }
+}
+
+bool isLeftAssociative(TokenType type) {
+   switch(type) {
+      case TokenType::CARET:
+         return false;
+
+      default:
+         return true;
    }
 }
 

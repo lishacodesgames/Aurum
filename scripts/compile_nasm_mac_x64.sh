@@ -36,4 +36,5 @@ executable_name=${first_filename%.asm}
 outpath="$outdir/$executable_name"
 
 # Link object file into an executable
-clang -arch x86_64 -o "$outpath" "${objects[@]}"
+# -Wl command shuts off annoying os warnings
+clang -arch x86_64 -Wl,-w -o "$outpath" "${objects[@]}"

@@ -122,6 +122,10 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
                tokens.emplace_back(TokenType::CLOSE_PAREN);
                break;
 
+            case '^':
+               tokens.emplace_back(TokenType::CARET);
+               break;
+
             default:
                return std::unexpected(std::format("Unknown character '{}'!", next));
          }

@@ -163,7 +163,7 @@ std::expected<ast::Expression, std::string> Parser::parseExpression(int minPrec)
    while(isBinaryOperator(peek().type) && getPrecedence(peek().type) >= minPrec) {
       TokenType op = consume().type;
       int precedence = getPrecedence(op);
-      int next_minPrec = precedence + 1; // only if associativity is left. If right (eg. x ^ y ^ z) then just precedence
+      int next_minPrec = isLeftAssociative(op) ? precedence + 1 : precedence;
 
       auto rhs = parseExpression(next_minPrec);
       if(!rhs)

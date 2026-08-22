@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <set>
 
 // Streams & I/O
 #include <fstream>

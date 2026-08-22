@@ -22,7 +22,7 @@
    X(LESS_THAN)    X(GREATER_THAN)  /* <> */ \
 \
    /* Operators */ \
-   X(PLUS) X(MINUS) X(STAR) X(SLASH) X(PERCENT) /* (+ - * / %) */ \
+   X(PLUS) X(MINUS) X(STAR) X(SLASH) X(PERCENT) X(CARET) /* (+ - * / % ^) */ \
    X(EQUALITY) X(INEQUALITY) X(LESS_EQUALS) X(GREATER_EQUALS) /* (== != <= >=) */ \
    X(LOGICAL_AND) X(LOGICAL_OR) X(LOGICAL_NOT) /* (&& || !) */ \
    X(INCREMENT) X(DECREMENT) /* (++ --) */ \
@@ -44,9 +44,12 @@ enum class TokenType {
 };
 
 std::string to_string(TokenType type);
+
 bool isBinaryOperator(TokenType type);
 bool isUnaryOperator(TokenType type);
+
 int getPrecedence(TokenType type);
+bool isLeftAssociative(TokenType type);
 
 struct Token {
    TokenType type;
