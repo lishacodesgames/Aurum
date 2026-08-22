@@ -21,13 +21,19 @@ private:
 private:
    /// @note std::format might throw exception, so these 3 functions cannot be noexcept
 
+   /// writes comment on its own line
+   void comment(std::string_view comment);
+
+   /// writes command into m_output with proper formatting
+   /// @param comment WITH preceeding ;
+   void write(std::string_view cmd, std::optional<std::string_view> comment = std::nullopt);
+
    /// Increases stack size by 1 and pushes value to the top
+   /// @param comment WITH preceeding ;
    void push(std::string_view value, std::optional<std::string_view> comment = std::nullopt);
 
-   /// COPIES value to reg
-   void mov(std::string reg, std::string value, std::optional<std::string_view> comment = std::nullopt);
-
    /// REMOVES the value from the top of the stack and decreases stack size by 1
+   /// @param comment WITH preceeding ;
    void pop(std::string_view reg, std::optional<std::string_view> comment = std::nullopt);
 
 private:

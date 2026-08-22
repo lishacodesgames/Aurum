@@ -5,9 +5,9 @@ std::expected<std::string, std::string> Generator::generate() {
    m_output += "; macOS x86_64, NASM syntax\n\n";
    m_output += "global _main\n";
    m_output += "_main:\n";
-   m_output += "\tpush rbp     ; save the caller's base pointer\n";
-   m_output += "\tmov rbp, rsp ; mov our stack pointer to the current base pointer\n";
-   m_output += "\t; rbp doesn't move for this entire function\n\n";
+   write("push rbp", "    ; save the caller's base pointer");
+   write("mov rbp, rsp", "; mov our stack pointer to the current base pointer");
+   comment("rbp doesn't move for this entire function\n"); // extra \n is intentional
 
    for(const ast::Statement& stmt : m_program.statements) {
       auto returnValue = generate<ast::Statement>(&stmt);
@@ -16,42 +16,32 @@ std::expected<std::string, std::string> Generator::generate() {
    }
 
    // won't get executed if user exits explicitly, just as a safety net
-   m_output += "\n\t; default exit statement in case user hasn't exited explicitly\n";
-   m_output += "\tmov rax, 1 | 0x2000000\n";
-   m_output += "\tmov rdi, 0\n";
-   m_output += "\tsyscall\n";
+   m_output += "\n";
+   comment("default exit statement in case user hasn't exited explicitly");
+   write("mov rax, 1 | 0x2000000");
+   write("mov rdi, 0");
+   write("syscall");
 
    return m_output;
 }
 
-void Generator::push(std::string_view value, std::optional<std::string_view> comment) {
-   // does: rsp -= 8 and mov's value to [rsp] (top of stack)
-   m_output += std::format("\tpush {}", value);
-
-   if(comment)
-      m_output += std::format(" ; {}", *comment);
-
-   m_output += "\n";
-   m_stackSize++;
+void Generator::comment(std::string_view comment) {
+   m_output += std::format("\t; {}\n", comment);
 }
 
-void Generator::mov(std::string reg, std::string value, std::optional<std::string_view> comment) {
-   m_output += std::format("\tmov {}, {}", reg, value);
+void Generator::write(std::string_view cmd, std::optional<std::string_view> comment) {
+   m_output += std::format("\t{} {}\n", cmd, comment ? *comment : "");
+}
 
-   if(comment)
-      m_output += std::format(" ; {}", *comment);
-
-   m_output += "\n";
+void Generator::push(std::string_view value, std::optional<std::string_view> comment) {
+   // does: rsp -= 8 and mov's value to [rsp] (top of stack)
+   write(std::format("push {}", value), comment);
+   m_stackSize++;
 }
 
 void Generator::pop(std::string_view reg, std::optional<std::string_view> comment) {
    // does: reg = value; rsp += 8
-   m_output += std::format("\tpop {}", reg);
-
-   if(comment)
-      m_output += std::format(" ; {}", *comment);
-
-   m_output += "\n";
+   write(std::format("pop {}", reg), comment);
    m_stackSize--;
 }
 
@@ -63,17 +53,16 @@ inline std::optional<std::string> Generator::generate(const ast::Declaration* de
    if(m_symbolTable.contains(declaration->identifier->name))
       return std::format("Redeclaration of identifier '{}'!", declaration->identifier->name);
 
-   m_output += std::format("\t; declaration of {}\n", declaration->identifier->name);
-
+   comment(std::format("declaration of {}", declaration->identifier->name));
    if(declaration->expression) {
       auto returnValue = generate<ast::Expression>(*declaration->expression);
       if(returnValue)
          return std::move(returnValue);
    } else { // declaration without definition: identifier points to garbage value
-      m_output += "\tsub rsp, 8\n";
+      write("sub rsp, 8");
       m_stackSize++;
    }
-   m_output += "\t; end of declaration\n\n";
+   comment("end of declaration\n");
 
    m_symbolTable[declaration->identifier->name] = m_stackSize;
 
@@ -83,15 +72,16 @@ inline std::optional<std::string> Generator::generate(const ast::Declaration* de
 /// @todo Expression
 template<>
 std::optional<std::string> Generator::generate(const ast::Exit* exit) {
-   m_output += "\n\t; Exiting...\n";
+   m_output += "\n";
+   comment("Exiting...");
 
    auto returnValue = generate<ast::Expression>(exit->expression);
    if(returnValue)
       return std::move(returnValue);
 
-   mov("rax", "1 | 0x2000000", "exit syscall number");
-   pop("rdi", "store return value");
-   m_output += "\tsyscall\n";
+   write("mov rax, 1 | 0x2000000", "; exit syscall number");
+   pop("rdi", "; store return value");
+   write("syscall");
 
    return std::nullopt;
 }
@@ -110,7 +100,7 @@ std::optional<std::string> Generator::generate(const ast::Identifier* identifier
    if(!m_symbolTable.contains(identifier->name))
       return std::format("Use of undeclared identifier '{}'!", identifier->name);
 
-   push(std::format("qword [rbp - {}]", m_symbolTable.at(identifier->name) * 8), std::format("'{}'", identifier->name));
+   push(std::format("qword [rbp - {}]", m_symbolTable.at(identifier->name) * 8), std::format("; '{}'", identifier->name));
 
    return std::nullopt;
 }
@@ -122,7 +112,7 @@ std::optional<std::string> Generator::generate(const ast::Negative* negative) {
       return std::move(returnValue);
 
    pop("rax");
-   m_output += "\tneg rax\n";
+   write("neg rax");
    push("rax");
 
    return std::nullopt;
@@ -138,23 +128,39 @@ std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr
    if(rightReturnValue)
       return std::move(rightReturnValue);
 
-   pop("rbx", "rhs"); // right was pushed last so that pops to reg B first
-   pop("rax", "lhs");
+   pop("rbx", "; rhs"); // right was pushed last so that pops to reg B first
+   pop("rax", "; lhs");
 
    switch(binaryExpr->op) {
       case TokenType::PLUS:
-         m_output += "\tadd rax, rbx\n"; // stores value in rax
+         write("add rax, rbx");
          break;
 
       case TokenType::STAR:
-         m_output += "\timul rax, rbx\n";
+         write("imul rax, rbx");
+         break;
+
+      case TokenType::MINUS:
+         write("sub rax, rbx");
+         break;
+
+      case TokenType::SLASH:
+         write("cqo", "; prep rdx:rax for division");
+         write("idiv rbx");
+         comment("rax now holds the quotient");
+         break;
+
+      case TokenType::PERCENT:
+         write("cqo", "; prep rdx:rax for division");
+         write("idiv rbx");
+         write("mov rax, rdx", "; store remainder");
          break;
 
       default:
          return std::format("Unsupported binary operator: '{}'!", to_string(binaryExpr->op));
    }
 
-   push("rax", "binary expression result");
+   push("rax", "; binary expression result");
 
    return std::nullopt;
 }

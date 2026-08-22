@@ -39,6 +39,20 @@ bool isUnaryOperator(TokenType type) {
    }
 }
 
+/**
+ * eventually want to get to this
+ * 
+ * General Order of Operations
+ * 8: Parentheses (()): Evaluated first
+ * 7: Unary/Postfix (++, --, !): Increments, decrements, and logical NOT
+ * 6: Multiplicative (*, /, %): Multiplication, division, and remainder
+ * 5: Additive (+, -): Addition and subtraction
+ * 4: Relational (<, >, <=, >=): Comparisons
+ * 3: Equality (==, !=): Checking if items match
+ * 2: Logical AND (&&)
+ * 1: Logical OR (||)
+ * 0: Assignment (=): Saving final values last
+ */
 int getPrecedence(TokenType type) {
    switch(type) {
       case TokenType::PLUS:
@@ -47,6 +61,7 @@ int getPrecedence(TokenType type) {
 
       case TokenType::STAR:
       case TokenType::SLASH:
+      case TokenType::PERCENT:
          return 1;
 
       default:

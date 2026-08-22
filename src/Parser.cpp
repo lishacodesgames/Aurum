@@ -140,7 +140,7 @@ std::expected<ast::Expression, std::string> Parser::parseAtom() {
       /// @todo implement parenthesized expressions
 
       default:
-         return std::unexpected(std::format("Expected expression! Got: '{}'!", to_string(consume().type)));
+         return std::unexpected(std::format("Expected an atom. Got: '{}'!", to_string(consume().type)));
    }
 }
 
@@ -187,7 +187,7 @@ template<>
 std::expected<ast::Negative*, std::string> Parser::parse<ast::Negative>() {
    consume(); // consume minus
 
-   auto expression = parseExpression(); // recursion
+   auto expression = parseAtom(); // recursion
    if(!expression)
       return std::unexpected(expression.error());
 

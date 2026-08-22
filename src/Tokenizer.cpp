@@ -106,6 +106,14 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
                tokens.emplace_back(TokenType::STAR);
                break;
 
+            case '/':
+               tokens.emplace_back(TokenType::SLASH);
+               break;
+
+            case '%':
+               tokens.emplace_back(TokenType::PERCENT);
+               break;
+
             default:
                return std::unexpected(std::format("Unknown character '{}'!", next));
          }
