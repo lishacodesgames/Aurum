@@ -137,7 +137,18 @@ std::expected<ast::Expression, std::string> Parser::parseAtom() {
          return ast::Expression(std::in_place_type<ast::Negative*>, *negation);
       }
 
-      /// @todo implement parenthesized expressions
+      case TokenType::OPEN_PAREN: {
+         consume();
+         auto expression = parseExpression();
+         if(!expression)
+            return std::unexpected(expression.error());
+
+         if(peek() != TokenType::CLOSE_PAREN)
+            return std::unexpected("Expected `)`!");
+
+         consume();
+         return expression;
+      }
 
       default:
          return std::unexpected(std::format("Expected an atom. Got: '{}'!", to_string(consume().type)));

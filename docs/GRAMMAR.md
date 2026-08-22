@@ -12,6 +12,13 @@
 - If user declares `bar name;` then its type is $None$
 - User can use type annotations to specify type explicitly (`bar: type` or `mint: type`)
 
+### Scopes
+- Like python and java (kinda?), unlike c++, aurum has no scopes.
+- If a variable exists when it is called, it will work despite it not being created there itself
+- To remove a variable, we use the keyword `del`
+- `del` basically blinks the variable from existence. Useful in built-in functions for preventing variable-name overlap
+- Also useful if you have an immutable variable that you want to be mutable, you can re-declare it safely by `del`eting its previous instance
+
 ### If Statements
 ```
 if condition: {
