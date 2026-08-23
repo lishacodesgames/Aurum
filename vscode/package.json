@@ -1,0 +1,26 @@
+{
+   "name": "aurum-lang",
+   "displayName": "Aurum",
+   "version": "0.2.0",
+   "engines": {
+      "vscode": "^1.60.0"
+   },
+   "contributes": {
+      "languages": [
+         {
+            "id": "aurum",
+            "extensions": [
+               ".aura"
+            ],
+            "configuration": "./language-configuration.json"
+         }
+      ],
+      "grammars": [
+         {
+            "language": "aurum",
+            "scopeName": "source.aurum",
+            "path": "./syntaxes/aurum.tmLanguage.json"
+         }
+      ]
+   }
+}

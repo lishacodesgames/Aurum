@@ -137,17 +137,20 @@ std::expected<ast::Expression, std::string> Parser::parseAtom() {
          return ast::Expression(std::in_place_type<ast::Negative*>, *negation);
       }
 
+      case TokenType::PLUS: {
+         consume();
+         return parseAtom();
+      }
+
       case TokenType::OPEN_PAREN: {
          consume();
          auto expression = parseExpression();
-         if(!expression)
-            return std::unexpected(expression.error());
 
          if(peek() != TokenType::CLOSE_PAREN)
             return std::unexpected("Expected `)`!");
 
          consume();
-         return expression;
+         return expression; // same return type so we don't need to unwrap and rewrap
       }
 
       default:
@@ -158,7 +161,7 @@ std::expected<ast::Expression, std::string> Parser::parseAtom() {
 std::expected<ast::Expression, std::string> Parser::parseExpression(int minPrec) {
    auto expression = parseAtom();
    if(!expression)
-      return std::unexpected(expression.error());
+      return expression;
 
    while(isBinaryOperator(peek().type) && getPrecedence(peek().type) >= minPrec) {
       TokenType op = consume().type;

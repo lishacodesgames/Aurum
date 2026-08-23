@@ -37,6 +37,17 @@ while True: {
 }
 ```
 
+### Functions
+```
+craft doThis(arg1, arg2): returntypehint {
+
+}
+
+craft doThat(arg1: typehint1 | typehint2) { $$ return type ambiguous
+
+}
+```
+
 ## Node Tree
 $$
 \begin{align}

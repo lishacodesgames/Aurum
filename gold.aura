@@ -1,1 +1,2 @@
-exit 2 ^ 2 ^ 2;
+mint x = 200;
+exit x;
