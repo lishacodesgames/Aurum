@@ -111,7 +111,7 @@ std::expected<ast::Exit*, std::string> Parser::parse<ast::Exit>() {
 
 #pragma region Expressions
 
-std::expected<ast::Expression, std::string> Parser::parseAtom() {
+std::expected<ast::Expression, std::string> Parser::parseTerm() {
    switch(peek().type) {
       case TokenType::INTEGER_LITERAL: {
          auto integerLiteral = parse<ast::IntegerLiteral>();
@@ -139,7 +139,7 @@ std::expected<ast::Expression, std::string> Parser::parseAtom() {
 
       case TokenType::PLUS: {
          consume();
-         return parseAtom();
+         return parseTerm();
       }
 
       case TokenType::OPEN_PAREN: {
@@ -154,12 +154,12 @@ std::expected<ast::Expression, std::string> Parser::parseAtom() {
       }
 
       default:
-         return std::unexpected(std::format("Expected an atom. Got: '{}'!", to_string(consume().type)));
+         return std::unexpected(std::format("Expected an Term. Got: '{}'!", to_string(consume().type)));
    }
 }
 
 std::expected<ast::Expression, std::string> Parser::parseExpression(int minPrec) {
-   auto expression = parseAtom();
+   auto expression = parseTerm();
    if(!expression)
       return expression;
 
@@ -201,7 +201,7 @@ template<>
 std::expected<ast::Negative*, std::string> Parser::parse<ast::Negative>() {
    consume(); // consume minus
 
-   auto expression = parseAtom(); // recursion
+   auto expression = parseTerm(); // recursion
    if(!expression)
       return std::unexpected(expression.error());
 

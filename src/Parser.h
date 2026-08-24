@@ -3,8 +3,8 @@
 #include "ast.h"
 #include "mem.h"
 
-// Atoms are either numbers or parenthesized expressions.
-// Expressions consist of atoms connected by binary operators.
+// Terms are either numbers or parenthesized expressions.
+// Expressions consist of terms connected by binary operators.
 // Note how these two terms are mutually dependent
 // For precedence climbing I used: https://eli.thegreenplace.net/2012/08/02/parsing-expressions-by-precedence-climbing
 
@@ -51,5 +51,5 @@ private:
    // BinaryExpr is not a template type. Unnecessary
 
    // helpers
-   std::expected<ast::Expression, std::string> parseAtom();
+   std::expected<ast::Expression, std::string> parseTerm();
 };

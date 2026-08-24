@@ -1,2 +1,2 @@
-mint x = 200;
+mint x = 100 * 8 / 4 / 4;
 exit x;

@@ -171,8 +171,6 @@ std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr
       case TokenType::CARET:
          m_requiredExterns.insert("exponentiate");
          write("call exponentiate");
-         write("call print_int"); // temp
-         m_requiredExterns.insert("print_int");
          break;
 
       default:
