@@ -48,13 +48,13 @@ void Generator::write(std::string_view cmd, std::optional<std::string_view> comm
 void Generator::push(std::string_view value, std::optional<std::string_view> comment) {
    // does: rsp -= 8 and mov's value to [rsp] (top of stack)
    write(std::format("push {}", value), comment);
-   m_stackSize++;
+   m_stackSize += 8;
 }
 
 void Generator::pop(std::string_view reg, std::optional<std::string_view> comment) {
    // does: reg = value; rsp += 8
    write(std::format("pop {}", reg), comment);
-   m_stackSize--;
+   m_stackSize -= 8;
 }
 
 // GENERATE OVERLOADS
@@ -63,21 +63,23 @@ void Generator::pop(std::string_view reg, std::optional<std::string_view> commen
 
 template <>
 inline std::optional<std::string> Generator::generate(const ast::Declaration* declaration) {
-   if(m_symbolTable.contains(declaration->identifier->name))
-      return std::format("Redeclaration of identifier '{}'!", declaration->identifier->name);
+   const std::string& varName = declaration->identifier->name;
 
-   comment(std::format("declaration of {}", declaration->identifier->name));
+   if(m_symbolTable.contains(varName))
+      return std::format("Redeclaration of identifier '{}'!", varName);
+
+   comment(std::format("declaration of {}", varName));
    if(declaration->expression) {
       auto returnValue = generate<ast::Expression>(*declaration->expression);
       if(returnValue)
          return std::move(returnValue);
    } else { // declaration without definition: identifier points to garbage value
       write("sub rsp, 8");
-      m_stackSize++;
+      m_stackSize += 8;
    }
    comment("end of declaration\n");
 
-   m_symbolTable[declaration->identifier->name] = m_stackSize;
+   m_symbolTable[varName] = { .offset = m_stackSize, .isMutable = declaration->isMutable };
 
    return std::nullopt;
 }
@@ -100,20 +102,28 @@ std::optional<std::string> Generator::generate(const ast::Exit* exit) {
 
 template <>
 std::optional<std::string> Generator::generate(const ast::Increment* increment) {
-   if(!m_symbolTable.contains(increment->identifier->name))
-      return std::format("Use of undeclared identifier '{}'!", increment->identifier->name);
+   const std::string& varName = increment->identifier->name;
 
-   write(std::format("inc QWORD [rbp - {}]", m_symbolTable.at(increment->identifier->name) * 8));
+   if(auto it = m_symbolTable.find(varName); it == m_symbolTable.end())
+      return std::format("Use of undeclared identifier '{}'!", varName);
+   else if(!it->second.isMutable)
+      return std::format("Tried to modify immutable variable '{}'!", varName);
+   else 
+      write(std::format("inc QWORD [rbp - {}]", it->second.offset), std::format("; {}++", varName));
 
    return std::nullopt;
 }
 
 template <>
 std::optional<std::string> Generator::generate(const ast::Decrement* decrement) {
-   if(!m_symbolTable.contains(decrement->identifier->name))
-      return std::format("Use of undeclared identifier '{}'!", decrement->identifier->name);
+   const std::string& varName = decrement->identifier->name;
 
-   write(std::format("dec QWORD [rbp - {}]", m_symbolTable.at(decrement->identifier->name) * 8));
+   if(auto it = m_symbolTable.find(varName); it == m_symbolTable.end())
+      return std::format("Use of undeclared identifier '{}'!", varName);
+   else if(!it->second.isMutable)
+      return std::format("Tried to modify immutable variable '{}'!", varName);
+   else 
+      write(std::format("dec QWORD [rbp - {}]", it->second.offset), std::format("; {}--", varName));
 
    return std::nullopt;
 }
@@ -131,10 +141,12 @@ std::optional<std::string> Generator::generate(const ast::IntegerLiteral* intege
 
 template<>
 std::optional<std::string> Generator::generate(const ast::Identifier* identifier) {
-   if(!m_symbolTable.contains(identifier->name))
-      return std::format("Use of undeclared identifier '{}'!", identifier->name);
+   const std::string& varName = identifier->name;
 
-   push(std::format("QWORD [rbp - {}]", m_symbolTable.at(identifier->name) * 8), std::format("; '{}'", identifier->name));
+   if(auto it = m_symbolTable.find(varName); it == m_symbolTable.end())
+      return std::format("Use of undeclared identifier '{}'!", varName);
+   else 
+      push(std::format("QWORD [rbp - {}]", it->second.offset), std::format("; '{}'", varName));
 
    return std::nullopt;
 }

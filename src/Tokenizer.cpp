@@ -12,7 +12,7 @@ std::optional<char> Tokenizer::peek(int offset) const noexcept {
    return m_src[targetPos]; // use [] when we've checked bounds ourselves to avoid the bounds-checking overhead in .at()
 }
 
-char Tokenizer::consume(uint32_t count) noexcept {
+char Tokenizer::consume(std::uint32_t count) noexcept {
    if(!peek(count - 1))
       FATAL_ERROR("Tried to consume end of file character!");
 
@@ -39,6 +39,8 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
             tokens.emplace_back(TokenType::EXIT);
          else if(buffer == "mint")
             tokens.emplace_back(TokenType::MINT);
+         else if(buffer == "bar")
+            tokens.emplace_back(TokenType::BAR);
          else
             tokens.emplace_back(TokenType::IDENTIFIER, buffer);
 

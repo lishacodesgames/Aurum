@@ -29,7 +29,7 @@ Token Parser::peek(int offset) const noexcept {
    return m_tokens.at(m_pos + offset);
 }
 
-Token Parser::consume(uint32_t count) noexcept {
+Token Parser::consume(std::uint32_t count) noexcept {
    Token current = m_tokens.at(m_pos);
    m_pos += count;
 
@@ -42,6 +42,7 @@ Token Parser::consume(uint32_t count) noexcept {
 
 std::expected<ast::Statement, std::string> Parser::parseStatement() {
    switch(peek().type) {
+      case TokenType::BAR:
       case TokenType::MINT: {
          auto declaration = parse<ast::Declaration>();
          if(!declaration)
@@ -89,7 +90,7 @@ std::expected<ast::Statement, std::string> Parser::parseStatement() {
 
 template<>
 std::expected<ast::Declaration*, std::string> Parser::parse<ast::Declaration>() {
-   consume(); // consume keyword
+   bool isMutable = consume().type == TokenType::BAR;
 
    /// @todo prevent identifier from being a keyword
    auto identifier = parse<ast::Identifier>();
@@ -110,13 +111,12 @@ std::expected<ast::Declaration*, std::string> Parser::parse<ast::Declaration>() 
    
    if(peek() != TokenType::SEMICOLON)
       return std::unexpected("Expected `;`!");
-
    consume();
 
    if(expression)
-      return m_arena.create<ast::Declaration>(*identifier, *expression);
+      return m_arena.create<ast::Declaration>(*identifier, *expression, isMutable);
    else
-      return m_arena.create<ast::Declaration>(*identifier);
+      return m_arena.create<ast::Declaration>(*identifier, isMutable);
 }
 
 template<>

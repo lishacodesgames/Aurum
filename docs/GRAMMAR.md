@@ -13,7 +13,7 @@
 - User can use type annotations to specify type explicitly (`bar: type` or `mint: type`)
 
 ### Scopes
-- Like python and java (kinda?), unlike c++, aurum has no scopes.
+- Like python, unlike c++, aurum has no scopes (but variables defined inside a function are not visible outside)
 - If a variable exists when it is called, it will work despite it not being created there itself
 - To remove a variable, we use the keyword `del`
 - `del` basically blinks the variable from existence. Useful in built-in functions for preventing variable-name overlap

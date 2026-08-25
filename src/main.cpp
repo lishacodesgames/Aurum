@@ -71,6 +71,8 @@ int main(int argc, char* argv[]) {
       compileAssemblyCommand += std::format(" {}", file);
 
    std::println("Compiling assembly file '{}' to executable...", executablePath.string());
+   
+   /// @todo don't print success if it didn't succeed
    system(compileAssemblyCommand.c_str()); // compile the assembly file to an executable
    std::println("Successfully compiled to executable '{}'!", executablePath.string());
 

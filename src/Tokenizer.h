@@ -10,7 +10,7 @@ public:
 
 private:
    std::string_view m_src;
-   size_t m_pos = 0;
+   std::size_t m_pos = 0;
 
 private:
    [[nodiscard]] std::optional<char> peek(int offset = 0) const noexcept;
@@ -21,5 +21,5 @@ private:
     * @returns CURRENT char
     * @throws runtime_error if next char doesn't exist, so check with peek() before calling
     */
-   char consume(uint32_t count = 1U) noexcept;
+   char consume(std::uint32_t count = 1U) noexcept;
 };

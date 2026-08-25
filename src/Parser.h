@@ -19,7 +19,7 @@ public:
 
 private:
    std::vector<Token> m_tokens{};
-   size_t m_pos = 0;
+   std::size_t m_pos = 0;
    mem::ArenaAllocator m_arena;
 
 private:
@@ -30,7 +30,7 @@ private:
     * @param count by how much to increment m_pos
     * @returns CURRENT Token
     */ 
-   Token consume(uint32_t count = 1) noexcept;
+   Token consume(std::uint32_t count = 1) noexcept;
 
 private:
    template<AstNode T>

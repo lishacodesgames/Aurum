@@ -1,5 +1,6 @@
 #pragma once
 #include "ast.h"
+#include "Symbol.h"
 
 class Generator {
 public:
@@ -13,13 +14,11 @@ private:
    const ast::Program m_program;
 
    std::string m_output;
-   uint32_t m_stackSize = 0;
+   std::uint32_t m_stackSize = 0;
 
-   /// Key Type: string, name of the variable ;
-   /// Value Type: uint32_t, offset from stack
-   /// @note offset is in variable slots (each variable is 8 bytes)
-   /// @todo store offset in bytes?
-   std::unordered_map<std::string, uint32_t> m_symbolTable;
+   /// Key Type: string, name of the variable;
+   /// Value Type: Symbol, stores offset from rbp in bytes and if variable is mutable
+   std::unordered_map<std::string, Symbol> m_symbolTable;
 
    std::set<std::string> m_requiredExterns; // required pre-built asm functions our program actually uses
 

@@ -3,12 +3,10 @@
 
 namespace mem
 {
-   using std::size_t;
-
    /// @todo A way to allocate a new block when this one has exceeded capacity
    class ArenaAllocator {
    public:
-      explicit ArenaAllocator(size_t capacity) : m_capacity(capacity) {
+      explicit ArenaAllocator(std::size_t capacity) : m_capacity(capacity) {
          // c++ modern equivalent of malloc that throws accordingly
          // allocate without calling any constructors
          // m_buffer now points to the beginning of our memory block
@@ -46,13 +44,13 @@ namespace mem
       /// @brief only allocates memory, aligned as per T, NO construction involved
       /// @returns address to allocated memory
       template<typename T>
-      [[nodiscard]] T* allocate(size_t alignment = alignof(T)) {
-         const size_t bytes = sizeof(T);
-         const size_t currentAddress = reinterpret_cast<size_t>(m_buffer + m_offset); // so we can use the % operator
+      [[nodiscard]] T* allocate(std::size_t alignment = alignof(T)) {
+         const std::size_t bytes = sizeof(T);
+         const std::size_t currentAddress = reinterpret_cast<std::size_t>(m_buffer + m_offset); // so we can use the % operator
 
          // current % align = how far past the aligned boundary the current address sits
          // (alignment - that) % alignment to get the PADDING not raw value eg. if that = alignment then padding = 0
-         const size_t offsetPadding = (alignment - (currentAddress % alignment)) % alignment;
+         const std::size_t offsetPadding = (alignment - (currentAddress % alignment)) % alignment;
 
          if(m_offset + offsetPadding + bytes > m_capacity)
             FATAL_ERROR("Tried to allocate more memory than capacity in Arena!");
@@ -77,13 +75,13 @@ namespace mem
       }
 
    public:
-      [[nodiscard]] size_t capacity() const noexcept { return m_capacity; }
-      [[nodiscard]] size_t used() const noexcept { return m_offset; }
-      [[nodiscard]] size_t available() const noexcept { return m_capacity - m_offset; }
+      [[nodiscard]] std::size_t capacity() const noexcept { return m_capacity; }
+      [[nodiscard]] std::size_t used() const noexcept { return m_offset; }
+      [[nodiscard]] std::size_t available() const noexcept { return m_capacity - m_offset; }
 
    private:
       std::byte* m_buffer = nullptr;
-      size_t m_capacity = 0;
-      size_t m_offset = 0;
+      std::size_t m_capacity = 0;
+      std::size_t m_offset = 0;
    };
 }

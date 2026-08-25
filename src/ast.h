@@ -53,15 +53,16 @@ namespace ast
 
    // --- STATEMENTS ---
 
-   /// @todo mutability & type constraints: mint vs bar vs bar<>
+   /// @todo type constraints: bar vs bar<>
    struct Declaration {
       Identifier* identifier;
       std::optional<Expression*> expression;
+      bool isMutable; /// TRUE = bar, FALSE = mint.
 
-      explicit Declaration(Identifier* identifier) : identifier(identifier) {}
+      explicit Declaration(Identifier* identifier, bool isMutable) : identifier(identifier), isMutable(isMutable) {}
 
-      explicit Declaration(Identifier* identifier, Expression* expression)
-         : identifier(identifier), expression(expression) {}
+      explicit Declaration(Identifier* identifier, Expression* expression, bool isMutable)
+         : identifier(identifier), expression(expression), isMutable(isMutable) {}
    };
 
    struct Exit {
