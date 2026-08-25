@@ -34,7 +34,7 @@ cmake --build --preset Release
 
 ### Run
 ```bash
-./build/Release/Aurum gold.aura
+./build/Release/Aurum foundry/gold.aura
 ```
 
 ### Dependencies
