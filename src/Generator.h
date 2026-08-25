@@ -15,9 +15,12 @@ private:
    std::string m_output;
    uint32_t m_stackSize = 0;
 
-   /// Key Type: string, name of the variable
+   /// Key Type: string, name of the variable ;
    /// Value Type: uint32_t, offset from stack
+   /// @note offset is in variable slots (each variable is 8 bytes)
+   /// @todo store offset in bytes?
    std::unordered_map<std::string, uint32_t> m_symbolTable;
+
    std::set<std::string> m_requiredExterns; // required pre-built asm functions our program actually uses
 
 private:
@@ -47,6 +50,8 @@ private:
    // statements
    template<> std::optional<std::string> generate(const ast::Declaration* declaration);
    template<> std::optional<std::string> generate(const ast::Exit* exit);
+   template<> std::optional<std::string> generate(const ast::Increment* increment);
+   template<> std::optional<std::string> generate(const ast::Decrement* decrement);
 
    // expression
 
@@ -54,9 +59,7 @@ private:
    /// @param integerLiteral must be popped off the stack and used
    template<> std::optional<std::string> generate(const ast::IntegerLiteral* integerLiteral);
 
-   /// @brief assigns m_symbolTable[name] <- m_stackSize (latest pushed value)
-   /// @throws runtime_error if symbol already exists in m_symbolTable
-   /// @note MUST call expression first
+   /// @brief pushes a COPY of the value of the variable on top of the stack
    template<> std::optional<std::string> generate(const ast::Identifier* identifier);
 
    template<> std::optional<std::string> generate(const ast::Negative* negative);

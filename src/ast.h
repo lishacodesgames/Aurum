@@ -70,7 +70,20 @@ namespace ast
       explicit Exit(Expression* expression) : expression(expression) {}
    };
 
-   using Statement = std::variant<std::monostate, Declaration*, Exit*>;
+   struct Increment {
+      /// Storing the entire identifier, because later on it might contain more information
+      Identifier* identifier;
+
+      explicit Increment(Identifier* identifier) : identifier(identifier) {}
+   };
+
+   struct Decrement {
+      Identifier* identifier;
+
+      explicit Decrement(Identifier* identifier) : identifier(identifier) {}
+   };
+
+   using Statement = std::variant<std::monostate, Declaration*, Exit*, Increment*, Decrement*>;
 
    // --- PROGRAM ---
 

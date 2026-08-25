@@ -53,12 +53,11 @@ $$
 \begin{align}
    \text{[NODE]} &\to representation\ /\ type
 \\ \\
-   \text{[program]} &\to [statement]^*
+   \text{[program]} &\to [statement]^+
 \\
    \text{[statement]} &\to
       \begin{cases}
          exit\ [expression]; \\
-         bar \text{ name} = [expression];\ \ \footnotesize{\text{// mutable value}} \\
          mint \text{ name} = [expression];\ \ \footnotesize{\text{// constant value}} \\
       \end{cases}
 \\
@@ -66,12 +65,15 @@ $$
       \begin{cases}
          [term]
             \begin{cases}
+               (expresssion) \\
                integer\ literal \\
                [identifier] \\
                [unary\ expression]
                   \begin{cases}
                      -[expression] \\
-                     +[expression]
+                     +[expression] \\
+                     [identifier]++ \\
+                     [identifier]--
                   \end{cases} \\
             \end{cases} \\
       \\

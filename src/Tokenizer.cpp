@@ -95,11 +95,23 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
                break;
 
             case '-':
-               tokens.emplace_back(TokenType::MINUS);
+               if(peek() == '-') {
+                  consume();
+                  tokens.emplace_back(TokenType::DECREMENT);
+               } else {
+                  tokens.emplace_back(TokenType::MINUS);
+               }
+
                break;
 
             case '+':
-               tokens.emplace_back(TokenType::PLUS);
+               if(peek() == '+') {
+                  consume();
+                  tokens.emplace_back(TokenType::INCREMENT);
+               } else {
+                  tokens.emplace_back(TokenType::PLUS);
+               }
+
                break;
 
             case '*':

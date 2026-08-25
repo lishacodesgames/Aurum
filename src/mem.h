@@ -5,6 +5,7 @@ namespace mem
 {
    using std::size_t;
 
+   /// @todo A way to allocate a new block when this one has exceeded capacity
    class ArenaAllocator {
    public:
       explicit ArenaAllocator(size_t capacity) : m_capacity(capacity) {

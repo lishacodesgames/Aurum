@@ -59,7 +59,8 @@ void Generator::pop(std::string_view reg, std::optional<std::string_view> commen
 
 // GENERATE OVERLOADS
 
-// statements
+#pragma region Statements
+
 template <>
 inline std::optional<std::string> Generator::generate(const ast::Declaration* declaration) {
    if(m_symbolTable.contains(declaration->identifier->name))
@@ -81,7 +82,6 @@ inline std::optional<std::string> Generator::generate(const ast::Declaration* de
    return std::nullopt;
 }
 
-/// @todo Expression
 template<>
 std::optional<std::string> Generator::generate(const ast::Exit* exit) {
    m_output += "\n";
@@ -98,7 +98,29 @@ std::optional<std::string> Generator::generate(const ast::Exit* exit) {
    return std::nullopt;
 }
 
-// expressions
+template <>
+std::optional<std::string> Generator::generate(const ast::Increment* increment) {
+   if(!m_symbolTable.contains(increment->identifier->name))
+      return std::format("Use of undeclared identifier '{}'!", increment->identifier->name);
+
+   write(std::format("inc QWORD [rbp - {}]", m_symbolTable.at(increment->identifier->name) * 8));
+
+   return std::nullopt;
+}
+
+template <>
+std::optional<std::string> Generator::generate(const ast::Decrement* decrement) {
+   if(!m_symbolTable.contains(decrement->identifier->name))
+      return std::format("Use of undeclared identifier '{}'!", decrement->identifier->name);
+
+   write(std::format("dec QWORD [rbp - {}]", m_symbolTable.at(decrement->identifier->name) * 8));
+
+   return std::nullopt;
+}
+
+#pragma endregion
+
+#pragma region Expressions
 
 template<>
 std::optional<std::string> Generator::generate(const ast::IntegerLiteral* integerLiteral) {
@@ -112,7 +134,7 @@ std::optional<std::string> Generator::generate(const ast::Identifier* identifier
    if(!m_symbolTable.contains(identifier->name))
       return std::format("Use of undeclared identifier '{}'!", identifier->name);
 
-   push(std::format("qword [rbp - {}]", m_symbolTable.at(identifier->name) * 8), std::format("; '{}'", identifier->name));
+   push(std::format("QWORD [rbp - {}]", m_symbolTable.at(identifier->name) * 8), std::format("; '{}'", identifier->name));
 
    return std::nullopt;
 }
@@ -181,3 +203,5 @@ std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr
 
    return std::nullopt;
 }
+
+#pragma endregion

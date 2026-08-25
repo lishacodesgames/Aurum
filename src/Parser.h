@@ -13,6 +13,8 @@ public:
    explicit Parser(std::vector<Token> tokens)
       : m_tokens(std::move(tokens)), m_arena(4 * 1024 * 1024) {} // 4MB stack frame (for now)
 
+   ~Parser() { m_arena.reset(); }
+
    std::expected<ast::Program, std::string> parse();
 
 private:
@@ -41,6 +43,8 @@ private:
    std::expected<ast::Statement, std::string> parseStatement();
    template<> std::expected<ast::Declaration*, std::string> parse<ast::Declaration>();
    template<> std::expected<ast::Exit*, std::string> parse<ast::Exit>();
+   template<> std::expected<ast::Increment*, std::string> parse<ast::Increment>();
+   template<> std::expected<ast::Decrement*, std::string> parse<ast::Decrement>();
 
    // expressions
    /// @param minPrec the minimum precedence that has to be parsed from the expression

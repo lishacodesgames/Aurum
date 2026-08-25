@@ -8,6 +8,11 @@ std::expected<ast::Program, std::string> Parser::parse() {
       if(!statement)
          return std::unexpected(statement.error());
 
+      /// @todo error save system that
+      /// 1. confirms ; at the end of each statement (don't check inside parseStatement, do it here)
+      /// 2. if ANY error occurs ANYWHERE, don't return, but LOG it or save the string error wtv
+      /// 3. consume till the next ; and then begin parsing the next statement
+
       program.push_back(std::move(*statement));
    }
 
@@ -19,7 +24,7 @@ std::expected<ast::Program, std::string> Parser::parse() {
 
 Token Parser::peek(int offset) const noexcept {
    if(m_pos + offset >= m_tokens.size())
-      FATAL_ERROR("Parser tried to access outside tokens!");
+      LOG_ERROR("Parser tried to access outside tokens!");
 
    return m_tokens.at(m_pos + offset);
 }
@@ -52,6 +57,29 @@ std::expected<ast::Statement, std::string> Parser::parseStatement() {
             return std::unexpected(exit.error());
 
          return ast::Statement(std::in_place_type<ast::Exit*>, *exit);
+      }
+
+      case TokenType::IDENTIFIER: {
+         switch(peek(1).type) {
+            case TokenType::INCREMENT: {
+               auto increment = parse<ast::Increment>();
+               if(!increment)
+                  return std::unexpected(increment.error());
+
+               return ast::Statement(std::in_place_type<ast::Increment*>, *increment);
+            }
+
+            case TokenType::DECREMENT: {
+               auto decrement = parse<ast::Decrement>();
+               if(!decrement)
+                  return std::unexpected(decrement.error());
+
+               return ast::Statement(std::in_place_type<ast::Decrement*>, *decrement);
+            }
+
+            default:
+               return std::unexpected(std::format("Expected a unary postfix operator! Got: {}", to_string(peek(1).type)));
+         }
       }
 
       default:
@@ -101,10 +129,35 @@ std::expected<ast::Exit*, std::string> Parser::parse<ast::Exit>() {
 
    if(peek() != TokenType::SEMICOLON)
       return std::unexpected("Expected `;`!");
-   else
-      consume();
-
+      
+   consume();
    return m_arena.create<ast::Exit>(m_arena.create<ast::Expression>(std::move(*expression)));
+}
+
+template<>
+std::expected<ast::Increment*, std::string> Parser::parse<ast::Increment>() {
+   auto identifier = parse<ast::Identifier>();
+   if(!identifier)
+      std::unexpected(identifier.error());
+
+   if(peek(1) != TokenType::SEMICOLON)
+      return std::unexpected("Expected `;`!");
+
+   consume(2);
+   return m_arena.create<ast::Increment>(std::move(*identifier));
+}
+
+template<>
+std::expected<ast::Decrement*, std::string> Parser::parse<ast::Decrement>() {
+   auto identifier = parse<ast::Identifier>();
+   if(!identifier)
+      return std::unexpected(identifier.error());
+
+   if(peek(1) != TokenType::SEMICOLON)
+      return std::unexpected("Expected `;`!");
+
+   consume(2);
+   return m_arena.create<ast::Decrement>(std::move(*identifier));
 }
 
 #pragma endregion
