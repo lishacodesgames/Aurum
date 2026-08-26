@@ -1,4 +1,5 @@
-bar x = 100 * 8 / 4 / 4; $$ 50
-x++; $$ this is wrong bcz mint = const but mutability is not implemented yet
+bar x = 12;
 mint y = x;
-exit y / 2; $$ 25
+bar z = 8 - x / y;
+x++;
+exit z; 

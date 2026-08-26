@@ -42,7 +42,6 @@ namespace ast
       explicit Negative(Expression* operand) : operand(operand) {}
    };
 
-   /// @todo maybe make into a variant of BinExprAdd, Sub, Mult, Div, Mod, etc.
    struct BinaryExpr {
       Expression* left, *right;
       TokenType op;
@@ -95,27 +94,26 @@ namespace ast
       bool empty() const noexcept { return statements.empty(); }
       void push_back(Statement stmt) { statements.push_back(stmt); } // not noexcept bcz push_back might throw bad_alloc()
    };
+
+   // --- TRAIT MACHINERY ---
+   namespace detail // not meant to be used anywhere else (header implementation name convention)
+   {
+      // 1. Primary template — intentionally undefined; only specialization below is used
+      template<typename T, typename V>
+      struct is_variant_alternative;
+
+      // 2. Specialization — triggers when Variant is shaped like std::variant<Ts...>,
+      template<typename T, typename... Ts>
+      struct is_variant_alternative<T, std::variant<Ts...>>
+         : std::disjunction<std::is_same<T, Ts>...> {}; // check if T is part of the variant types, ::value will be true if it is.
+
+      template<typename T, typename Variant>
+      inline constexpr bool is_variant_alternative_v = detail::is_variant_alternative<T, Variant>::value;
+   }
+
+   template<typename T>
+   concept ExprNode = detail::is_variant_alternative_v<T*, Expression> || std::is_same_v<T, Expression>;
+
+   template<typename T>
+   concept StmtNode = detail::is_variant_alternative_v<T*, Statement> || std::is_same_v<T, Statement>;
 }
-
-// --- TRAIT MACHINERY ---
-namespace detail // not meant to be used other than to define AstNode (header implementation name convention)
-{
-   // 1. Primary template — intentionally undefined; only specialization below is used
-   template<typename T, typename V>
-   struct is_variant_alternative;
-
-   // 2. Specialization — triggers when Variant is shaped like std::variant<Ts...>,
-   template<typename T, typename... Ts>
-   struct is_variant_alternative<T, std::variant<Ts...>>
-      : std::disjunction<std::is_same<T, Ts>...> {}; // check if T is part of the variant types, ::value will be true if it is.
-
-   // 3. Shorthand, avoids writing ::value everywhere
-   template<typename T, typename Variant>
-   inline constexpr bool is_variant_alternative_v = is_variant_alternative<T, Variant>::value;
-}
-
-template<typename T>
-concept AstNode = detail::is_variant_alternative_v<T*, ast::Expression> || detail::is_variant_alternative_v<T*, ast::Statement>;
-
-template<typename T>
-concept VariantNode = std::is_same_v<T, ast::Expression> || std::is_same_v<T, ast::Statement>;

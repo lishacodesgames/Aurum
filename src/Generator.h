@@ -1,6 +1,6 @@
 #pragma once
 #include "ast.h"
-#include "Symbol.h"
+#include "Stack.h"
 
 class Generator {
 public:
@@ -14,11 +14,7 @@ private:
    const ast::Program m_program;
 
    std::string m_output;
-   std::uint32_t m_stackSize = 0;
-
-   /// Key Type: string, name of the variable;
-   /// Value Type: Symbol, stores offset from rbp in bytes and if variable is mutable
-   std::unordered_map<std::string, Symbol> m_symbolTable;
+   Stack m_stack;
 
    std::set<std::string> m_requiredExterns; // required pre-built asm functions our program actually uses
 
@@ -30,52 +26,32 @@ private:
 
    /// writes command into m_output with proper formatting
    /// @param comment WITH preceeding ;
-   void write(std::string_view cmd, std::optional<std::string_view> comment = std::nullopt);
-
-   /// Increases stack size by 1 and pushes value to the top
-   /// @param comment WITH preceeding ;
-   void push(std::string_view value, std::optional<std::string_view> comment = std::nullopt);
-
-   /// REMOVES the value from the top of the stack and decreases stack size by 1
-   /// @param comment WITH preceeding ;
-   void pop(std::string_view reg, std::optional<std::string_view> comment = std::nullopt);
+   void write(std::string_view cmd);
 
 private:
+   // --- statements ---
+
    /// @return nullopt if everything went well. string if error (containing error info)
-   template<AstNode T>
+   template<ast::StmtNode T>
    [[nodiscard]] std::optional<std::string> generate(const T*);
 
-   // --- EXPLICIT SPECIALISATIONS ---
-   // statements
+   template<> std::optional<std::string> generate(const ast::Statement* statement); 
+
    template<> std::optional<std::string> generate(const ast::Declaration* declaration);
    template<> std::optional<std::string> generate(const ast::Exit* exit);
    template<> std::optional<std::string> generate(const ast::Increment* increment);
    template<> std::optional<std::string> generate(const ast::Decrement* decrement);
 
-   // expression
+   // --- expression ---
 
-   /// @brief pushes the literal on top of the stack
-   /// @param integerLiteral must be popped off the stack and used
-   template<> std::optional<std::string> generate(const ast::IntegerLiteral* integerLiteral);
+   /// @return the part / value / dereferenced address that should be passed as arg to push() (to avoid push pop extra work)
+   template<ast::ExprNode T>
+   [[nodiscard]] std::expected<std::string, std::string> generate(const T*);
 
-   /// @brief pushes a COPY of the value of the variable on top of the stack
-   template<> std::optional<std::string> generate(const ast::Identifier* identifier);
+   template<> std::expected<std::string, std::string> generate(const ast::Expression* expression);
 
-   template<> std::optional<std::string> generate(const ast::Negative* negative);
-   template<> std::optional<std::string> generate(const ast::BinaryExpr* binaryExpr);
-
-private:
-   // Variant overload
-   template<VariantNode V>
-   [[nodiscard]] std::optional<std::string> generate(const V* variant) {
-      return std::visit([this](auto&& arg) -> std::optional<std::string> {
-         using PtrT = std::decay_t<decltype(arg)>;              // e.g. Declaration*
-         if constexpr(!std::is_same_v<PtrT, std::monostate>) {
-            using T = std::remove_pointer_t<PtrT>;               // Declaration
-            return generate<T>(arg);
-         }
-
-         return "Tried to call generate on monostate!";
-      }, *variant);
-   }
+   template<> std::expected<std::string, std::string> generate(const ast::IntegerLiteral* integerLiteral);
+   template<> std::expected<std::string, std::string> generate(const ast::Identifier* identifier);
+   template<> std::expected<std::string, std::string> generate(const ast::Negative* negative);
+   template<> std::expected<std::string, std::string> generate(const ast::BinaryExpr* binaryExpr);
 };

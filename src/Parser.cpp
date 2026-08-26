@@ -92,12 +92,11 @@ template<>
 std::expected<ast::Declaration*, std::string> Parser::parse<ast::Declaration>() {
    bool isMutable = consume().type == TokenType::BAR;
 
-   /// @todo prevent identifier from being a keyword
    auto identifier = parse<ast::Identifier>();
    if(!identifier)
       return std::unexpected(identifier.error());
 
-   std::optional<ast::Expression*> expression; // in case it's a Declaration without Definition
+   ast::Expression* expression = nullptr; // in case it's a Declaration without Definition
 
    if(peek() == TokenType::EQUALS) {
       consume();
@@ -114,7 +113,7 @@ std::expected<ast::Declaration*, std::string> Parser::parse<ast::Declaration>() 
    consume();
 
    if(expression)
-      return m_arena.create<ast::Declaration>(*identifier, *expression, isMutable);
+      return m_arena.create<ast::Declaration>(*identifier, expression, isMutable);
    else
       return m_arena.create<ast::Declaration>(*identifier, isMutable);
 }
@@ -243,7 +242,6 @@ std::expected<ast::IntegerLiteral*, std::string> Parser::parse<ast::IntegerLiter
 
 template<>
 std::expected<ast::Identifier*, std::string> Parser::parse<ast::Identifier>() {
-   /// @todo remember identifiers thru some sort of map maybe
    if(peek() != TokenType::IDENTIFIER || !peek().value)
       return std::unexpected("Expected an identifier!");
 

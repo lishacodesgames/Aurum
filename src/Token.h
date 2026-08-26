@@ -35,7 +35,7 @@
    X(LEFT_SHIFT) X(RIGHT_SHIFT) \
 \
    /* Special */ \
-   X(END_OF_FILE) /* @todo implement end of file */
+   X(END_OF_FILE)
 
 enum class TokenType {
    #define X(name) name,

@@ -1,7 +1,6 @@
 #pragma once
 #include "Token.h"
 
-/// @todo taking negative integer literals
 class Tokenizer {
 public:
    explicit Tokenizer(std::string_view src) : m_src(src) {}

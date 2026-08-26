@@ -1,0 +1,11 @@
+{
+   "string_view": {
+      "prefix": "stdsv",
+      "body": "std::string_view"
+   },
+
+   "string": {
+      "prefix": "str",
+      "body": "std::string"
+   }
+}

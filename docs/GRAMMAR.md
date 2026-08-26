@@ -1,4 +1,4 @@
-## Language
+## Aurum
 ### Program
 - There is no `main` function
 - If user wants to exit explicitly with an `exit code;`, they can, otherwise it exits with 0
@@ -9,15 +9,20 @@
 - `mint name = value;` (immutable variable, can have type annotations for specificity)
 - `bar name = value;` (mutable variable that **can change type**)
 - `bar<type> name = value;` (mutable variable that **CANNOT change type**)
-- If user declares `bar name;` then its type is $None$
+- If user declares `bar name;` then its type is $Null$
 - User can use type annotations to specify type explicitly (`bar: type` or `mint: type`)
 
 ### Scopes
-- Like python, unlike c++, aurum has no scopes (but variables defined inside a function are not visible outside)
-- If a variable exists when it is called, it will work despite it not being created there itself
-- To remove a variable, we use the keyword `del`
+- Aurum is a block-scoped language. Meaning any variables declared inside blocks `{...}` like `if/for/while`, functions, or even just blocks on their own, are trapped inside and are destroyed at the end of the block.
+- HOWEVER, if I want a variable declared differently for different conditions, I don't need to declare it above the `if-else` then define it inside, instead we can declare and define it inside the block itself but `hoist` it into its parent scope, so it's available after the `if-else` block is over.
+   - The `hoist` keyword just prevents that variable from being destroyed at the end of *this* scope, *hoisting* it into the outer scope. At the end of which, it will be destroyed.
+- To remove a variable from memory (so we can reuse the name for something else, for example), we use the keyword `del`
 - `del` basically blinks the variable from existence. Useful in built-in functions for preventing variable-name overlap
 - Also useful if you have an immutable variable that you want to be mutable, you can re-declare it safely by `del`eting its previous instance
+
+### Comments
+- Inline comments: `$$ comment`
+- Block comment `$~ ... ~$`
 
 ### If Statements
 ```
