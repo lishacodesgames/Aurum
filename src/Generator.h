@@ -29,13 +29,12 @@ private:
    void write(std::string_view cmd);
 
 private:
-   // --- statements ---
 
    /// @return nullopt if everything went well. string if error (containing error info)
-   template<ast::StmtNode T>
+   template<ast::AstNode T>
    [[nodiscard]] std::optional<std::string> generate(const T*);
 
-   template<> std::optional<std::string> generate(const ast::Statement* statement); 
+   // --- statements ---
 
    template<> std::optional<std::string> generate(const ast::Declaration* declaration);
    template<> std::optional<std::string> generate(const ast::Exit* exit);
@@ -44,14 +43,24 @@ private:
 
    // --- expression ---
 
-   /// @return the part / value / dereferenced address that should be passed as arg to push() (to avoid push pop extra work)
-   template<ast::ExprNode T>
-   [[nodiscard]] std::expected<std::string, std::string> generate(const T*);
+   template<> std::optional<std::string> generate(const ast::IntegerLiteral* integerLiteral);
+   template<> std::optional<std::string> generate(const ast::Identifier* identifier);
+   template<> std::optional<std::string> generate(const ast::Negative* negative);
+   template<> std::optional<std::string> generate(const ast::BinaryExpr* binaryExpr);
 
-   template<> std::expected<std::string, std::string> generate(const ast::Expression* expression);
+   // --- variant's overload ---
 
-   template<> std::expected<std::string, std::string> generate(const ast::IntegerLiteral* integerLiteral);
-   template<> std::expected<std::string, std::string> generate(const ast::Identifier* identifier);
-   template<> std::expected<std::string, std::string> generate(const ast::Negative* negative);
-   template<> std::expected<std::string, std::string> generate(const ast::BinaryExpr* binaryExpr);
+   /// @return nullopt if everything went well. string if error (containing error info)
+   template<ast::VariantNode V>
+   [[nodiscard]] std::optional<std::string> generate(const V* varNode) {
+      return std::visit([this](auto&& arg) -> std::optional<std::string> {
+         using PtrT = std::decay_t<decltype(arg)>;
+         if constexpr(!std::is_same_v<PtrT, std::monostate>) {
+            using T = std::remove_pointer_t<PtrT>;
+            return generate<T>(arg);
+         }
+
+         return "Tried to call generate on monstate!";
+      }, *varNode);
+   }
 };

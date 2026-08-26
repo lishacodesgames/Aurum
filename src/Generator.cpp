@@ -50,19 +50,6 @@ void Generator::write(std::string_view cmd) {
 #pragma region Statements
 
 template<>
-std::optional<std::string> Generator::generate(const ast::Statement* statement) {
-   return std::visit([this](auto&& arg) -> std::optional<std::string> {
-      using PtrT = std::decay_t<decltype(arg)>;
-      if constexpr(!std::is_same_v<PtrT, std::monostate>) {
-         using T = std::remove_pointer_t<PtrT>;
-         return generate<T>(arg);
-      }
-
-      return "tried to generate a monostate Statement!";
-   }, *statement);
-}
-
-template<>
 inline std::optional<std::string> Generator::generate(const ast::Declaration* declaration) {
    std::string_view varName = declaration->identifier->name;
 
@@ -71,13 +58,14 @@ inline std::optional<std::string> Generator::generate(const ast::Declaration* de
 
    comment(std::format("declaration of {}", varName));
    if(declaration->expression) {
-      auto expression = generate<ast::Expression>(*declaration->expression);
-      if(!expression)
-         return expression.error();
+      auto exprError = generate<ast::Expression>(*declaration->expression);
+      if(exprError)
+         return exprError;
 
-      write(m_stack.push(*expression, declaration->isMutable, varName));
-   } else { // declaration without definition: identifier points to garbage value
-      write(m_stack.push(std::nullopt, declaration->isMutable, varName));
+      m_stack.changeTop(varName, declaration->isMutable);
+   } else {
+      // declaration without definition: identifier points to garbage value
+      m_stack.push(m_output, std::nullopt, declaration->isMutable, varName);
    }
    comment("end of declaration\n");
 
@@ -89,12 +77,12 @@ std::optional<std::string> Generator::generate(const ast::Exit* exit) {
    m_output += "\n";
    comment("Exiting (by user)...");
 
-   auto expression = generate<ast::Expression>(exit->expression);
-   if(!expression)
-      return expression.error();
+   auto exprError = generate<ast::Expression>(exit->expression);
+   if(exprError)
+      return exprError;
 
    write("mov rax, 1 | 0x2000000 ; exit syscall number");
-   write(std::format("mov rdi, {}", *expression));
+   m_stack.pop(m_output, "rdi");
    write("syscall");
 
    return std::nullopt;
@@ -135,61 +123,50 @@ std::optional<std::string> Generator::generate(const ast::Decrement* decrement) 
 #pragma region Expressions
 
 template<>
-std::expected<std::string, std::string> Generator::generate(const ast::Expression* expression) {
-   return std::visit([this](auto&& arg) -> std::expected<std::string, std::string> {
-      using PtrT = std::decay_t<decltype(arg)>;              // e.g. Declaration*
-      if constexpr(!std::is_same_v<PtrT, std::monostate>) {
-         using T = std::remove_pointer_t<PtrT>;               // Declaration
-         return generate<T>(arg);
-      }
+std::optional<std::string> Generator::generate(const ast::IntegerLiteral* integerLiteral) {
+   m_stack.push(m_output, integerLiteral->to_string(), false);
 
-      return "Tried to call generate monostate expression!";
-   }, *expression);
+   return std::nullopt;
 }
 
 template<>
-std::expected<std::string, std::string> Generator::generate(const ast::IntegerLiteral* integerLiteral) {
-   return integerLiteral->to_string();
-}
-
-template<>
-std::expected<std::string, std::string> Generator::generate(const ast::Identifier* identifier) {
+std::optional<std::string> Generator::generate(const ast::Identifier* identifier) {
    const std::string& varName = identifier->name;
    const auto symbol = m_stack.find(varName);
 
    if(!symbol)
-      return std::unexpected(std::format("Use of undeclared identifier '{}'!", varName));
-   else 
-      return std::format("QWORD [rbp - {}] ; '{}'", symbol->offset, varName);
+      return std::format("Use of undeclared identifier '{}'!", varName);
+   else
+      m_stack.push(m_output, std::format("QWORD [rbp - {}] ; '{}'", symbol->offset, varName));
+
+   return std::nullopt;
 }
 
 template <>
-std::expected<std::string, std::string> Generator::generate(const ast::Negative* negative) {
+std::optional<std::string> Generator::generate(const ast::Negative* negative) {
    auto operand = generate<ast::Expression>(negative->operand);
-   if(!operand)
+   if(operand)
       return operand;
 
-   write(std::format("mov rax, {}", *operand));
+   m_stack.pop(m_output, "rax");
    write("neg rax");
-   return "rax";
+   m_stack.push(m_output, "rax", false);
+
+   return std::nullopt;
 }
 
 template <>
-std::expected<std::string, std::string> Generator::generate(const ast::BinaryExpr* binaryExpr) {
+std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr) {
    auto left = generate<ast::Expression>(binaryExpr->left);
-   if(!left)
+   if(left)
       return left;
 
    auto right = generate<ast::Expression>(binaryExpr->right);
-   if(!right)
+   if(right)
       return right;
 
-   // should be pushed, not moved because there might be multiple recursive binary operations that'd get overwritten if we just mov
-   write(m_stack.push(*left, false, std::format("lhs for op '{}'", to_string(binaryExpr->op))));
-   write(m_stack.push(*right, false, std::format("rhs for op '{}'", to_string(binaryExpr->op))));
-
-   write(m_stack.pop(std::format("rbx ; rhs for op '{}'", to_string(binaryExpr->op))));
-   write(m_stack.pop(std::format("rax ; lhs for op '{}'", to_string(binaryExpr->op))));
+   m_stack.pop(m_output, std::format("rbx ; rhs for op '{}'", to_string(binaryExpr->op)));
+   m_stack.pop(m_output, std::format("rax ; lhs for op '{}'", to_string(binaryExpr->op)));
 
    switch(binaryExpr->op) {
       case TokenType::PLUS:
@@ -225,7 +202,9 @@ std::expected<std::string, std::string> Generator::generate(const ast::BinaryExp
          return std::format("Unsupported binary operator: '{}'!", to_string(binaryExpr->op));
    }
 
-   return "rax ; result of binary operation '" + to_string(binaryExpr->op) + "'";
+   m_stack.push(m_output, std::format("rax ; result of binary operation '{}'", to_string(binaryExpr->op)), false);
+
+   return std::nullopt;
 }
 
 #pragma endregion

@@ -3,21 +3,21 @@
 
 #include "Errors.h"
 
-std::string Stack::push(std::optional<std::string_view> value, bool isMutable, std::string_view name) {
+void Stack::push(std::string& output, std::optional<std::string_view> value, bool isMutable, std::string_view name) {
    m_size += 8;
    m_stack.emplace_back(name, m_size, isMutable);
 
    if(value)
-      return std::format("push {}", *value);
+      output += std::format("\tpush {}\n", *value);
    else
-      return "sub rsp, 8";
+      output += "\tsub rsp, 8\n";
 }
 
-std::string Stack::pop(std::string_view reg) {
+void Stack::pop(std::string& output, std::string_view reg) {
    m_stack.pop_back();
    m_size -= 8;
 
-   return std::format("pop {}", reg);
+   output += std::format("\tpop {}\n", reg);
 }
 
 std::optional<Symbol> Stack::find(std::string_view name) const {

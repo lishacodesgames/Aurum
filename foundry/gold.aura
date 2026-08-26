@@ -1,5 +1,5 @@
 bar x = 12;
 mint y = x;
-bar z = 8 - x / y;
 x++;
+bar z = 8 + 5 - x; $$ 0
 exit z; 

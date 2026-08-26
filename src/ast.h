@@ -112,8 +112,8 @@ namespace ast
    }
 
    template<typename T>
-   concept ExprNode = detail::is_variant_alternative_v<T*, Expression> || std::is_same_v<T, Expression>;
+   concept AstNode = detail::is_variant_alternative_v<T*, Expression> || detail::is_variant_alternative_v<T*, Statement>;
 
    template<typename T>
-   concept StmtNode = detail::is_variant_alternative_v<T*, Statement> || std::is_same_v<T, Statement>;
+   concept VariantNode = std::is_same_v<T, Expression> || std::is_same_v<T, Statement>;
 }

@@ -20,12 +20,15 @@ public:
     * @param comment WITH PRECEEDING SEMICOLON
     * @return the instruction text to emit for this push
     */
-   std::string push(std::optional<std::string_view> value, bool isMutable, std::string_view name = "");
-
-   std::string pop(std::string_view reg);
+   void push(std::string& output, std::optional<std::string_view> value, bool isMutable = false, std::string_view name = "");
+   void pop(std::string& output, std::string_view reg);
 
    /// name the variable at the very top of the stack
    void nameTop(std::string_view name) { m_stack.back().name = name; }
+   void changeTop(std::string_view name, bool isMutable) {
+      nameTop(name);
+      m_stack.back().isMutable = isMutable;
+   }
 
    bool contains(std::string_view name) const { return get(name) != std::nullopt; }
    std::optional<Symbol> find(std::string_view name) const;

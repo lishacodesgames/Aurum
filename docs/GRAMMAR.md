@@ -62,10 +62,24 @@ $$
 \\
    \text{[statement]} &\to
       \begin{cases}
-         exit\ [expression]; \\
-         mint \text{ name} = [expression];\ \ \footnotesize{\text{// constant value}} \\
+         \text{[simple statement]}
+            \begin{cases}
+               exit\ [expression]; \\
+               mint \text{ name} = [expression];\ \ \footnotesize{\text{// constant value}} \\
+               [identifier]++; \\
+               [identifier]--;
+            \end{cases} \\ \\
+         \text{[block statement]} \to \{\ [statement]^+\ \} \\ \\
+         \text{[selection statement]}
+            \begin{cases}
+               if \\ switch
+            \end{cases} \\ \\
+         \text{[iteration statement]}
+            \begin{cases}
+               for \\ while
+            \end{cases} \\
       \end{cases}
-\\
+\\ \\
    [\text{expression}] &\to
       \begin{cases}
          [term]
@@ -77,8 +91,6 @@ $$
                   \begin{cases}
                      -[expression] \\
                      +[expression] \\
-                     [identifier]++ \\
-                     [identifier]--
                   \end{cases} \\
             \end{cases} \\
       \\

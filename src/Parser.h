@@ -33,8 +33,7 @@ private:
    Token consume(std::uint32_t count = 1) noexcept;
 
 private:
-   template<typename T>
-   requires ast::ExprNode<T> || ast::StmtNode<T>
+   template<ast::AstNode T>
    std::expected<T*, std::string> parse();
 
    // by value because there's no circular dependencies here and we don't want them in the arena
