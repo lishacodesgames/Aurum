@@ -118,6 +118,15 @@ std::optional<std::string> Generator::generate(const ast::Decrement* decrement) 
    return std::nullopt;
 }
 
+template <>
+std::optional<std::string> Generator::generate(const ast::Block *block) {
+   for(const ast::Statement& stmt : block->statements) {
+      auto error = generate<ast::Statement>(&stmt);
+      if(error)
+         return error;
+   }
+}
+
 #pragma endregion
 
 #pragma region Expressions

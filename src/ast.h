@@ -83,7 +83,16 @@ namespace ast
       explicit Decrement(Identifier* identifier) : identifier(identifier) {}
    };
 
-   using Statement = std::variant<std::monostate, Declaration*, Exit*, Increment*, Decrement*>;
+   // statements that contain statements
+   struct Block;
+
+   using Statement = std::variant<std::monostate, Declaration*, Exit*, Increment*, Decrement*, Block*>;
+
+   struct Block {
+      std::vector<Statement> statements;
+
+      explicit Block(std::vector<Statement> statements) : statements(statements) {}
+   };
 
    // --- PROGRAM ---
 

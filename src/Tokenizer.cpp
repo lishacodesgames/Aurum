@@ -103,7 +103,6 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
                } else {
                   tokens.emplace_back(TokenType::MINUS);
                }
-
                break;
 
             case '+':
@@ -113,7 +112,6 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
                } else {
                   tokens.emplace_back(TokenType::PLUS);
                }
-
                break;
 
             case '*':
@@ -128,6 +126,10 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
                tokens.emplace_back(TokenType::PERCENT);
                break;
 
+            case '^':
+               tokens.emplace_back(TokenType::CARET);
+               break;
+
             case '(':
                tokens.emplace_back(TokenType::OPEN_PAREN);
                break;
@@ -136,9 +138,12 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
                tokens.emplace_back(TokenType::CLOSE_PAREN);
                break;
 
-            case '^':
-               tokens.emplace_back(TokenType::CARET);
+            case '{':
+               tokens.emplace_back(TokenType::OPEN_CURLY);
                break;
+
+            case '}':
+               tokens.emplace_back(TokenType::CLOSE_CURLY);
 
             default:
                return std::unexpected(std::format("Unknown character '{}'!", next));

@@ -45,6 +45,7 @@ private:
    template<> std::expected<ast::Exit*, std::string> parse<ast::Exit>();
    template<> std::expected<ast::Increment*, std::string> parse<ast::Increment>();
    template<> std::expected<ast::Decrement*, std::string> parse<ast::Decrement>();
+   template<> std::expected<ast::Block*, std::string> parse<ast::Block>();
 
    // expressions
    /// @param minPrec the minimum precedence that has to be parsed from the expression

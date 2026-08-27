@@ -82,9 +82,17 @@ std::expected<ast::Statement, std::string> Parser::parseStatement() {
                return std::unexpected(std::format("Expected a unary postfix operator! Got: {}", to_string(peek(1).type)));
          }
       }
+      
+      case TokenType::OPEN_CURLY: {
+         auto block = parse<ast::Block>();
+         if(!block)
+            return std::unexpected(block.error());
+
+         return ast::Statement(std::in_place_type<ast::Block*>, *block);
+      }
 
       default:
-         return std::unexpected(std::format("Expected statement! Got: {}", to_string(consume().type)));
+         return std::unexpected(std::format("Unexpected token, unable to parse statement beginning with '{}'", to_string(consume().type)));
    }
 }
 
@@ -157,6 +165,22 @@ std::expected<ast::Decrement*, std::string> Parser::parse<ast::Decrement>() {
 
    consume(2);
    return m_arena.create<ast::Decrement>(std::move(*identifier));
+}
+
+template<>
+std::expected<ast::Block*, std::string> Parser::parse<ast::Block>() {
+   std::vector<ast::Statement> stmts;
+   while(peek() != TokenType::CLOSE_CURLY) {
+      /// @todo check for unexpected end of file?
+
+      auto statement = parseStatement();
+      if(!statement)
+         return std::unexpected(statement.error());
+
+      stmts.push_back(*statement);
+   }
+
+   return m_arena.create<ast::Block>(std::move(stmts));
 }
 
 #pragma endregion

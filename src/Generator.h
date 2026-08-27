@@ -40,6 +40,7 @@ private:
    template<> std::optional<std::string> generate(const ast::Exit* exit);
    template<> std::optional<std::string> generate(const ast::Increment* increment);
    template<> std::optional<std::string> generate(const ast::Decrement* decrement);
+   template<> std::optional<std::string> generate(const ast::Block* block);
 
    // --- expression ---
 
