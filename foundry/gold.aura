@@ -3,4 +3,4 @@
    x = 10 - x + 50;
 }
 mint x = 60;
-exit x;
+exit x / 5;
