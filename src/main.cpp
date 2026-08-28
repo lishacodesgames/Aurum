@@ -72,9 +72,22 @@ int main(int argc, char* argv[]) {
 
    std::println("Compiling assembly file '{}' to executable...", executablePath.string());
    
-   /// @todo don't print success if it didn't succeed
-   system(compileAssemblyCommand.c_str()); // compile the assembly file to an executable
-   std::println("Successfully compiled to executable '{}'!", executablePath.string());
+   int assembleResult = std::system(compileAssemblyCommand.c_str()); // compile the assembly file to an executable
+   if(!assembleResult) {
+      std::println("Successfully assembled to executable '{}'!", executablePath.string());
+   } else {
+      std::println("Assembling failed! Exit code: {}", assembleResult);
+      return EXIT_FAILURE;
+   }
+
+   std::string runExecutableCommand = std::format("./{}", executablePath.string());
+   std::print("\nRunning compiled executable '{}'...\n\n\033[38:5:80m", runExecutableCommand); // prints any output of executable in teal
+   int result = std::system(runExecutableCommand.c_str());
+   std::println("\033[0m");
+
+   // On Linux and macOS, std::system does not return the program's raw exit code directly. Instead, it returns a 16-bit wait status integer encoded by the operating system
+   // to get the real exit code, we must divide by 256
+   std::println("Successfully ran executable! Exited with exit code: {}", result / 256);
 
    return EXIT_SUCCESS;
 }

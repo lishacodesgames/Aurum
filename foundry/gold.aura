@@ -1,3 +1,6 @@
-bar x = 40;
-{ x = 10 - x + 50; }
-exit x; $$ 20
+{
+   bar x = 40;
+   x = 10 - x + 50;
+}
+mint x = 60;
+exit x;
