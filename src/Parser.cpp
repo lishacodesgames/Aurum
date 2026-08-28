@@ -240,17 +240,12 @@ std::expected<ast::Expression, std::string> Parser::parseExpression(int minPrec)
       return expression;
 
    while(isBinaryOperator(peek().type) && getPrecedence(peek().type) >= minPrec) {
-      TokenType op = consume().type;
-      int precedence = getPrecedence(op);
-      int next_minPrec = isLeftAssociative(op) ? precedence + 1 : precedence;
+      auto binaryExpr = parse<ast::BinaryExpr>();
+      if(!binaryExpr)
+         return std::unexpected(binaryExpr.error());
 
-      auto rhs = parseExpression(next_minPrec);
-      if(!rhs)
-         return std::unexpected(rhs.error());
-
-      ast::BinaryExpr* binaryExpr = m_arena.create<ast::BinaryExpr>(m_arena.create<ast::Expression>(*expression), op, m_arena.create<ast::Expression>(*rhs));
-
-      expression = ast::Expression(std::in_place_type<ast::BinaryExpr*>, binaryExpr);
+      (*binaryExpr)->left = m_arena.create<ast::Expression>(*expression);
+      expression = ast::Expression(std::in_place_type<ast::BinaryExpr*>, *binaryExpr);
    }
 
    return expression;
@@ -281,6 +276,19 @@ std::expected<ast::Negative*, std::string> Parser::parse<ast::Negative>() {
       return std::unexpected(expression.error());
 
    return m_arena.create<ast::Negative>(m_arena.create<ast::Expression>(std::move(*expression)));
+}
+
+template<>
+std::expected<ast::BinaryExpr*, std::string> Parser::parse<ast::BinaryExpr>() {
+   TokenType op = consume().type;
+   int precedence = getPrecedence(op);
+   int nextMinPrec = isLeftAssociative(op) ? precedence + 1 : precedence;
+
+   auto rhs = parseExpression(nextMinPrec);
+   if(!rhs)
+      return std::unexpected(rhs.error());
+
+   return m_arena.create<ast::BinaryExpr>(nullptr, op, m_arena.create<ast::Expression>(*rhs));
 }
 
 #pragma endregion

@@ -125,6 +125,8 @@ std::optional<std::string> Generator::generate(const ast::Block *block) {
       if(error)
          return error;
    }
+
+   return std::nullopt;
 }
 
 #pragma endregion

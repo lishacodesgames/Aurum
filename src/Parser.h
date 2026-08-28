@@ -41,6 +41,7 @@ private:
    // --- EXPLICIT SPECIALISATIONS ---
    // statements
    std::expected<ast::Statement, std::string> parseStatement();
+
    template<> std::expected<ast::Declaration*, std::string> parse<ast::Declaration>();
    template<> std::expected<ast::Exit*, std::string> parse<ast::Exit>();
    template<> std::expected<ast::Increment*, std::string> parse<ast::Increment>();
@@ -50,10 +51,13 @@ private:
    // expressions
    /// @param minPrec the minimum precedence that has to be parsed from the expression
    std::expected<ast::Expression, std::string> parseExpression(int minPrec = 0);
+
    template<> std::expected<ast::IntegerLiteral*, std::string> parse<ast::IntegerLiteral>();
    template<> std::expected<ast::Identifier*, std::string> parse<ast::Identifier>();
    template<> std::expected<ast::Negative*, std::string> parse<ast::Negative>();
-   // BinaryExpr is not a template type. Unnecessary
+
+   /// @return BinaryExpr containing op and rhs, left will be assigned by caller
+   template<> std::expected<ast::BinaryExpr*, std::string> parse<ast::BinaryExpr>();
 
    // helpers
    std::expected<ast::Expression, std::string> parseTerm();
