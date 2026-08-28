@@ -25,7 +25,7 @@ public:
 
    /// name the variable at the very top of the stack
    void nameTop(std::string_view name) { m_stack.back().name = name; }
-   void changeTop(std::string_view name, bool isMutable) {
+   void setTop(std::string_view name, bool isMutable) {
       nameTop(name);
       m_stack.back().isMutable = isMutable;
    }
@@ -36,12 +36,15 @@ public:
    /// @return offset from rbp in BYTES
    std::uint32_t offset(std::string_view name) const;
 
-   /// @return size of stack IN BYTES
-   std::size_t size() const noexcept { return m_size; }
+   /// @return size of stack in 8-byte elements
+   std::size_t size() const noexcept { return m_stack.size(); }
+
+   void startScope(std::string& output);
+   void endScope(std::string& output);
 
 private:
    std::vector<Symbol> m_stack{};
-   std::uint32_t m_size = 0; /// in BYTES
+   std::vector<std::size_t> m_scopeMarks{}; /// how many vars existed when each scope was added
 
 private:
    /// private helper function for the 3 public ones: contains, find, offset

@@ -4,8 +4,7 @@
 #include "Errors.h"
 
 void Stack::push(std::string& output, std::optional<std::string_view> value, bool isMutable, std::string_view name) {
-   m_size += 8;
-   m_stack.emplace_back(name, m_size, isMutable);
+   m_stack.emplace_back(name, (m_stack.size() + 1) * 8, isMutable);
 
    if(value)
       output += std::format("\tpush {}\n", *value);
@@ -15,8 +14,6 @@ void Stack::push(std::string& output, std::optional<std::string_view> value, boo
 
 void Stack::pop(std::string& output, std::string_view reg) {
    m_stack.pop_back();
-   m_size -= 8;
-
    output += std::format("\tpop {}\n", reg);
 }
 
@@ -37,6 +34,29 @@ std::uint32_t Stack::offset(std::string_view name) const {
    return 0;   
 }
 
+void Stack::startScope(std::string& output) {
+   m_scopeMarks.push_back(m_stack.size());
+   output += std::format("\n\t; Entering scope {}...\n", m_scopeMarks.size());
+}
+
+void Stack::endScope(std::string& output) {
+   if(m_scopeMarks.empty())
+      FATAL_ERROR("Tried to end a non-existent scope!");
+
+   output += std::format("\t; Leaving scope {}...\n", m_scopeMarks.size());
+   std::size_t mark = m_scopeMarks.back();
+   m_scopeMarks.pop_back();
+
+   std::size_t count = m_stack.size() - mark; // how many new variables were in the scope
+   if(count == 0) 
+      return; // no new memory, nothing to cleanup
+
+   output += std::format("\tadd rsp, {} ; reclaiming scope memory of {} variable(s)\n", count * 8, count);
+
+   m_stack.erase(m_stack.begin() + mark, m_stack.end());
+}
+
+// non-const
 std::optional<std::vector<Symbol>::iterator> Stack::get(std::string_view name) {
    auto it = std::find_if(m_stack.begin(), m_stack.end(), [name](const Symbol& symbol) { return symbol.name == name; });
    if(it != m_stack.end())
@@ -45,10 +65,11 @@ std::optional<std::vector<Symbol>::iterator> Stack::get(std::string_view name) {
    return std::nullopt;
 }
 
+// const
 std::optional<std::vector<Symbol>::const_iterator> Stack::get(std::string_view name) const {
    const auto it = std::find_if(m_stack.begin(), m_stack.end(), [name](const Symbol& symbol) { return symbol.name == name; });
-   if(it == m_stack.end())
-      return std::nullopt;
-
-   return it;
+   if(it != m_stack.end())
+      return it;
+   
+   return std::nullopt;
 }

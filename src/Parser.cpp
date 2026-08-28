@@ -170,6 +170,8 @@ std::expected<ast::Decrement*, std::string> Parser::parse<ast::Decrement>() {
 template<>
 std::expected<ast::Block*, std::string> Parser::parse<ast::Block>() {
    std::vector<ast::Statement> stmts;
+   consume(); // consume open_curly
+
    while(peek() != TokenType::CLOSE_CURLY) {
       /// @todo check for unexpected end of file?
 
@@ -180,6 +182,7 @@ std::expected<ast::Block*, std::string> Parser::parse<ast::Block>() {
       stmts.push_back(*statement);
    }
 
+   consume(); // consume close_curly
    return m_arena.create<ast::Block>(std::move(stmts));
 }
 

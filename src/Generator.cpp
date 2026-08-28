@@ -62,7 +62,7 @@ inline std::optional<std::string> Generator::generate(const ast::Declaration* de
       if(exprError)
          return exprError;
 
-      m_stack.changeTop(varName, declaration->isMutable);
+      m_stack.setTop(varName, declaration->isMutable);
    } else {
       // declaration without definition: identifier points to garbage value
       m_stack.push(m_output, std::nullopt, declaration->isMutable, varName);
@@ -120,11 +120,15 @@ std::optional<std::string> Generator::generate(const ast::Decrement* decrement) 
 
 template <>
 std::optional<std::string> Generator::generate(const ast::Block *block) {
+   m_stack.startScope(m_output);
+
    for(const ast::Statement& stmt : block->statements) {
       auto error = generate<ast::Statement>(&stmt);
       if(error)
          return error;
    }
+
+   m_stack.endScope(m_output);
 
    return std::nullopt;
 }

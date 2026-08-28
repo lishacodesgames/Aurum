@@ -144,6 +144,7 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
 
             case '}':
                tokens.emplace_back(TokenType::CLOSE_CURLY);
+               break;
 
             default:
                return std::unexpected(std::format("Unknown character '{}'!", next));

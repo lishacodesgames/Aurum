@@ -1,7 +1,9 @@
 bar x = 12;
 mint y = x;
-x++;
 {
-   bar z = 8 + 5 - x / y; $$ 0
+   bar z = 8 + 5 - x / y;
+   {}
+   x++;
 }
-exit z; 
+$$ using z out here would throw an error :D
+exit x;
