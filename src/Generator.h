@@ -37,6 +37,7 @@ private:
    // --- statements ---
 
    template<> std::optional<std::string> generate(const ast::Declaration* declaration);
+   template<> std::optional<std::string> generate(const ast::Assignment* assignment);
    template<> std::optional<std::string> generate(const ast::Exit* exit);
    template<> std::optional<std::string> generate(const ast::Increment* increment);
    template<> std::optional<std::string> generate(const ast::Decrement* decrement);

@@ -64,6 +64,13 @@ namespace ast
          : identifier(identifier), expression(expression), isMutable(isMutable) {}
    };
 
+   struct Assignment {
+      Identifier* identifier;
+      Expression* expression;
+
+      explicit Assignment(Identifier* identifier, Expression* expression) : identifier(identifier), expression(expression) {}
+   };
+
    struct Exit {
       Expression* expression;
 
@@ -86,7 +93,7 @@ namespace ast
    // statements that contain statements
    struct Block;
 
-   using Statement = std::variant<std::monostate, Declaration*, Exit*, Increment*, Decrement*, Block*>;
+   using Statement = std::variant<std::monostate, Declaration*, Assignment*, Exit*, Increment*, Decrement*, Block*>;
 
    struct Block {
       std::vector<Statement> statements;

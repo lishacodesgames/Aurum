@@ -72,6 +72,27 @@ inline std::optional<std::string> Generator::generate(const ast::Declaration* de
    return std::nullopt;
 }
 
+template <>
+std::optional<std::string> Generator::generate(const ast::Assignment* assignment) {
+   std::string_view varName = assignment->identifier->name;
+   const auto symbol = m_stack.find(varName);
+
+   /// @todo extract into function that checks existence and mutability
+   if(!symbol)
+      return std::format("Use of undeclared identifier '{}'!", varName);
+   else if(!symbol->isMutable)
+      return std::format("Tried to modify immutable variable '{}'!", varName);
+
+   auto exprError = generate<ast::Expression>(assignment->expression);
+   if(exprError)
+      return exprError;
+
+   m_stack.pop(m_output, "rax");
+   write(std::format("mov QWORD [rbp - {}], rax ; assignment of '{}'", symbol->offset, varName));
+
+   return std::nullopt;
+}
+
 template<>
 std::optional<std::string> Generator::generate(const ast::Exit* exit) {
    m_output += "\n";
@@ -97,9 +118,8 @@ std::optional<std::string> Generator::generate(const ast::Increment* increment) 
       return std::format("Use of undeclared identifier '{}'!", varName);
    else if(!symbol->isMutable)
       return std::format("Tried to modify immutable variable '{}'!", varName);
-   else 
-      write(std::format("inc QWORD [rbp - {}] ; {}++", symbol->offset, varName));
 
+   write(std::format("inc QWORD [rbp - {}] ; {}++", symbol->offset, varName));
    return std::nullopt;
 }
 
@@ -112,9 +132,8 @@ std::optional<std::string> Generator::generate(const ast::Decrement* decrement) 
       return std::format("Use of undeclared identifier '{}'!", varName);
    else if(!symbol->isMutable)
       return std::format("Tried to modify immutable variable '{}'!", varName);
-   else 
-      write(std::format("dec QWORD [rbp - {}] ; {}--", symbol->offset, varName));
 
+   write(std::format("dec QWORD [rbp - {}] ; {}--", symbol->offset, varName));
    return std::nullopt;
 }
 

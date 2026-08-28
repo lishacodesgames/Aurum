@@ -43,6 +43,7 @@ private:
    std::expected<ast::Statement, std::string> parseStatement();
 
    template<> std::expected<ast::Declaration*, std::string> parse<ast::Declaration>();
+   template<> std::expected<ast::Assignment*, std::string> parse<ast::Assignment>();
    template<> std::expected<ast::Exit*, std::string> parse<ast::Exit>();
    template<> std::expected<ast::Increment*, std::string> parse<ast::Increment>();
    template<> std::expected<ast::Decrement*, std::string> parse<ast::Decrement>();

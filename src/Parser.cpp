@@ -49,7 +49,7 @@ std::expected<ast::Statement, std::string> Parser::parseStatement() {
             return std::unexpected(declaration.error());
 
          // must explicitly construct Declaration in Statement bcz 1 implicit conversion to expected<> already happening
-         return ast::Statement(std::in_place_type<ast::Declaration*>, *declaration);
+         return ast::Statement(std::in_place_type<ast::Declaration*>, declaration.value());
       }
 
       case TokenType::EXIT: {
@@ -57,7 +57,7 @@ std::expected<ast::Statement, std::string> Parser::parseStatement() {
          if(!exit)
             return std::unexpected(exit.error());
 
-         return ast::Statement(std::in_place_type<ast::Exit*>, *exit);
+         return ast::Statement(std::in_place_type<ast::Exit*>, exit.value());
       }
 
       case TokenType::IDENTIFIER: {
@@ -67,7 +67,7 @@ std::expected<ast::Statement, std::string> Parser::parseStatement() {
                if(!increment)
                   return std::unexpected(increment.error());
 
-               return ast::Statement(std::in_place_type<ast::Increment*>, *increment);
+               return ast::Statement(std::in_place_type<ast::Increment*>, increment.value());
             }
 
             case TokenType::DECREMENT: {
@@ -75,11 +75,19 @@ std::expected<ast::Statement, std::string> Parser::parseStatement() {
                if(!decrement)
                   return std::unexpected(decrement.error());
 
-               return ast::Statement(std::in_place_type<ast::Decrement*>, *decrement);
+               return ast::Statement(std::in_place_type<ast::Decrement*>, decrement.value());
+            }
+
+            case TokenType::EQUALS: {
+               auto assignment = parse<ast::Assignment>();
+               if(!assignment)
+                  return std::unexpected(assignment.error());
+
+               return ast::Statement(std::in_place_type<ast::Assignment*>, assignment.value());
             }
 
             default:
-               return std::unexpected(std::format("Expected a unary postfix operator! Got: {}", to_string(peek(1).type)));
+               return std::unexpected("Expected a unary postfix operator! Got: " + to_string(peek(1).type));
          }
       }
       
@@ -88,11 +96,11 @@ std::expected<ast::Statement, std::string> Parser::parseStatement() {
          if(!block)
             return std::unexpected(block.error());
 
-         return ast::Statement(std::in_place_type<ast::Block*>, *block);
+         return ast::Statement(std::in_place_type<ast::Block*>, block.value());
       }
 
       default:
-         return std::unexpected(std::format("Unexpected token, unable to parse statement beginning with '{}'", to_string(consume().type)));
+         return std::unexpected("Unexpected token, unable to parse statement beginning with: " + to_string(consume().type));
    }
 }
 
@@ -113,17 +121,39 @@ std::expected<ast::Declaration*, std::string> Parser::parse<ast::Declaration>() 
       if(!expr)
          return std::unexpected(expr.error());
 
-      expression = m_arena.create<ast::Expression>(std::move(*expr));
+      expression = m_arena.create<ast::Expression>(std::move(expr.value()));
    }
    
    if(peek() != TokenType::SEMICOLON)
       return std::unexpected("Expected `;`!");
+
    consume();
 
    if(expression)
       return m_arena.create<ast::Declaration>(*identifier, expression, isMutable);
    else
       return m_arena.create<ast::Declaration>(*identifier, isMutable);
+}
+
+template<>
+std::expected<ast::Assignment*, std::string> Parser::parse<ast::Assignment>() {
+   auto identifier = parse<ast::Identifier>();
+   if(!identifier)
+      return std::unexpected(identifier.error());
+
+   consume(); // consume equals
+
+   auto expression = parseExpression();
+   if(!expression)
+      return std::unexpected(expression.error());
+
+   /// @todo extract
+   if(peek() != TokenType::SEMICOLON)
+      return std::unexpected("Expected `;`");
+
+   consume();
+
+   return m_arena.create<ast::Assignment>(*identifier, m_arena.create<ast::Expression>(std::move(expression.value())));
 }
 
 template<>
@@ -136,9 +166,10 @@ std::expected<ast::Exit*, std::string> Parser::parse<ast::Exit>() {
 
    if(peek() != TokenType::SEMICOLON)
       return std::unexpected("Expected `;`!");
-      
+
    consume();
-   return m_arena.create<ast::Exit>(m_arena.create<ast::Expression>(std::move(*expression)));
+
+   return m_arena.create<ast::Exit>(m_arena.create<ast::Expression>(std::move(expression.value())));
 }
 
 template<>
@@ -150,8 +181,8 @@ std::expected<ast::Increment*, std::string> Parser::parse<ast::Increment>() {
    if(peek(1) != TokenType::SEMICOLON)
       return std::unexpected("Expected `;`!");
 
-   consume(2);
-   return m_arena.create<ast::Increment>(std::move(*identifier));
+   consume(2); // consume ++;
+   return m_arena.create<ast::Increment>(std::move(identifier.value()));
 }
 
 template<>
@@ -163,8 +194,10 @@ std::expected<ast::Decrement*, std::string> Parser::parse<ast::Decrement>() {
    if(peek(1) != TokenType::SEMICOLON)
       return std::unexpected("Expected `;`!");
 
-   consume(2);
-   return m_arena.create<ast::Decrement>(std::move(*identifier));
+   consume(2); // consume --;
+   
+   /// @todo do I need to std::move a pointer?
+   return m_arena.create<ast::Decrement>(std::move(identifier.value()));
 }
 
 template<>
@@ -197,7 +230,7 @@ std::expected<ast::Expression, std::string> Parser::parseTerm() {
          if(!integerLiteral)
             return std::unexpected(integerLiteral.error());
 
-         return ast::Expression(std::in_place_type<ast::IntegerLiteral*>, *integerLiteral);
+         return ast::Expression(std::in_place_type<ast::IntegerLiteral*>, integerLiteral.value());
       }
 
       case TokenType::IDENTIFIER: {
@@ -205,7 +238,7 @@ std::expected<ast::Expression, std::string> Parser::parseTerm() {
          if(!identifier)
             return std::unexpected(identifier.error());
 
-         return ast::Expression(std::in_place_type<ast::Identifier*>, *identifier);
+         return ast::Expression(std::in_place_type<ast::Identifier*>, identifier.value());
       }
 
       case TokenType::MINUS: {
@@ -213,7 +246,7 @@ std::expected<ast::Expression, std::string> Parser::parseTerm() {
          if(!negation)
             return std::unexpected(negation.error());
 
-         return ast::Expression(std::in_place_type<ast::Negative*>, *negation);
+         return ast::Expression(std::in_place_type<ast::Negative*>, negation.value());
       }
 
       case TokenType::PLUS: {
@@ -248,7 +281,7 @@ std::expected<ast::Expression, std::string> Parser::parseExpression(int minPrec)
          return std::unexpected(binaryExpr.error());
 
       (*binaryExpr)->left = m_arena.create<ast::Expression>(*expression);
-      expression = ast::Expression(std::in_place_type<ast::BinaryExpr*>, *binaryExpr);
+      expression = ast::Expression(std::in_place_type<ast::BinaryExpr*>, binaryExpr.value());
    }
 
    return expression;
@@ -278,7 +311,7 @@ std::expected<ast::Negative*, std::string> Parser::parse<ast::Negative>() {
    if(!expression)
       return std::unexpected(expression.error());
 
-   return m_arena.create<ast::Negative>(m_arena.create<ast::Expression>(std::move(*expression)));
+   return m_arena.create<ast::Negative>(m_arena.create<ast::Expression>(std::move(expression.value())));
 }
 
 template<>
@@ -291,7 +324,7 @@ std::expected<ast::BinaryExpr*, std::string> Parser::parse<ast::BinaryExpr>() {
    if(!rhs)
       return std::unexpected(rhs.error());
 
-   return m_arena.create<ast::BinaryExpr>(nullptr, op, m_arena.create<ast::Expression>(*rhs));
+   return m_arena.create<ast::BinaryExpr>(nullptr, op, m_arena.create<ast::Expression>(rhs.value()));
 }
 
 #pragma endregion
