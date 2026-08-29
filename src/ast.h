@@ -78,7 +78,6 @@ namespace ast
    };
 
    struct Increment {
-      /// Storing the entire identifier, because later on it might contain more information
       Identifier* identifier;
 
       explicit Increment(Identifier* identifier) : identifier(identifier) {}

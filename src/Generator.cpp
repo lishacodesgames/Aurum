@@ -15,15 +15,20 @@ std::expected<std::string, std::string> Generator::generate() {
    write("mov rdi, 0");
    write("syscall");
 
-   std::string header;
-   header += "; macOS x86_64, NASM syntax\n\n";
+   std::string externs;
    for(const std::string& func : m_requiredExterns)
-      header += std::format("extern {}\n", func);
-   header += "\nglobal _main\n";
-   header += "_main:\n";
-   header += "\tpush rbp      ; save the caller's base pointer\n";
-   header += "\tmov rbp, rsp  ; mov our stack pointer to the current base pointer\n";
-   header += "\t; rbp doesn't move for this entire function\n\n";
+      externs += std::format("extern {}\n", func);
+
+   std::string header = std::format(
+R"delim(; macOS x86_64, NASM syntax
+
+{}
+global _main
+_main:
+	push rbp       ; save the caller's base pointer
+	mov rbp, rsp   ; mov our stack pointer to the current base pointer
+
+)delim", externs);
 
    return header + m_output;
 }
@@ -148,7 +153,6 @@ std::optional<std::string> Generator::generate(const ast::Block *block) {
    }
 
    m_stack.endScope(m_output);
-
    return std::nullopt;
 }
 
@@ -158,8 +162,7 @@ std::optional<std::string> Generator::generate(const ast::Block *block) {
 
 template<>
 std::optional<std::string> Generator::generate(const ast::IntegerLiteral* integerLiteral) {
-   m_stack.push(m_output, integerLiteral->to_string(), false);
-
+   m_stack.push(m_output, integerLiteral->to_string());
    return std::nullopt;
 }
 
@@ -184,7 +187,7 @@ std::optional<std::string> Generator::generate(const ast::Negative* negative) {
 
    m_stack.pop(m_output, "rax");
    write("neg rax");
-   m_stack.push(m_output, "rax", false);
+   m_stack.push(m_output, "rax");
 
    return std::nullopt;
 }
@@ -199,8 +202,8 @@ std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr
    if(right)
       return right;
 
-   m_stack.pop(m_output, std::format("rbx ; rhs for op '{}'", to_string(binaryExpr->op)));
-   m_stack.pop(m_output, std::format("rax ; lhs for op '{}'", to_string(binaryExpr->op)));
+   m_stack.pop(m_output, std::format("rbx ; rhs for op '{}'", getCharsOf(binaryExpr->op)));
+   m_stack.pop(m_output, std::format("rax ; lhs for op '{}'", getCharsOf(binaryExpr->op)));
 
    switch(binaryExpr->op) {
       case TokenType::PLUS:
@@ -215,7 +218,7 @@ std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr
          write("sub rax, rbx");
          break;
 
-      case TokenType::SLASH:
+      case TokenType::FSLASH:
          write("cqo ; prep rdx:rax for division");
          write("idiv rbx");
          comment("rax now holds the quotient");
@@ -233,11 +236,10 @@ std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr
          break;
 
       default:
-         return std::format("Unsupported binary operator: '{}'!", to_string(binaryExpr->op));
+         return std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op));
    }
 
-   m_stack.push(m_output, std::format("rax ; result of binary operation '{}'", to_string(binaryExpr->op)), false);
-
+   m_stack.push(m_output, std::format("rax ; result of binary operation '{}'", getCharsOf(binaryExpr->op)));
    return std::nullopt;
 }
 

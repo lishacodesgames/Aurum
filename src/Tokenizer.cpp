@@ -119,7 +119,7 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
                break;
 
             case '/':
-               tokens.emplace_back(TokenType::SLASH);
+               tokens.emplace_back(TokenType::FSLASH);
                break;
 
             case '%':

@@ -12,7 +12,7 @@ bool isBinaryOperator(TokenType type) {
       case TokenType::PLUS:
       case TokenType::MINUS:
       case TokenType::STAR:
-      case TokenType::SLASH:
+      case TokenType::FSLASH:
       case TokenType::PERCENT:
       case TokenType::CARET:
 
@@ -66,7 +66,7 @@ int getPrecedence(TokenType type) {
          return 0;
 
       case TokenType::STAR:
-      case TokenType::SLASH:
+      case TokenType::FSLASH:
       case TokenType::PERCENT:
          return 1;
 
@@ -99,4 +99,83 @@ std::string to_string(TokenType type) {
    #undef X
 
    return "bye world"; // should never run
+}
+
+std::string getCharsOf(TokenType type) {
+   switch(type) {
+      case TokenType::EQUALS:
+         return "=";
+      case TokenType::COLON:
+         return ":";
+      case TokenType::SEMICOLON:
+         return ";";
+
+      case TokenType::OPEN_PAREN:
+         return "(";
+      case TokenType::CLOSE_PAREN:
+         return ")";
+      case TokenType::OPEN_BRACKET:
+         return "[";
+      case TokenType::CLOSE_BRACKET:
+         return "]";
+      case TokenType::OPEN_CURLY:
+         return "{";
+      case TokenType::CLOSE_CURLY:
+         return "}";
+
+      case TokenType::LESS_THAN:
+         return "<";
+      case TokenType::GREATER_THAN:
+         return ">";
+      case TokenType::PLUS:
+         return "+";
+      case TokenType::MINUS:
+         return "-";
+      case TokenType::STAR:
+         return "*";
+      case TokenType::FSLASH:
+         return "/";
+      case TokenType::PERCENT:
+         return "%";
+      case TokenType::CARET:
+         return "^";
+
+      case TokenType::EQUALITY:
+         return "==";
+      case TokenType::INEQUALITY:
+         return "!=";
+      case TokenType::LESS_EQUALS:
+         return "<=";
+      case TokenType::GREATER_EQUALS:
+         return ">=";
+
+      case TokenType::LOGICAL_AND:
+         return "&&";
+      case TokenType::LOGICAL_OR:
+         return "||";
+      case TokenType::LOGICAL_NOT:
+         return "!";
+
+      case TokenType::INCREMENT:
+         return "++";
+      case TokenType::DECREMENT:
+         return "--";
+
+      case TokenType::PLUS_EQUALS:
+         return "+=";
+      case TokenType::MINUS_EQUALS:
+         return "-=";
+      case TokenType::STAR_EQUALS:
+         return "*=";
+      case TokenType::SLASH_EQUALS:
+         return "/=";
+      case TokenType::PERCENT_EQUALS:
+         return "%=";
+
+      case TokenType::BSLASH:
+         return "\\";
+      
+      default:
+         return to_string(type);
+   }
 }

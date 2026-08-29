@@ -32,6 +32,21 @@ private:
     */ 
    Token consume(std::uint32_t count = 1) noexcept;
 
+   /**
+    * @brief tries to consume type. If not, the throws errMsg.
+    * @param errMsg if empty, throws "Expected `TYPE`!"
+    * @param hasValue whether not having value should also throw
+    * @return consumed token
+    */
+   Token tryConsume(TokenType type, std::optional<std::string_view> errMsg, bool hasValue = false);
+
+   /**
+    * @brief confirms whether the next token is type. If yes, then it consumes it. Otherwise does nothing
+    * @param hasValue whether not having value contributes to next token being valid
+    * @return if next token is valid (is type and/or hasValue), returns true. Else false
+    */
+   std::optional<Token> tryConsume(TokenType type, bool hasValue = false);
+
 private:
    template<ast::AstNode T>
    std::expected<T*, std::string> parse();

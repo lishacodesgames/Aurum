@@ -22,7 +22,7 @@
    X(LESS_THAN)    X(GREATER_THAN)  /* <> */ \
 \
    /* Operators */ \
-   X(PLUS) X(MINUS) X(STAR) X(SLASH) X(PERCENT) X(CARET) /* (+ - * / % ^) */ \
+   X(PLUS) X(MINUS) X(STAR) X(FSLASH) X(PERCENT) X(CARET) /* (+ - * / % ^) */ \
    X(EQUALITY) X(INEQUALITY) X(LESS_EQUALS) X(GREATER_EQUALS) /* (== != <= >=) */ \
    X(LOGICAL_AND) X(LOGICAL_OR) X(LOGICAL_NOT) /* (&& || !) */ \
    X(INCREMENT) X(DECREMENT) /* (++ --) */ \
@@ -31,8 +31,7 @@
    X(PLUS_EQUALS) X(MINUS_EQUALS) X(STAR_EQUALS) X(SLASH_EQUALS) X(PERCENT_EQUALS) \
 \
    /* Not sure abt but do exist */ \
-   X(BITWISE_AND) X(BITWISE_OR) X(BITWISE_NOT) X(BITWISE_XOR) \
-   X(LEFT_SHIFT) X(RIGHT_SHIFT) \
+   X(BSLASH) \
 \
    /* Special */ \
    X(END_OF_FILE)
@@ -44,6 +43,7 @@ enum class TokenType {
 };
 
 std::string to_string(TokenType type);
+std::string getCharsOf(TokenType type); /// eg. returns ( for OPEN_PAREN
 
 bool isBinaryOperator(TokenType type);
 bool isUnaryOperator(TokenType type);
