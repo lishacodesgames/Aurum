@@ -1,7 +1,7 @@
 #include <pch/Precompiled.h>
-#include "Assembler.h"
+#include "AsmEmitter.h"
 
-std::expected<std::string, std::string> Assembler::assemble() {
+std::expected<std::string, std::string> AsmEmitter::emitAssembly() {
    for(const ir::Instruction& instr : m_instructions) {
       if(auto instrError = handle(instr))
          return std::unexpected(std::move(*instrError));
@@ -25,7 +25,7 @@ _main:
    return header + m_output;
 }
 
-std::vector<std::string> Assembler::getRequiredLibs() const {
+std::vector<std::string> AsmEmitter::getRequiredLibs() const {
    std::vector<std::string> files{};
 
    for(const std::string& libFunc : m_requiredExterns)
@@ -34,7 +34,7 @@ std::vector<std::string> Assembler::getRequiredLibs() const {
    return files;
 }
 
-std::optional<std::string> Assembler::pushValue(std::string_view value) {
+std::optional<std::string> AsmEmitter::pushValue(std::string_view value) {
    bool isNumeric = std::isdigit(static_cast<unsigned char>(value[0]));
 
    if(isNumeric) {
@@ -49,7 +49,7 @@ std::optional<std::string> Assembler::pushValue(std::string_view value) {
    return std::nullopt;
 }
 
-std::optional<std::string> Assembler::movFoldedValue(std::string_view dest, std::string_view value) {
+std::optional<std::string> AsmEmitter::movFoldedValue(std::string_view dest, std::string_view value) {
    bool isNumeric = std::isdigit(static_cast<unsigned char>(value[0]));
 
    if(isNumeric) {
@@ -64,7 +64,7 @@ std::optional<std::string> Assembler::movFoldedValue(std::string_view dest, std:
    return std::nullopt;
 }
 
-std::optional<std::string> Assembler::movToVar(std::string_view varName, std::string_view value, bool valueIsReg) {
+std::optional<std::string> AsmEmitter::movToVar(std::string_view varName, std::string_view value, bool valueIsReg) {
    auto symbol = m_stack.find(varName);
    if(!symbol)
       return std::format("Use of undeclared identifier '{}'!", varName);
@@ -79,7 +79,7 @@ std::optional<std::string> Assembler::movToVar(std::string_view varName, std::st
    return std::nullopt;
 }
 
-std::optional<std::string> Assembler::resolveBinaryOperands(const ir::Instruction& instr) {
+std::optional<std::string> AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
    const std::string& left = *instr.operandLeft;
    const std::string& right = *instr.operandRight;
 
@@ -113,7 +113,7 @@ std::optional<std::string> Assembler::resolveBinaryOperands(const ir::Instructio
    return std::nullopt;
 }
 
-std::optional<std::string> Assembler::handleBinary(const ir::Instruction& instr, std::string_view asmMnemonic) {
+std::optional<std::string> AsmEmitter::handleBinary(const ir::Instruction& instr, std::string_view asmMnemonic) {
    if(auto resolveError = resolveBinaryOperands(instr)) return resolveError;
 
    write(std::format("{} rax, rbx", asmMnemonic));
@@ -121,7 +121,7 @@ std::optional<std::string> Assembler::handleBinary(const ir::Instruction& instr,
    return std::nullopt;
 }
 
-std::optional<std::string> Assembler::handleDivMod(const ir::Instruction& instr, bool wantRemainder) {
+std::optional<std::string> AsmEmitter::handleDivMod(const ir::Instruction& instr, bool wantRemainder) {
    if(auto resolveError = resolveBinaryOperands(instr)) return resolveError;
 
    write("cqo ; prep rdx:rax for division");
@@ -135,7 +135,7 @@ std::optional<std::string> Assembler::handleDivMod(const ir::Instruction& instr,
    return std::nullopt;
 }
 
-std::optional<std::string> Assembler::handle(const ir::Instruction& instr) {
+std::optional<std::string> AsmEmitter::handle(const ir::Instruction& instr) {
    switch(instr.opcode) {
       case ir::OpCode::PUSH_INT: {
          if(auto pushError = pushValue(*instr.operandLeft)) return pushError;

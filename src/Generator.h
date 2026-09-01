@@ -6,7 +6,7 @@
  * Lowers AST -> flat IR. Purely structural: no stack offsets, no asm text.
  * Still needs a scope-aware symbol table, but ONLY for validity checks
  * (redeclaration / undeclared / mutability) -- NOT for memory layout.
- * Layout is the Assembler's job now, since it's a sequential concern that
+ * Layout is the AsmEmitter's job now, since it's a sequential concern that
  * only makes sense once the tree has been flattened.
  */
 class Generator {

@@ -2,12 +2,12 @@
 #include "IR.h"
 #include "Stack.h"
 
-class Assembler {
+class AsmEmitter {
 public:
-   explicit Assembler(std::vector<ir::Instruction> instructions) : m_instructions(std::move(instructions))
+   explicit AsmEmitter(std::vector<ir::Instruction> instructions) : m_instructions(std::move(instructions))
       { m_output.reserve(4096); }
 
-   std::expected<std::string, std::string> assemble();
+   std::expected<std::string, std::string> emitAssembly();
    std::vector<std::string> getRequiredLibs() const; /// @todo noexcept?
 
 private:

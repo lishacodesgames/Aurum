@@ -1,2 +1,2 @@
 bar x = 5;
-exit x / 5;
+exit x * 5;
