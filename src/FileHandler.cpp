@@ -11,6 +11,7 @@ FileHandler::FileHandler(std::string_view aurumFilePath) : aurumFilePath(aurumFi
    std::filesystem::create_directories(outDir); // does nothing if it already exists
 
    std::string name = std::filesystem::path(this->aurumFilePath).stem().string();
+   irFilePath = outDir / (name + ".ir");
    assemblyFilePath = outDir / (name + ".asm");
    executableFilePath = outDir / name;
    assembleCommand = "./scripts/assemble_nasm_mac_x64.sh " + assemblyFilePath;
@@ -29,8 +30,11 @@ std::string FileHandler::getSourceCode() const {
    return contents.str();
 }
 
-void FileHandler::outputIR(const std::vector<ir::Instruction>& instructions) const {
-   /// @todo
+void FileHandler::outputIR(const std::string_view IR) const {
+   std::ofstream irFile(irFilePath);
+   irFile << IR;
+
+   std::println("Successfully made an Intermediate Representation at '{}'!", irFilePath);
 }
 
 void FileHandler::outputAssembly(std::string_view assembly) const {

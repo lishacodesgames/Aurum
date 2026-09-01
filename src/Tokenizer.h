@@ -8,7 +8,7 @@ public:
    std::expected<std::vector<Token>, std::string> tokenize();
 
 private:
-   std::string_view m_src;
+   std::string m_src;
    std::size_t m_pos = 0;
 
 private:

@@ -56,7 +56,7 @@ std::optional<std::string> AsmEmitter::movFoldedValue(std::string_view dest, std
       write(std::format("mov {}, {}", dest, value));
    } else {
       if(auto symbol = m_stack.find(value))
-         write(std::format("mov {}, QWORD [rbp - {}] ; '{}", dest, symbol->offset, value));
+         write(std::format("mov {}, QWORD [rbp - {}] ; '{}'", dest, symbol->offset, value));
       else
          return std::format("Use of undeclared identifier '{}'!", value);
    }
@@ -154,7 +154,7 @@ std::optional<std::string> AsmEmitter::handle(const ir::Instruction& instr) {
          if(value != ir::TOS)
             if(auto pushError = pushValue(value)) return pushError;
 
-         /// @todo mutability
+         /// @todo mutability? is it needed since generator throws error anyways? should mutability be removed from stack?
          m_stack.setTop(varName, true);
          return std::nullopt;
       }

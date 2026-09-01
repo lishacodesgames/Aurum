@@ -124,7 +124,7 @@ std::expected<ast::Statement, std::string> Parser::parseStatement() {
 
 template<>
 std::expected<ast::Declaration*, std::string> Parser::parse<ast::Declaration>() {
-   bool isMutable = tryConsume(TokenType::BAR) != std::nullopt;
+   bool isMutable = consume().type == TokenType::BAR;
 
    auto identifier = parse<ast::Identifier>();
    if(!identifier)

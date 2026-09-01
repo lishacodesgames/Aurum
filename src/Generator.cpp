@@ -11,6 +11,27 @@ std::expected<std::vector<ir::Instruction>, std::string> Generator::generate() {
    return m_instructions;
 }
 
+std::string Generator::getIR() const {
+   std::string IR;
+
+   IR += "; Intermediate Representation for Aurum\n\n";
+   IR += "_main:\n"; /// @todo function definition opcodes
+
+   for(const ir::Instruction& instr : m_instructions) {
+      IR += "\t " + ir::to_string(instr.opcode);
+
+      if(instr.operandLeft) {
+         IR += " " + *instr.operandLeft;
+         if(instr.operandRight)
+            IR += ", " + *instr.operandRight;
+      }
+
+      IR += "\n";
+   }
+
+   return IR;
+}
+
 void Generator::emit(ir::OpCode op, std::optional<std::string_view> operand1, std::optional<std::string_view> operand2) {
    uint8_t requiredOperands = ir::operands(op);
 
@@ -189,6 +210,9 @@ std::optional<std::string> Generator::generate(const ast::Negative* negative) {
    return std::nullopt;
 }
 
+/// @todo fix: both should not be tos. maybe add sos (second on stack as a value)
+/// sub tos, tos should result in 0 basically (tos - tos = 0)
+/// but instead it assumes left tos to be below right tos which is not good
 template <>
 std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr) {
    std::string left, right;

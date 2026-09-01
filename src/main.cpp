@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
    if(!instructions)
       FATAL_ERROR("{}", instructions.error());
 
-   fileHandler.outputIR(*instructions);
+   fileHandler.outputIR(generator.getIR());
 
    AsmEmitter emitter(std::move(*instructions));
    auto assembly = emitter.emitAssembly();

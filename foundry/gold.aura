@@ -1,2 +1,3 @@
-bar x = 5;
-exit x * 5;
+bar a = 5;
+bar b = 3;
+exit (a + b) * 2 - 1 * 8 - 8;

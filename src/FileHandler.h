@@ -8,7 +8,7 @@ public:
    /// @return aurum source code
    std::string getSourceCode() const;
 
-   void outputIR(const std::vector<ir::Instruction>& instructions) const;
+   void outputIR(const std::string_view IR) const;
    void outputAssembly(std::string_view assembly) const;
 
    /// runs the assemble script
@@ -17,6 +17,7 @@ public:
 
 private:
    std::string aurumFilePath;
+   std::string irFilePath;
    std::string assemblyFilePath;
    std::string executableFilePath;
    std::string assembleCommand;

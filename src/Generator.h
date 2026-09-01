@@ -14,6 +14,7 @@ public:
    explicit Generator(ast::Program program) : m_program(std::move(program)) {}
 
    std::expected<std::vector<ir::Instruction>, std::string> generate();
+   std::string getIR() const;
 
 private:
    const ast::Program m_program;
