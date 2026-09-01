@@ -1,41 +1,61 @@
 #pragma once
+#include "IR.h"
 #include "ast.h"
-#include "Stack.h"
 
+/**
+ * Lowers AST -> flat IR. Purely structural: no stack offsets, no asm text.
+ * Still needs a scope-aware symbol table, but ONLY for validity checks
+ * (redeclaration / undeclared / mutability) -- NOT for memory layout.
+ * Layout is the Assembler's job now, since it's a sequential concern that
+ * only makes sense once the tree has been flattened.
+ */
 class Generator {
 public:
-   explicit Generator(ast::Program program): m_program(std::move(program))
-      { m_output.reserve(4096); } // to avoid constant reallocation as it grows
+   explicit Generator(ast::Program program) : m_program(std::move(program)) {}
 
-   std::expected<std::string, std::string> generate();
-   std::vector<std::string> getRequiredLibs() const;
+   std::expected<std::vector<ir::Instruction>, std::string> generate();
 
 private:
    const ast::Program m_program;
+   std::vector<ir::Instruction> m_instructions;
 
-   std::string m_output;
-   Stack m_stack;
-
-   std::set<std::string> m_requiredExterns; // required pre-built asm functions our program actually uses
-
-private:
-   /// @note std::format might throw exception, so these 3 functions cannot be noexcept
-
-   /// writes comment on its own line
-   void comment(std::string_view comment);
-
-   /// writes command into m_output with proper formatting
-   /// @param comment WITH preceeding ;
-   void write(std::string_view cmd);
+   /// name -> isMutable, per scope. Purely for semantic validity, not layout
+   /// start with 1 empty global scope
+   std::vector<std::unordered_map<std::string, bool>> m_scopes{{}};
 
 private:
+   void emit(ir::OpCode op, std::optional<std::string_view> operand1 = std::nullopt, std::optional<std::string_view> operand2 = std::nullopt);
+   
+   /// add an empty map to m_scopes
+   void pushScope() {
+      m_scopes.emplace_back();
+      emit(ir::OpCode::SCOPE_START);
+   }
 
-   /// @return nullopt if everything went well. string if error (containing error info)
+   /// pop latest scope
+   void popScope() {
+      m_scopes.pop_back();
+      emit(ir::OpCode::SCOPE_END);
+   }
+
+   bool isDeclared(const std::string& name) const; /// check each scope starting from latest for identifier
+
+   /// @retval TRUE: if found and mutable
+   /// @retval FALSE: if found but not mutable
+   /// @retval NULLOPT: if name not found
+   std::optional<bool> findMutability(const std::string& name) const;
+
+   /// @retval folded string: ONLY for leaf expressions (literal/identifier)
+   /// @retval nullopt: for compound expressions (negative/binary)
+   std::optional<std::string> tryFold(const ast::Expression* expr) const;
+
+private:
+   /// @retval error striing if falied
+   /// @retval nullopt if everything went well
    template<ast::AstNode T>
    [[nodiscard]] std::optional<std::string> generate(const T*);
 
-   // --- statements ---
-
+   // -- statements --
    template<> std::optional<std::string> generate(const ast::Declaration* declaration);
    template<> std::optional<std::string> generate(const ast::Assignment* assignment);
    template<> std::optional<std::string> generate(const ast::Exit* exit);
@@ -43,16 +63,13 @@ private:
    template<> std::optional<std::string> generate(const ast::Decrement* decrement);
    template<> std::optional<std::string> generate(const ast::Block* block);
 
-   // --- expression ---
-
+   // -- expressions --
    template<> std::optional<std::string> generate(const ast::IntegerLiteral* integerLiteral);
    template<> std::optional<std::string> generate(const ast::Identifier* identifier);
    template<> std::optional<std::string> generate(const ast::Negative* negative);
    template<> std::optional<std::string> generate(const ast::BinaryExpr* binaryExpr);
 
-   // --- variant's overload ---
-
-   /// @return nullopt if everything went well. string if error (containing error info)
+   // -- variant's overload
    template<ast::VariantNode V>
    [[nodiscard]] std::optional<std::string> generate(const V* varNode) {
       return std::visit([this](auto&& arg) -> std::optional<std::string> {
@@ -62,7 +79,7 @@ private:
             return generate<T>(arg);
          }
 
-         return "Tried to call generate on monstate!";
+         return "Tried to call generate on monostate!";
       }, *varNode);
    }
 };

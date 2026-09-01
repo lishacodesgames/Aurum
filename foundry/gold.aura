@@ -1,1 +1,2 @@
-exit 2^2;
+bar x = 5;
+exit x / 5;

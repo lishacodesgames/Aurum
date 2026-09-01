@@ -21,4 +21,9 @@ private:
     * @throws runtime_error if next char doesn't exist, so check with peek() before calling
     */
    char consume(std::uint32_t count = 1U) noexcept;
+
+private:
+   // --- HELPERS ---
+   void emplaceKeyword(std::vector<Token>& tokens, std::string& buffer);
+   void emplaceNumber(std::vector<Token>& tokens, std::string& buffer);
 };

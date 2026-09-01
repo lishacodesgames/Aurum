@@ -1,8 +1,9 @@
 #include <pch/Precompiled.h>
 
 #include "Tokenizer.h"
-#include "Generator.h"
 #include "Parser.h"
+#include "Generator.h"
+#include "Assembler.h"
 
 int main(int argc, char* argv[]) {
    // make sure the correct number of arguments is provided
@@ -14,6 +15,7 @@ int main(int argc, char* argv[]) {
    if(!std::filesystem::exists("scripts"))
       FATAL_ERROR("Please run from the root of the project, where the 'scripts' folder is located.");
 
+   /// @todo extract file i/o
    std::filesystem::path aurumFile(aurumFilePath);
    std::string fileBaseName = aurumFile.stem().string();
 
@@ -50,8 +52,14 @@ int main(int argc, char* argv[]) {
    if(!program)
       FATAL_ERROR("{}", program.error());
 
+   /// @todo output IR instructions into a file
    Generator generator(std::move(*program));
-   auto assembly = generator.generate();
+   auto instructions = generator.generate();
+   if(!instructions)
+      FATAL_ERROR("{}", instructions.error());
+
+   Assembler assembler(std::move(*instructions));
+   auto assembly = assembler.assemble();
    if(!assembly)
       FATAL_ERROR("{}", assembly.error());
 
@@ -65,7 +73,7 @@ int main(int argc, char* argv[]) {
    std::println("Successfully compiled to assembly file '{}'!\n", assemblyFile.string());
 
    // compile assembly into executable
-   std::vector<std::string> libArgs = generator.getRequiredLibs();
+   std::vector<std::string> libArgs = assembler.getRequiredLibs();
    std::string compileAssemblyCommand = std::format("./scripts/compile_nasm_mac_x64.sh {}", assemblyFile.string()); // check args of the script
    for(const std::string& file : libArgs)
       compileAssemblyCommand += std::format(" {}", file);

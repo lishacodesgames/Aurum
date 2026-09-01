@@ -1,115 +1,115 @@
 #include <pch/Precompiled.h>
 #include "Generator.h"
 
-std::expected<std::string, std::string> Generator::generate() {
+std::expected<std::vector<ir::Instruction>, std::string> Generator::generate() {
    for(const ast::Statement& stmt : m_program.statements) {
-      auto returnValue = generate<ast::Statement>(&stmt);
-      if(returnValue)
-         return std::unexpected(*returnValue);
+      if(auto error = generate<ast::Statement>(&stmt))
+         return std::unexpected(*error);
    }
 
-   // won't get executed if user exits explicitly, just as a safety net
-   m_output += "\n";
-   comment("default exit statement in case user hasn't exited explicitly");
-   write("mov rax, 1 | 0x2000000");
-   write("mov rdi, 0");
-   write("syscall");
-
-   std::string externs;
-   for(const std::string& func : m_requiredExterns)
-      externs += std::format("extern {}\n", func);
-
-   std::string header = std::format(
-R"delim(; macOS x86_64, NASM syntax
-
-{}
-global _main
-_main:
-	push rbp       ; save the caller's base pointer
-	mov rbp, rsp   ; mov our stack pointer to the current base pointer
-
-)delim", externs);
-
-   return header + m_output;
+   emit(ir::OpCode::EXIT, "0"); // in case user hasn't exited
+   return m_instructions;
 }
 
-std::vector<std::string> Generator::getRequiredLibs() const {
-   std::vector<std::string> files{};
+void Generator::emit(ir::OpCode op, std::optional<std::string_view> operand1, std::optional<std::string_view> operand2) {
+   uint8_t requiredOperands = ir::operands(op);
 
-   for(const std::string& lib : m_requiredExterns)
-      files.push_back(std::format("vault/{}.asm", lib));
-
-   return files;
+   // verifying if they're correct
+   if(requiredOperands == 0 && !operand1 && !operand2)
+      m_instructions.emplace_back(op);
+   else if(requiredOperands == 1 && operand1 && !operand2)
+      m_instructions.emplace_back(op, *operand1);
+   else if(requiredOperands == 2 && operand1 && operand2)
+      m_instructions.emplace_back(op, *operand1, *operand2);
+   else
+      throw std::runtime_error(std::format("Expected {} operands for opcode '{}'!", requiredOperands, ir::to_string(op)));
 }
 
-void Generator::comment(std::string_view comment) {
-   m_output += std::format("\t; {}\n", comment);
+bool Generator::isDeclared(const std::string& name) const {
+   for(auto it = m_scopes.rbegin(); it != m_scopes.rend(); ++it) {
+      if(it->contains(name))
+         return true;
+   }
+
+   return false;
 }
 
-void Generator::write(std::string_view cmd) {
-   m_output += std::format("\t{}\n", cmd);
+std::optional<bool> Generator::findMutability(const std::string& name) const {
+   for(auto it = m_scopes.rbegin(); it != m_scopes.rend(); ++it) {
+      if(auto found = it->find(name); found != it->end())
+         return found->second;
+   }
+
+   return std::nullopt;
 }
 
-// GENERATE OVERLOADS
+std::optional<std::string> Generator::tryFold(const ast::Expression* expr) const {
+   return std::visit([](auto&& arg) -> std::optional<std::string> {
+      using PtrT = std::decay_t<decltype(arg)>;
+
+      if constexpr(std::is_same_v<PtrT, ast::IntegerLiteral*>)
+         return arg->to_string();
+      else if constexpr(std::is_same_v<PtrT, ast::Identifier*>)
+         return arg->name;
+
+      return std::nullopt;
+   }, *expr);
+}
 
 #pragma region Statements
 
-template<>
+template <>
 inline std::optional<std::string> Generator::generate(const ast::Declaration* declaration) {
-   std::string_view varName = declaration->identifier->name;
+   const std::string& varName = declaration->identifier->name;
 
-   if(m_stack.contains(varName))
+   if(isDeclared(varName))
       return std::format("Redeclaration of identifier '{}'!", varName);
 
-   comment(std::format("declaration of {}", varName));
    if(declaration->expression) {
-      auto exprError = generate<ast::Expression>(*declaration->expression);
-      if(exprError)
-         return exprError;
-
-      m_stack.setTop(varName, declaration->isMutable);
+      if(auto folded = tryFold(*declaration->expression)) {
+         emit(ir::OpCode::DEF_VAR, varName, *folded);
+      } else {
+         if(auto exprError = generate<ast::Expression>(*declaration->expression)) return exprError;
+         emit(ir::OpCode::DEF_VAR, varName, ir::TOS);
+      }
    } else {
-      // declaration without definition: identifier points to garbage value
-      m_stack.push(m_output, std::nullopt, declaration->isMutable, varName);
+      emit(ir::OpCode::ALLOC_VAR, varName);
    }
-   comment("end of declaration\n");
 
+   m_scopes.back()[varName] = declaration->isMutable;
    return std::nullopt;
 }
 
 template <>
 std::optional<std::string> Generator::generate(const ast::Assignment* assignment) {
-   std::string_view varName = assignment->identifier->name;
-   const auto symbol = m_stack.find(varName);
+   const std::string& varName = assignment->identifier->name;
+   auto mutability = findMutability(varName);
 
-   /// @todo extract into function that checks existence and mutability
-   if(!symbol)
+   if(!mutability.has_value())
       return std::format("Use of undeclared identifier '{}'!", varName);
-   else if(!symbol->isMutable)
+   else if(!*mutability)
       return std::format("Tried to modify immutable variable '{}'!", varName);
 
-   auto exprError = generate<ast::Expression>(assignment->expression);
-   if(exprError)
-      return exprError;
-
-   m_stack.pop(m_output, "rax");
-   write(std::format("mov QWORD [rbp - {}], rax ; assignment of '{}'", symbol->offset, varName));
+   if(auto folded = tryFold(assignment->expression)) {
+      emit(ir::OpCode::STORE_VAR, varName, *folded);
+   } else {
+      if(auto exprError = generate<ast::Expression>(assignment->expression)) return exprError;
+      emit(ir::OpCode::STORE_VAR, varName, ir::TOS);
+   }
 
    return std::nullopt;
 }
 
-template<>
+template <>
 std::optional<std::string> Generator::generate(const ast::Exit* exit) {
-   m_output += "\n";
-   comment("Exiting (by user)...");
+   if(auto folded = tryFold(exit->expression))
+      emit(ir::OpCode::EXIT, *folded);
+   else {
+      if(auto exprError = generate<ast::Expression>(exit->expression))
+         return exprError;
 
-   auto exprError = generate<ast::Expression>(exit->expression);
-   if(exprError)
-      return exprError;
-
-   write("mov rax, 1 | 0x2000000 ; exit syscall number");
-   m_stack.pop(m_output, "rdi");
-   write("syscall");
+      emit(ir::OpCode::EXIT, ir::TOS);
+   }
 
    return std::nullopt;
 }
@@ -117,42 +117,41 @@ std::optional<std::string> Generator::generate(const ast::Exit* exit) {
 template <>
 std::optional<std::string> Generator::generate(const ast::Increment* increment) {
    const std::string& varName = increment->identifier->name;
-   const auto symbol = m_stack.find(varName);
+   auto mutability = findMutability(varName);
 
-   if(!symbol)
+   if(!mutability.has_value())
       return std::format("Use of undeclared identifier '{}'!", varName);
-   else if(!symbol->isMutable)
+   else if(!*mutability)
       return std::format("Tried to modify immutable variable '{}'!", varName);
 
-   write(std::format("inc QWORD [rbp - {}] ; {}++", symbol->offset, varName));
+   emit(ir::OpCode::INCR, varName);
    return std::nullopt;
 }
 
 template <>
 std::optional<std::string> Generator::generate(const ast::Decrement* decrement) {
    const std::string& varName = decrement->identifier->name;
-   const auto symbol = m_stack.find(varName);
+   auto mutability = findMutability(varName);
 
-   if(!symbol)
+   if(!mutability.has_value())
       return std::format("Use of undeclared identifier '{}'!", varName);
-   else if(!symbol->isMutable)
+   else if(!*mutability)
       return std::format("Tried to modify immutable variable '{}'!", varName);
 
-   write(std::format("dec QWORD [rbp - {}] ; {}--", symbol->offset, varName));
+   emit(ir::OpCode::DECR, varName);
    return std::nullopt;
 }
 
 template <>
-std::optional<std::string> Generator::generate(const ast::Block *block) {
-   m_stack.startScope(m_output);
+std::optional<std::string> Generator::generate(const ast::Block* block) {
+   pushScope();
 
    for(const ast::Statement& stmt : block->statements) {
-      auto error = generate<ast::Statement>(&stmt);
-      if(error)
-         return error;
+      if(auto stmtError = generate<ast::Statement>(&stmt))
+         return stmtError;
    }
 
-   m_stack.endScope(m_output);
+   popScope();
    return std::nullopt;
 }
 
@@ -160,86 +159,88 @@ std::optional<std::string> Generator::generate(const ast::Block *block) {
 
 #pragma region Expressions
 
-template<>
+template <>
 std::optional<std::string> Generator::generate(const ast::IntegerLiteral* integerLiteral) {
-   m_stack.push(m_output, integerLiteral->to_string());
+   emit(ir::OpCode::PUSH_INT, integerLiteral->to_string());
    return std::nullopt;
 }
 
-template<>
+template <>
 std::optional<std::string> Generator::generate(const ast::Identifier* identifier) {
    const std::string& varName = identifier->name;
-   const auto symbol = m_stack.find(varName);
+   if(!isDeclared(varName))
+      return std::format("Use of undeclared '{}!", varName);
 
-   if(!symbol)
-      return std::format("Use of undeclared identifier '{}'!", varName);
-   else
-      m_stack.push(m_output, std::format("QWORD [rbp - {}] ; '{}'", symbol->offset, varName));
-
+   emit(ir::OpCode::PUSH_VAR, varName);
    return std::nullopt;
 }
 
 template <>
 std::optional<std::string> Generator::generate(const ast::Negative* negative) {
-   auto operand = generate<ast::Expression>(negative->operand);
-   if(operand)
-      return operand;
+   if(auto folded = tryFold(negative->operand)) {
+      emit(ir::OpCode::NEG, *folded);
+   } else {
+      if(auto exprError = generate<ast::Expression>(negative->operand))
+         return exprError;
 
-   m_stack.pop(m_output, "rax");
-   write("neg rax");
-   m_stack.push(m_output, "rax");
+      emit(ir::OpCode::NEG, ir::TOS);
+   }
 
    return std::nullopt;
 }
 
 template <>
 std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr) {
-   auto left = generate<ast::Expression>(binaryExpr->left);
-   if(left)
-      return left;
+   std::string left, right;
 
-   auto right = generate<ast::Expression>(binaryExpr->right);
-   if(right)
-      return right;
+   if(auto folded = tryFold(binaryExpr->left)) {
+      left = *folded;
+   } else {
+      if(auto exprError = generate<ast::Expression>(binaryExpr->left))
+         return exprError;
 
-   m_stack.pop(m_output, std::format("rbx ; rhs for op '{}'", getCharsOf(binaryExpr->op)));
-   m_stack.pop(m_output, std::format("rax ; lhs for op '{}'", getCharsOf(binaryExpr->op)));
+      left = ir::TOS;
+   }
 
+   if(auto folded = tryFold(binaryExpr->right)) {
+      right = *folded;
+   } else {
+      if(auto exprError = generate<ast::Expression>(binaryExpr->right))
+         return exprError;
+
+      right = ir::TOS;
+   }
+
+   ir::OpCode opcode;
    switch(binaryExpr->op) {
       case TokenType::PLUS:
-         write("add rax, rbx");
+         opcode = ir::OpCode::ADD;
          break;
 
       case TokenType::STAR:
-         write("imul rax, rbx");
+         opcode = ir::OpCode::MUL;
          break;
 
       case TokenType::MINUS:
-         write("sub rax, rbx");
+         opcode = ir::OpCode::SUB;
          break;
 
       case TokenType::FSLASH:
-         write("cqo ; prep rdx:rax for division");
-         write("idiv rbx");
-         comment("rax now holds the quotient");
+         opcode = ir::OpCode::DIV;
          break;
 
       case TokenType::PERCENT:
-         write("cqo ; prep rdx:rax for division");
-         write("idiv rbx");
-         write("mov rax, rdx ; store remainder");
+         opcode = ir::OpCode::MOD;
          break;
 
       case TokenType::CARET:
-         m_requiredExterns.insert("exponentiate");
-         write("call exponentiate");
-         break;
+         /// @todo calling exponentiation
 
       default:
          return std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op));
    }
 
-   m_stack.push(m_output, std::format("rax ; result of binary operation '{}'", getCharsOf(binaryExpr->op)));
+   emit(opcode, left, right);
    return std::nullopt;
 }
 

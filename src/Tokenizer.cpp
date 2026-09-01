@@ -22,67 +22,70 @@ char Tokenizer::consume(std::uint32_t count) noexcept {
    return current;
 }
 
+void Tokenizer::emplaceKeyword(std::vector<Token>& tokens, std::string& buffer) {
+   if(buffer == "mint")
+      tokens.emplace_back(TokenType::MINT);
+   else if(buffer == "bar")
+      tokens.emplace_back(TokenType::BAR);
+   else if(buffer == "exit")
+      tokens.emplace_back(TokenType::EXIT);
+   else
+      tokens.emplace_back(TokenType::IDENTIFIER, buffer);
+
+   buffer.clear();
+}
+
+void Tokenizer::emplaceNumber(std::vector<Token>& tokens, std::string& buffer) {
+   /// @todo float vs int type
+
+   tokens.emplace_back(TokenType::INTEGER_LITERAL, buffer);
+   buffer.clear();
+}
+
 std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
    /// @todo use a better, lighter data structure than vector
    std::vector<Token> tokens{};
    std::string buffer;
 
    while(peek()) {
-      if(std::isalpha(*peek())) {
-         // assign buffer
-         buffer.push_back(consume()); // first character can only be a letter, so we consume that before allowing other characters
-         while(peek() && (std::isalnum(*peek()) || *peek() == '_' ))
-            buffer.push_back(consume());
+      if(std::isalpha(*peek()) || *peek() == '_') {
+         do buffer.push_back(consume());
+         while(peek() && (std::isalnum(*peek()) || *peek() == '_' ));
 
-         // check buffer
-         if(buffer == "exit")
-            tokens.emplace_back(TokenType::EXIT);
-         else if(buffer == "mint")
-            tokens.emplace_back(TokenType::MINT);
-         else if(buffer == "bar")
-            tokens.emplace_back(TokenType::BAR);
-         else
-            tokens.emplace_back(TokenType::IDENTIFIER, buffer);
-
-         buffer.clear();
+         emplaceKeyword(tokens, buffer);
 
       } else if(std::isdigit(*peek())) {
-         // assign buffer
-         buffer.push_back(consume());
-         while(peek() && std::isdigit(*peek()))
-            buffer.push_back(consume());
+         /// @todo allow float type
+         do buffer.push_back(consume());
+         while(peek() && std::isdigit(*peek()));
 
-         /// @todo check buffer
-         tokens.emplace_back(TokenType::INTEGER_LITERAL, buffer);
-         buffer.clear();
+         emplaceNumber(tokens, buffer);
 
       } else if(*peek() == '$') { // comments. ignored in compilation completely
          consume();
-         if(*peek() == '$') { // inline comment "$$ .."
-            consume();
-            while(peek() && *peek() != '\n') {
-               consume();
-            }
+         switch(*peek()) {
+            case '$':
+               do consume();
+               while(peek() && *peek() != '\n');
 
-         } else if(*peek() == '~') { // multi-line comment "$~ ... ~$"
-            consume();
-            while(*peek() != '~') {
-               consume();
+               consume(); // consume newline
+               break;
 
-               if(!peek()) // unexpected end of file
-                  return std::unexpected("Unexpected end of file!\nExpected a `~`!");
-            }
+            case '~':
+               do consume();
+               while(peek() && peek() != '~');
 
-            if(!peek(1) || *peek(1) != '$')
-               return std::unexpected("Expected a `$`!");
-            consume(2);
+               if(!peek(1) || *peek(1) != '$')
+                  return std::unexpected("Comment unclosed at end of file!");
+               consume(2); // consume ~$
 
-         } else {
-            return std::unexpected("Expected a `$` or `~`!");
+            default:
+               continue; // the while loop's else case will handle unknown character error msg
          }
 
       } else if(std::isspace(static_cast<unsigned char>(*peek()))) {
-         consume();
+         do consume();
+         while(peek() && std::isspace(static_cast<unsigned char>(*peek())));
 
       } else {
          char next = consume();
@@ -147,7 +150,7 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
                break;
 
             default:
-               return std::unexpected(std::format("Unknown character '{}'!", next));
+               return std::unexpected(std::format("Unexpected character '{}'!", next));
          }
       }
    }

@@ -2,8 +2,8 @@
 
 #define TOKEN_TYPES \
    /* Keywords */ \
-   X(MINT) \
-   X(BAR) \
+   X(MINT) X(BAR) \
+   X(IF) X(ELIF) X(ELSE) \
    X(EXIT) \
 \
    /* Literals & identifiers */ \
