@@ -9,7 +9,7 @@ public:
       : m_instructions(std::move(instructions)), m_stack(m_output, reporter), m_reporter(reporter)
    { m_output.reserve(4096); }
 
-   std::expected<std::string, std::string> emitAssembly();
+   std::string emitAssembly();
    std::vector<std::string> getRequiredLibs() const;
 
 private:
@@ -23,19 +23,19 @@ private:
 
 private:
    void comment(std::string_view comment) { m_output += std::format("\t; {}\n", comment); }
-   void write(std::string_view cmd) { m_output += std::format("\t{}\n", cmd); }
+   void write(std::string_view cmd, std::optional<std::string_view> comment = std::nullopt); 
 
    /// @param value an integer literal or an identifier
-   void pushValue(std::string_view value);
+   void pushValue(std::string_view value, std::optional<std::string_view> comment = std::nullopt);
 
    /// @param dest a register or the stack location of a variable
    /// @param value an integer literal or an identifier
-   void movFoldedValue(std::string_view dest, std::string_view value);
+   void movFoldedValue(std::string_view dest, std::string_view value, std::optional<std::string_view> comment = std::nullopt);
 
    /// @param varName name of destination variable
    /// @param value integer literal, identifier, or a register depending on valueIsReg
    /// @param valueIsReg if true, value won't be looked for in the symbol table
-   void movToVar(std::string_view varName, std::string_view value, bool valueIsReg);
+   void movToVar(std::string_view varName, std::string_view value, bool valueIsReg, std::optional<std::string_view> comment = std::nullopt);
 
    /// resolves a two-operand instruction so that after this call: rax = left, rbx = right
    void resolveBinaryOperands(const ir::Instruction& insr);

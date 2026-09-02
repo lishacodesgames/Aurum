@@ -44,10 +44,10 @@ int main(int argc, char* argv[]) {
 
    fileHandler.outputIR(generator.getIR());
 
-   AsmEmitter emitter(std::move(instructions));
+   AsmEmitter emitter(std::move(instructions), reporter);
    std::string assembly = emitter.emitAssembly();
 
-   fileHandler.outputAssembly(*assembly);
+   fileHandler.outputAssembly(assembly);
    fileHandler.assemble(emitter.getRequiredLibs());
    fileHandler.runExecutable();
 

@@ -20,11 +20,13 @@ public:
    /**
     * @param name name of variable being pushed
     * @param isMutable if the value can be changed after this.
-    * @param value the value / register being pushed. Can be empty if variable has only been declared and not defined
+    * @param value the value / register being pushed. Can be empty if variable has only been declared and not defined. can also be followed by a comment 
     * @param comment WITH PRECEEDING SEMICOLON
     * @return the instruction text to emit for this push
     */
    void push(std::optional<std::string_view> value, bool isMutable = false, std::string_view name = "");
+
+   /// @param reg can be followed by a comment
    void pop(std::string_view reg);
 
    /// name the variable at the very top of the stack

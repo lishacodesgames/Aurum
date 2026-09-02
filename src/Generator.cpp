@@ -16,7 +16,7 @@ std::string Generator::getIR() const {
    IR += "_main:\n"; /// @todo function definition opcodes
 
    for(const ir::Instruction& instr : m_instructions) {
-      IR += "\t " + ir::to_string(instr.opcode);
+      IR += "\t" + ir::to_string(instr.opcode);
 
       if(instr.operandLeft) {
          IR += " " + *instr.operandLeft;
@@ -242,6 +242,9 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
       generate<ast::Expression>(binaryExpr->right);
       right = ir::TOS;
    }
+
+   if(right == ir::TOS && left == ir::TOS)
+      left = ir::SOS; // left was pushed first so it's SECOND ON STACK
 
    ir::OpCode opcode;
    switch(binaryExpr->op) {
