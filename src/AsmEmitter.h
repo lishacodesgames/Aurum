@@ -8,7 +8,7 @@ public:
       { m_output.reserve(4096); }
 
    std::expected<std::string, std::string> emitAssembly();
-   std::vector<std::string> getRequiredLibs() const; /// @todo noexcept?
+   std::vector<std::string> getRequiredLibs() const;
 
 private:
    const std::vector<ir::Instruction> m_instructions;

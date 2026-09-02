@@ -53,7 +53,7 @@ bool isLeftAssociative(TokenType type);
 
 struct Token {
    TokenType type;
-   std::optional<std::string> value = std::nullopt; /// @todo change type. Template it maybe
+   std::optional<std::string> value = std::nullopt;
 
    Token(TokenType type) : type(type) {} // for implicit conversion
    Token(TokenType type, std::string value) : type(type), value(value) {}

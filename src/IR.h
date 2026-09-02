@@ -21,6 +21,10 @@
 namespace ir
 {
    inline const std::string TOS = "$tos"; /// an operand that says: the value that is currently on the stack, before the running of this operation
+   inline const std::string SOS = "$sos"; /// an operand that says: the value that is currently SECOND on the stack, before running of this operation
+
+   /// @todo implement SOS
+
    enum class OpCode {
       #define X(name) name,
          OP_CODES

@@ -13,6 +13,8 @@ struct Symbol { // for now, can only be a variable
 
 class Stack {
 public:
+   Stack(std::string& emitter_output) : emitter_output(emitter_output) {}
+
    /**
     * @param name name of variable being pushed
     * @param isMutable if the value can be changed after this.
@@ -20,8 +22,8 @@ public:
     * @param comment WITH PRECEEDING SEMICOLON
     * @return the instruction text to emit for this push
     */
-   void push(std::string& output, std::optional<std::string_view> value, bool isMutable = false, std::string_view name = "");
-   void pop(std::string& output, std::string_view reg);
+   void push(std::optional<std::string_view> value, bool isMutable = false, std::string_view name = "");
+   void pop(std::string_view reg);
 
    /// name the variable at the very top of the stack
    void nameTop(std::string_view name) { m_stack.back().name = name; }
@@ -39,12 +41,16 @@ public:
    /// @return size of stack in 8-byte elements
    std::size_t size() const noexcept { return m_stack.size(); }
 
-   void startScope(std::string& output);
-   void endScope(std::string& output);
+   void startScope();
+   void endScope();
 
 private:
    std::vector<Symbol> m_stack{};
    std::vector<std::size_t> m_scopeMarks{}; /// how many vars existed when each scope was added
+
+   /// @todo test if it works
+   /// @todo store the entire emitter?
+   std::string& m_output;
 
 private:
    /// private helper function for the 3 public ones: contains, find, offset

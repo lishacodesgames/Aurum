@@ -26,7 +26,6 @@ int main(int argc, char* argv[]) {
    if(!program)
       FATAL_ERROR("{}", program.error());
 
-   /// @todo output IR instructions into a file
    Generator generator(std::move(*program));
    auto instructions = generator.generate();
    if(!instructions)
