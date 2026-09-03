@@ -145,9 +145,11 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
    switch(instr.opcode) {
       case ir::OpCode::PUSH_INT:
          pushValue(*instr.operandLeft);
+         break;
 
       case ir::OpCode::PUSH_VAR:
          pushValue(*instr.operandLeft);
+         break;
 
       case ir::OpCode::DEF_VAR: {
          const std::string& varName = *instr.operandLeft;
@@ -158,10 +160,12 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
 
          /// @todo mutability
          m_stack.setTop(varName, true);
+         break;
       }
 
       case ir::OpCode::ALLOC_VAR:
          m_stack.push(std::nullopt, true, *instr.operandLeft);
+         break;
 
       case ir::OpCode::STORE_VAR: {
          const std::string& varName = *instr.operandLeft;
@@ -174,6 +178,8 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          } else {
             movToVar(varName, value, false, std::format("{} = {}", varName, value));
          }
+
+         break;
       }
 
       case ir::OpCode::INCR: {
@@ -182,6 +188,8 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          else
             g_errors.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
                /* todo */ {}, std::format("Use of undeclared identifier '{}'!", *instr.operandLeft), true);
+
+         break;
       }
 
       case ir::OpCode::DECR: {
@@ -190,14 +198,29 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          else
             g_errors.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
                /* todo */ {}, std::format("Use of undeclared identifier '{}'!", *instr.operandLeft), true);
+
+         break;
       }
 
-      case ir::OpCode::ADD: return handleBinary(instr, "add");
-      case ir::OpCode::SUB: return handleBinary(instr, "sub");
-      case ir::OpCode::MUL: return handleBinary(instr, "imul"); // signed multiplication
+      case ir::OpCode::ADD:
+         handleBinary(instr, "add");
+         break;
 
-      case ir::OpCode::DIV: return handleDivMod(instr, false);
-      case ir::OpCode::MOD: return handleDivMod(instr, true);
+      case ir::OpCode::SUB:
+         handleBinary(instr, "sub");
+         break;
+
+      case ir::OpCode::MUL:
+         handleBinary(instr, "imul"); // signed multiplication
+         break;
+
+      case ir::OpCode::DIV:
+         handleDivMod(instr, false);
+         break;
+
+      case ir::OpCode::MOD:
+         handleDivMod(instr, true);
+         break;
 
       case ir::OpCode::NEG: {
          if(*instr.operandLeft == ir::TOS)
@@ -207,6 +230,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
 
          write("neg rax");
          m_stack.push("rax");
+         break;
       }
 
       case ir::OpCode::EXIT: {
@@ -218,16 +242,20 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          m_output += "\n";
          write("mov rax, 1 | 0x2000000", "exit syscall number for macOS");
          write("syscall");
+         break;
       }
 
       case ir::OpCode::SCOPE_START:
          m_stack.startScope();
+         break;
 
       case ir::OpCode::SCOPE_END:
          m_stack.endScope();
+         break;
 
       default:
          g_errors.report(Phase::EMITTING_ASSEMBLY, Category::INTERNAL,
             { "AsmEmitter.cpp" }, std::format("Unhandled opcode: '{}'!", ir::to_string(instr.opcode)), true);
+         break;
    }
 }

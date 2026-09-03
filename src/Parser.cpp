@@ -31,10 +31,10 @@ ast::Program Parser::parse() {
 }
 
 Token Parser::peek(int offset) const noexcept {
-   if(m_pos + offset >= m_tokens.size())
-      g_errors.report(Phase::PARSING, Category::INTERNAL, m_tokens.at(m_pos).location, "Parser tried to access outside tokens!");
-
-   return m_tokens[m_pos + offset];
+   if(m_pos + offset < m_tokens.size() - 1)
+      return m_tokens.at(m_pos + offset);
+   else
+      return m_tokens.back();
 }
 
 Token Parser::consume(std::uint32_t count) noexcept {
@@ -224,22 +224,22 @@ ast::Block* Parser::parse<ast::Block>() {
 ast::Expression Parser::parseTerm() {
    switch(peek().type) {
       case TokenType::INTEGER_LITERAL: {
-         auto integerLiteral = parse<ast::IntegerLiteral>();
-         if(!integerLiteral) return std::monostate{};
+         ast::IntegerLiteral* integerLiteral = parse<ast::IntegerLiteral>();
+         VALIDATE_PTR_RETURN_MONO(integerLiteral);
 
          return ast::Expression(std::in_place_type<ast::IntegerLiteral*>, integerLiteral);
       }
 
       case TokenType::IDENTIFIER: {
-         auto identifier = parse<ast::Identifier>();
-         if(!identifier) return std::monostate{};
+         ast::Identifier* identifier = parse<ast::Identifier>();
+         VALIDATE_PTR_RETURN_MONO(identifier);
 
          return ast::Expression(std::in_place_type<ast::Identifier*>, identifier);
       }
 
       case TokenType::MINUS: {
-         auto negation = parse<ast::Negative>();
-         if(!negation) return std::monostate{};
+         ast::Negative* negation = parse<ast::Negative>();
+         VALIDATE_PTR_RETURN_MONO(negation);
 
          return ast::Expression(std::in_place_type<ast::Negative*>, negation);
       }
@@ -270,7 +270,7 @@ ast::Expression Parser::parseExpression(int minPrec) {
    if(!std::holds_alternative<std::monostate>(expression)) {
       while(isBinaryOperator(peek().type) && getPrecedence(peek().type) >= minPrec) {
          ast::BinaryExpr* binaryExpr = parse<ast::BinaryExpr>();
-         if(!binaryExpr) return std::monostate{};
+         VALIDATE_PTR_RETURN_MONO(binaryExpr);
    
          binaryExpr->left = m_arena.create<ast::Expression>(std::move(expression));
          expression = ast::Expression(std::in_place_type<ast::BinaryExpr*>, binaryExpr);
@@ -310,7 +310,7 @@ ast::BinaryExpr* Parser::parse<ast::BinaryExpr>() {
    int nextMinPrec = isLeftAssociative(op) ? precedence + 1 : precedence;
 
    ast::Expression rhs = parseExpression(nextMinPrec);
-   if(std::holds_alternative<std::monostate>(rhs)) return nullptr;
+   VALIDATE_VARIANT_RETURN_NULL(rhs);
 
    return m_arena.create<ast::BinaryExpr>(nullptr, op, m_arena.create<ast::Expression>(std::move(rhs)));
 }

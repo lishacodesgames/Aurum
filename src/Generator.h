@@ -79,9 +79,10 @@ private:
          if constexpr(!std::is_same_v<PtrT, std::monostate>) {
             using T = std::remove_pointer_t<PtrT>;
             generate<T>(arg);
+         } else {
+            g_errors.report(Phase::GENERATING, Category::INTERNAL,
+               { "Generator.h" }, "Tried to call generate on monostate!", true);
          }
-
-         g_errors.report(Phase::GENERATING, Category::INTERNAL, { "Generator.h" }, "Tried to call generate on monostate!", true);
       }, *varNode);
    }
 };

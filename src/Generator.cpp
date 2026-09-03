@@ -83,7 +83,6 @@ void Generator::generate(const ast::Declaration* declaration) {
    const std::string& varName = declaration->identifier->name;
 
    if(isDeclared(varName)) {
-
       g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
          /* @todo */ {}, std::format("Redeclaration of identifier '{}'!", varName), true);
       return;
