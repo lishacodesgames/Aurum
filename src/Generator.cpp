@@ -84,8 +84,8 @@ void Generator::generate(const ast::Declaration* declaration) {
 
    if(isDeclared(varName)) {
 
-      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-            /* @todo */ {}, std::format("Redeclaration of identifier '{}'!", varName), true);
+      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+         /* @todo */ {}, std::format("Redeclaration of identifier '{}'!", varName), true);
       return;
    }
 
@@ -109,11 +109,11 @@ void Generator::generate(const ast::Assignment* assignment) {
    std::optional<bool> mutability = findMutability(varName);
 
    if(!mutability.has_value()) {
-      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
             /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", varName), true);
       return;
    } else if(!*mutability) {
-      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
             /* @todo */ {}, std::format("Tried to modify immutable variable '{}'!", varName), true);
       return;
    }
@@ -148,12 +148,12 @@ void Generator::generate(const ast::Increment* increment) {
    std::optional<bool> mutability = findMutability(varName);
 
    if(!mutability.has_value()) {
-      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-            /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", varName), true);
+      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+         /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", varName), true);
       return;
    } else if(!*mutability) {
-      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-            /* @todo */ {}, std::format("Tried to modify immutable variable '{}'!", varName), true);
+      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+         /* @todo */ {}, std::format("Tried to modify immutable variable '{}'!", varName), true);
       return;
    }
 
@@ -166,12 +166,12 @@ void Generator::generate(const ast::Decrement* decrement) {
    std::optional<bool> mutability = findMutability(varName);
 
    if(!mutability.has_value()) {
-      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-            /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", varName), true);
+      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+         /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", varName), true);
       return;
    } else if(!*mutability) {
-      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-            /* @todo */ {}, std::format("Tried to modify immutable variable '{}'!", varName), true);
+      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+         /* @todo */ {}, std::format("Tried to modify immutable variable '{}'!", varName), true);
       return;
    }
 
@@ -201,8 +201,8 @@ template <>
 void Generator::generate(const ast::Identifier* identifier) {
    const std::string& varName = identifier->name;
    if(!isDeclared(varName)) {
-      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-            /* todo */ {}, std::format("Use of undeclared '{}!", varName), true);
+      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+         /* todo */ {}, std::format("Use of undeclared '{}!", varName), true);
       return;
    }
 
@@ -272,8 +272,8 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
          /// @todo calling exponentiation
 
       default:
-         m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-               /* todo */ {}, std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op)), true);
+         g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+            /* todo */ {}, std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op)), true);
          return;
    }
 

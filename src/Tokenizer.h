@@ -1,10 +1,9 @@
 #pragma once
 #include "Token.h"
-#include "Errors.h"
 
 class Tokenizer {
 public:
-   explicit Tokenizer(std::string_view src, ErrorReporter& reporter) : m_src(src), m_reporter(reporter) {}
+   explicit Tokenizer(std::string_view src) : m_src(src) {}
 
    std::vector<Token> tokenize();
 
@@ -12,7 +11,6 @@ private:
    std::string m_src;
    std::size_t m_pos = 0;
    SourceLocation m_location;
-   ErrorReporter& m_reporter;
 
 private:
    [[nodiscard]] std::optional<char> peek(int offset = 0) const noexcept;

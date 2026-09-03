@@ -14,8 +14,8 @@ struct Symbol { // for now, can only be a variable
 
 class Stack {
 public:
-   Stack(std::string& emitter_output, ErrorReporter& reporter)
-      : m_output(emitter_output), m_reporter(reporter) {}
+   Stack(std::string& emitter_output)
+      : m_output(emitter_output) {}
 
    /**
     * @param name name of variable being pushed
@@ -55,7 +55,6 @@ private:
    /// @todo test if it works
    /// @todo store the entire emitter?
    std::string& m_output;
-   ErrorReporter& m_reporter; /// @todo implement
 
 private:
    /// private helper function for the 3 public ones: contains, find, offset

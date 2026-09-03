@@ -32,7 +32,7 @@ ast::Program Parser::parse() {
 
 Token Parser::peek(int offset) const noexcept {
    if(m_pos + offset >= m_tokens.size())
-      m_reporter.report(Phase::PARSING, Category::INTERNAL, m_tokens.at(m_pos).location, "Parser tried to access outside tokens!");
+      g_errors.report(Phase::PARSING, Category::INTERNAL, m_tokens.at(m_pos).location, "Parser tried to access outside tokens!");
 
    return m_tokens[m_pos + offset];
 }
@@ -51,9 +51,11 @@ Token Parser::tryConsume(TokenType type, std::optional<std::string_view> errMsg,
 
    /// @todo fatal vs non fatal distinction
    if(errMsg)
-      m_reporter.report(Phase::PARSING, errCategory, peek().location, *errMsg, true);
+      g_errors.report(Phase::PARSING, errCategory, peek().location, *errMsg, true);
    else
-      m_reporter.report(Phase::PARSING, errCategory, peek().location, std::format("Expected `{}`!", getCharsOf(type)), true);
+      g_errors.report(Phase::PARSING, errCategory, peek().location, std::format("Expected `{}`!", getCharsOf(type)), true);
+
+   throw std::runtime_error("@todo idk how to fix tryConsume");
 }
 
 std::optional<Token> Parser::tryConsume(TokenType type, bool hasValue) {
@@ -110,7 +112,7 @@ ast::Statement Parser::parseStatement() {
             }
 
             default: {
-               m_reporter.report(Phase::PARSING, Category::SYNTAX, consume().location,
+               g_errors.report(Phase::PARSING, Category::SYNTAX, consume().location,
                   "Expected a unary postfix operator! Got: " + getCharsOf(peek(1).type));
                return std::monostate{};
             }
@@ -125,7 +127,7 @@ ast::Statement Parser::parseStatement() {
       }
 
       default: {
-         m_reporter.report(Phase::PARSING, Category::SYNTAX, consume().location,
+         g_errors.report(Phase::PARSING, Category::SYNTAX, consume().location,
             "Unexpected token, unable to parse statement beginning with: " + to_string(consume().type));
          return std::monostate{};
       }
@@ -256,7 +258,7 @@ ast::Expression Parser::parseTerm() {
       }
 
       default:
-         m_reporter.report(Phase::PARSING, Category::SYNTAX, consume().location,
+         g_errors.report(Phase::PARSING, Category::SYNTAX, consume().location,
             "Unexpected token, unable to parse term beginning with: " + to_string(consume().type));
          return std::monostate{};
    }

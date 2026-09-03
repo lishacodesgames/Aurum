@@ -5,8 +5,8 @@
 
 class AsmEmitter {
 public:
-   explicit AsmEmitter(std::vector<ir::Instruction> instructions, ErrorReporter& reporter)
-      : m_instructions(std::move(instructions)), m_stack(m_output, reporter), m_reporter(reporter)
+   explicit AsmEmitter(std::vector<ir::Instruction> instructions)
+      : m_instructions(std::move(instructions)), m_stack(m_output)
    { m_output.reserve(4096); }
 
    std::string emitAssembly();
@@ -18,8 +18,6 @@ private:
    std::string m_output;
    Stack m_stack;
    std::set<std::string> m_requiredExterns{};
-
-   ErrorReporter& m_reporter;
 
 private:
    void comment(std::string_view comment) { m_output += std::format("\t; {}\n", comment); }

@@ -11,8 +11,8 @@
  */
 class Generator {
 public:
-   explicit Generator(ast::Program program, ErrorReporter& reporter)
-      : m_program(std::move(program)), m_reporter(reporter) {}
+   explicit Generator(ast::Program program)
+      : m_program(std::move(program)) {}
 
    std::vector<ir::Instruction> generate();
    std::string getIR() const;
@@ -24,8 +24,6 @@ private:
    /// name -> isMutable, per scope. Purely for semantic validity, not layout
    /// start with 1 empty global scope
    std::vector<std::unordered_map<std::string, bool>> m_scopes{{}};
-
-   ErrorReporter& m_reporter;
 
 private:
    void emit(ir::OpCode op, std::optional<std::string_view> operand1 = std::nullopt, std::optional<std::string_view> operand2 = std::nullopt);
@@ -83,7 +81,7 @@ private:
             generate<T>(arg);
          }
 
-         m_reporter.report(Phase::GENERATING, Category::INTERNAL, { "Generator.h" }, "Tried to call generate on monostate!", true);
+         g_errors.report(Phase::GENERATING, Category::INTERNAL, { "Generator.h" }, "Tried to call generate on monostate!", true);
       }, *varNode);
    }
 };

@@ -59,7 +59,7 @@ struct Token {
 
    Token(TokenType type, SourceLocation location) : type(type), location(location) {} // for implicit conversion
    // might need to change value(value) to value{value} bcz param is string VIEW
-   Token(TokenType type, SourceLocation location, std::string_view value) : type(type), location(location), value(value) {}
+   Token(TokenType type, std::string_view value, SourceLocation location) : type(type), location(location), value(value) {}
 
    std::string to_string() const;
 

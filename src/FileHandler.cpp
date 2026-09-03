@@ -5,7 +5,8 @@
 
 FileHandler::FileHandler(std::string_view aurumFilePath) : aurumFilePath(aurumFilePath) {
    if(!std::filesystem::exists("scripts"))
-      FATAL_ERROR("Please run from the root of the project, where the 'scripts' folder is located.");
+      g_errors.report(Phase::SETUP, Category::INTERNAL, { "FileHandler.cpp", __LINE__ },
+         "Please run from the root of the project, where the 'scripts' folder is located.", true);
 
    std::filesystem::path outDir("out");
    std::filesystem::create_directories(outDir); // does nothing if it already exists
@@ -20,12 +21,14 @@ FileHandler::FileHandler(std::string_view aurumFilePath) : aurumFilePath(aurumFi
 std::string FileHandler::getSourceCode() const {
    std::ifstream srcFile(aurumFilePath);
    if(!srcFile)
-      FATAL_ERROR("Could not open file '{}'!", aurumFilePath);
+      g_errors.report(Phase::SETUP, Category::INTERNAL,
+         { "FileHandler.cpp", __LINE__ }, "Could not open file: " + aurumFilePath, true);
 
    std::ostringstream contents;
    contents << srcFile.rdbuf();
    if(contents.view().empty()) // check empty with 0 allocations
-      FATAL_ERROR("Empty Aurum file: {}!", aurumFilePath);
+      g_errors.report(Phase::SETUP, Category::INTERNAL,
+         { "FileHandler.cpp", __LINE__ }, "Empty Aurum file: " + aurumFilePath, true);
 
    return contents.str();
 }
@@ -55,7 +58,8 @@ void FileHandler::assemble(const std::vector<std::string>& args) const {
    if(!assembleResult)
       std::println("Successfully assembled to executable '{}'!", executableFilePath);
    else
-      FATAL_ERROR("Assembling failed! Exit code: {}", assembleResult);
+      g_errors.report(Phase::SETUP, Category::INTERNAL,
+         { "FileHandler.cpp", __LINE__ }, std::format("Assembling failed with exit code {}!", assembleResult));
 }
 
 void FileHandler::runExecutable() const {

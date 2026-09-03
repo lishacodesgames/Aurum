@@ -30,7 +30,7 @@ std::uint32_t Stack::offset(std::string_view name) const {
    if(it)
       return it.value()->offset;
    
-   m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::INTERNAL, { "Stack.cpp" }, std::format("Tried to get offset of a variable that doesn't exist: '{}'", name), true);
+   g_errors.report(Phase::EMITTING_ASSEMBLY, Category::INTERNAL, { "Stack.cpp" }, std::format("Tried to get offset of a variable that doesn't exist: '{}'", name), true);
    return 0;   
 }
 
@@ -41,7 +41,7 @@ void Stack::startScope() {
 
 void Stack::endScope() {
    if(m_scopeMarks.empty())
-      m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::INTERNAL, { "Stack.cpp"}, "Tried to end a non-existent scope!", true);
+      g_errors.report(Phase::EMITTING_ASSEMBLY, Category::INTERNAL, { "Stack.cpp"}, "Tried to end a non-existent scope!", true);
 
    m_output += std::format("\t; Leaving scope {}...\n", m_scopeMarks.size());
    std::size_t mark = m_scopeMarks.back();

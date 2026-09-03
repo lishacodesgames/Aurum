@@ -18,32 +18,12 @@ struct SourceLocation {
    std::string file = "gold.aura"; /// only base name, no path
    std::uint32_t row = 0, column = 0;
 
-   std::string to_string() const {
-      return std::format("{}:{}:{}", file, row, column);
-   }
+   std::string to_string() const;
 };
 
 /// @todo put into cpp
-std::string to_string(Phase phase) {
-   switch(phase) {
-      case Phase::NONE:              return "NONE";
-      case Phase::SETUP:             return "SETUP";
-      case Phase::TOKENIZING:        return "TOKENIZING";
-      case Phase::PARSING:           return "PARSING";
-      case Phase::GENERATING:        return "GENERATING";
-      case Phase::EMITTING_ASSEMBLY: return "EMITTING ASSEMBLY";
-   }
-}
-
-std::string to_string(Category category) {
-   switch(category) {
-      case Category::NONE:             return "NONE";
-      case Category::SYNTAX:           return "SYNTAX";
-      case Category::NAME_RESOLUTION:  return "NAME RESOLUTION";
-      case Category::MUTABILITY:       return "MUTABILITY";
-      case Category::INTERNAL:         return "INTERNAL";
-   }
-}
+std::string to_string(Phase phase); 
+std::string to_string(Category category);
 
 struct Error {
    Phase phase;
@@ -52,37 +32,18 @@ struct Error {
    std::string message;
    bool isFatal = false;
 
-   /// Formats as "[FATAL ]{CATEGORY} ERROR during {PHASE} at {file}:{row}:{col}: {message}"
-   std::string to_string() const {
-      return std::format(
-         "\033[38:5:98m{}{} ERROR during {} at {}: {}\033[0m\n",
-         isFatal ? "FATAL " : "", ::to_string(category), ::to_string(phase), location.to_string(), message);
-   }
-
    Error(Phase phase, Category category, SourceLocation location, std::string_view message, bool isFatal = false)
       : phase(phase), category(category), location(location), message(message), isFatal(isFatal) {}
+
+   /// Formats as "[FATAL ]{CATEGORY} ERROR during {PHASE} at {file}:{row}:{col}: {message}"
+   std::string to_string() const;
 };
 
 class ErrorReporter {
 public:
-   void report(Phase phase, Category category, SourceLocation location, std::string_view message, bool isFatal = false) {
-      report(Error{ phase, category, location, message, isFatal });
-   }
-
    /// appends FIRST, then checks if it's fatal. If fatal, calls printAll and throws runtime_error with fatal's msg
-   void report(const Error& error) {
-      m_errors.push_back(error);
-
-      if(error.isFatal) {
-         printAll();
-         throw std::runtime_error(error.to_string());
-      }
-   }
-
-   void printAll() const {
-      for(const Error& error : m_errors)
-         std::println("{}", error.to_string());
-   }
+   void report(Phase phase, Category category, SourceLocation location, std::string_view message, bool isFatal = false);
+   void printAll() const;
 
    bool empty() const noexcept { return m_errors.empty(); }
    std::size_t count() const noexcept { return m_errors.size(); }
@@ -90,3 +51,5 @@ public:
 private:
    std::vector<Error> m_errors{};
 };
+
+inline ErrorReporter g_errors;

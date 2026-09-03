@@ -54,7 +54,7 @@ void AsmEmitter::pushValue(std::string_view value, std::optional<std::string_vie
             m_stack.push(std::format("QWORD [rbp - {}] ; '{}'", symbol->offset, value));
 
       } else {
-         m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
+         g_errors.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
             /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", value), true);
          return;
       }
@@ -63,14 +63,17 @@ void AsmEmitter::pushValue(std::string_view value, std::optional<std::string_vie
 
 void AsmEmitter::movFoldedValue(std::string_view dest, std::string_view value, std::optional<std::string_view> comment) {
    if(std::isdigit(static_cast<unsigned char>(value[0]))) {
-      write(std::format("mov {}, {} ; {}", dest, value, comment));
+      write(std::format("mov {}, {}", dest, value), comment);
 
    } else {
       if(auto symbol = m_stack.find(value)) {
-         write(std::format("mov {}, QWORD [rbp - {}], ; '{}', {}", dest, symbol->offset, value, comment));
+         if(comment)
+            write(std::format("mov {}, QWORD [rbp - {}]", dest, symbol->offset), std::format("'{}', {}", value, *comment));
+         else
+            write(std::format("mov {}, QWORD [rbp - {}]", dest, symbol->offset), std::format("'{}'", value));
 
       } else {
-         m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
+         g_errors.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
             /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", value), true);
          return;
       }
@@ -80,7 +83,7 @@ void AsmEmitter::movFoldedValue(std::string_view dest, std::string_view value, s
 void AsmEmitter::movToVar(std::string_view varName, std::string_view value, bool valueIsReg, std::optional<std::string_view> comment) {
    auto symbol = m_stack.find(varName);
    if(!symbol) {
-      m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
+      g_errors.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
          /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", value), true);
       return;
    }
@@ -97,7 +100,7 @@ void AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
    std::string opcode = ir::to_string(instr.opcode);
 
    if(left == ir::TOS && right == ir::TOS) {
-      m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::INTERNAL, { "AsmEmitter.cpp" }, "Both operands of binary expression are TOS!", true);
+      g_errors.report(Phase::EMITTING_ASSEMBLY, Category::INTERNAL, { "AsmEmitter.cpp" }, "Both operands of binary expression are TOS!", true);
       return;
    }
 
@@ -177,7 +180,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          if(auto symbol = m_stack.find(*instr.operandLeft))
             write(std::format("inc QWORD [rbp - {}]", symbol->offset), std::format("{}++", symbol->name));
          else
-            m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
+            g_errors.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
                /* todo */ {}, std::format("Use of undeclared identifier '{}'!", *instr.operandLeft), true);
       }
 
@@ -185,7 +188,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          if(auto symbol = m_stack.find(*instr.operandLeft))
             write(std::format("dec QWORD [rbp - {}]", symbol->offset), std::format("{}--", symbol->name));
          else
-            m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
+            g_errors.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
                /* todo */ {}, std::format("Use of undeclared identifier '{}'!", *instr.operandLeft), true);
       }
 
@@ -224,7 +227,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          m_stack.endScope();
 
       default:
-         m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::INTERNAL,
+         g_errors.report(Phase::EMITTING_ASSEMBLY, Category::INTERNAL,
             { "AsmEmitter.cpp" }, std::format("Unhandled opcode: '{}'!", ir::to_string(instr.opcode)), true);
    }
 }

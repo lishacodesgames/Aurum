@@ -14,17 +14,16 @@ std::optional<char> Tokenizer::peek(int offset) const noexcept {
 
 char Tokenizer::consume(std::uint32_t count) noexcept {
    if(!peek(count - 1))
-      m_reporter.report(Phase::TOKENIZING, Category::INTERNAL, m_location, "Tried to consume end of file character!", true);
+      g_errors.report(Phase::TOKENIZING, Category::INTERNAL, m_location, "Tried to consume end of file character!", true);
 
    char current = m_src[m_pos];
-   m_pos += count;
 
    while(count != 0) {
       if(m_src.at(m_pos) == '\n') {
-         m_location.row = 0;
-         m_location.column++;
-      } else {
+         m_location.column = 0;
          m_location.row++;
+      } else {
+         m_location.column++;
       }
 
       m_pos++;
@@ -36,13 +35,13 @@ char Tokenizer::consume(std::uint32_t count) noexcept {
 
 void Tokenizer::emplaceKeyword(std::vector<Token>& tokens, std::string& buffer) {
    if(buffer == "mint")
-      tokens.emplace_back(TokenType::MINT);
+      tokens.emplace_back(TokenType::MINT, m_location);
    else if(buffer == "bar")
-      tokens.emplace_back(TokenType::BAR);
+      tokens.emplace_back(TokenType::BAR, m_location);
    else if(buffer == "exit")
-      tokens.emplace_back(TokenType::EXIT);
+      tokens.emplace_back(TokenType::EXIT, m_location);
    else
-      tokens.emplace_back(TokenType::IDENTIFIER, buffer);
+      tokens.emplace_back(TokenType::IDENTIFIER, buffer, m_location);
 
    buffer.clear();
 }
@@ -50,7 +49,7 @@ void Tokenizer::emplaceKeyword(std::vector<Token>& tokens, std::string& buffer) 
 void Tokenizer::emplaceNumber(std::vector<Token>& tokens, std::string& buffer) {
    /// @todo float vs int type
 
-   tokens.emplace_back(TokenType::INTEGER_LITERAL, buffer);
+   tokens.emplace_back(TokenType::INTEGER_LITERAL, buffer, m_location);
    buffer.clear();
 }
 
@@ -71,7 +70,7 @@ void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
 
                consume(); // consume '~'
                if(!peek() || *peek() != '$')
-                  m_reporter.report(Phase::TOKENIZING, Category::SYNTAX, m_location, "Multi-line comment unclosed!", true);
+                  g_errors.report(Phase::TOKENIZING, Category::SYNTAX, m_location, "Multi-line comment unclosed!", true);
 
                consume(); // consume '$'
                break;
@@ -139,7 +138,7 @@ void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
          break;
 
       default:
-         m_reporter.report(Phase::TOKENIZING, Category::SYNTAX, m_location, std::format("Unexpected character '{}'!", current), true);
+         g_errors.report(Phase::TOKENIZING, Category::SYNTAX, m_location, std::format("Unexpected character '{}'!", current), true);
    }
 }
 
@@ -171,6 +170,6 @@ std::vector<Token> Tokenizer::tokenize() {
       }
    }
 
-   tokens.emplace_back(TokenType::END_OF_FILE);
+   tokens.emplace_back(TokenType::END_OF_FILE, m_location);
    return tokens;
 }

@@ -18,33 +18,31 @@ int main(int argc, char* argv[]) {
    FileHandler fileHandler(aurumFilePath);
    std::println("Compiling aurum file '{}'...", aurumFilePath);
 
-   ErrorReporter reporter;
-
    // parse & generate assembly
-   Tokenizer tokenizer(fileHandler.getSourceCode(), reporter);
+   Tokenizer tokenizer(fileHandler.getSourceCode());
    std::vector<Token> tokens = tokenizer.tokenize();
-   if(!reporter.empty()) {
-      reporter.printAll();
+   if(!g_errors.empty()) {
+      g_errors.printAll();
       return EXIT_FAILURE;
    }
 
-   Parser parser(std::move(tokens), reporter);
+   Parser parser(std::move(tokens));
    ast::Program program = parser.parse();
-   if(!reporter.empty()) {
-      reporter.printAll();
+   if(!g_errors.empty()) {
+      g_errors.printAll();
       return EXIT_FAILURE;
    }
 
-   Generator generator(std::move(program), reporter);
+   Generator generator(std::move(program));
    std::vector<ir::Instruction> instructions = generator.generate();
-   if(!reporter.empty()) {
-      reporter.printAll();
+   if(!g_errors.empty()) {
+      g_errors.printAll();
       return EXIT_FAILURE;
    }
 
    fileHandler.outputIR(generator.getIR());
 
-   AsmEmitter emitter(std::move(instructions), reporter);
+   AsmEmitter emitter(std::move(instructions));
    std::string assembly = emitter.emitAssembly();
 
    fileHandler.outputAssembly(assembly);

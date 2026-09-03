@@ -10,8 +10,8 @@
 
 class Parser {
 public:
-   explicit Parser(std::vector<Token> tokens, ErrorReporter& reporter)
-      : m_tokens(std::move(tokens)), m_arena(4 * 1024 * 1024), m_reporter(reporter) {} // 4MB stack frame (for now)
+   explicit Parser(std::vector<Token> tokens)
+      : m_tokens(std::move(tokens)), m_arena(4 * 1024 * 1024) {} // 4MB stack frame (for now)
 
    ~Parser() { m_arena.reset(); }
 
@@ -21,7 +21,6 @@ private:
    std::vector<Token> m_tokens{};
    std::size_t m_pos = 0;
    mem::ArenaAllocator m_arena;
-   ErrorReporter& m_reporter;
 
 private:
    Token peek(int offset = 0) const noexcept; // exit(1) doesn't count as an exception
