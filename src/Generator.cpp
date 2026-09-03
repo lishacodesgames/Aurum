@@ -6,7 +6,7 @@ std::vector<ir::Instruction> Generator::generate() {
       generate<ast::Statement>(&stmt);
 
    emit(ir::OpCode::EXIT, "0"); // in case user hasn't exited
-   return std::move(m_instructions);
+   return m_instructions; // NOT to be moved bcz it needs to be accessed later
 }
 
 std::string Generator::getIR() const {

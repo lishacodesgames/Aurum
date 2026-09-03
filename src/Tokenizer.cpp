@@ -55,30 +55,6 @@ void Tokenizer::emplaceNumber(std::vector<Token>& tokens, std::string& buffer) {
 
 void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
    switch(current) {
-      case '$':
-         switch(*peek()) {
-            case '$':
-               do consume();
-               while(peek() && *peek() != '\n');
-
-               consume(); // consume newline
-               break;
-
-            case '~':
-               do consume();
-               while(peek() && peek() != '~');
-
-               consume(); // consume '~'
-               if(!peek() || *peek() != '$')
-                  g_errors.report(Phase::TOKENIZING, Category::SYNTAX, m_location, "Multi-line comment unclosed!", true);
-
-               consume(); // consume '$'
-               break;
-
-            default:
-               return; // the while loop's else case will handle unknown character error msg
-         }
-
       case '-':
          if(peek() == '-') {
             consume();
@@ -86,6 +62,7 @@ void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
          } else {
             tokens.emplace_back(TokenType::MINUS, m_location);
          }
+
          break;
 
       case '+':
@@ -95,6 +72,7 @@ void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
          } else {
             tokens.emplace_back(TokenType::PLUS, m_location);
          }
+
          break;
 
       case ';':
@@ -164,6 +142,29 @@ std::vector<Token> Tokenizer::tokenize() {
       } else if(std::isspace(static_cast<unsigned char>(*peek()))) {
          do consume();
          while(peek() && std::isspace(static_cast<unsigned char>(*peek())));
+
+      } else if(*peek() == '$') {
+         switch(*peek()) {
+            case '$':
+               do consume();
+               while(peek() && *peek() != '\n');
+
+               consume(); // consume newline
+               break;
+
+            case '~':
+               do consume();
+               while(peek() && peek() != '~');
+
+               consume(); // consume '~'
+               if(!peek() || *peek() != '$')
+                  g_errors.report(Phase::TOKENIZING, Category::SYNTAX, m_location, "Multi-line comment unclosed!", true);
+
+               consume(); // consume '$'
+
+            default:
+               continue; // while loop will handle unknown character error
+         }
 
       } else {
          emplaceChar(tokens, consume());

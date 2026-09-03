@@ -1,0 +1,9 @@
+mint a = 10;
+bar b = 5;
+b = b + a;
+b++;
+{
+   bar c = 2;
+   b = b - c;
+}
+exit b;

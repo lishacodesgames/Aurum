@@ -1,0 +1,5 @@
+bar x = 1;
+{
+   bar y = 2;
+   exit x + y;
+}

@@ -1,0 +1,3 @@
+bar x = 5;
+bar x = 10;
+exit x;

@@ -1,0 +1,3 @@
+bar a = 17;
+bar b = a % 5;
+exit b;
