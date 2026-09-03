@@ -1,14 +1,12 @@
 #include <pch/Precompiled.h>
 #include "Generator.h"
 
-std::expected<std::vector<ir::Instruction>, std::string> Generator::generate() {
-   for(const ast::Statement& stmt : m_program.statements) {
-      if(auto error = generate<ast::Statement>(&stmt))
-         return std::unexpected(*error);
-   }
+std::vector<ir::Instruction> Generator::generate() {
+   for(const ast::Statement& stmt : m_program.statements)
+      generate<ast::Statement>(&stmt);
 
    emit(ir::OpCode::EXIT, "0"); // in case user hasn't exited
-   return m_instructions;
+   return std::move(m_instructions);
 }
 
 std::string Generator::getIR() const {
@@ -77,20 +75,25 @@ std::optional<std::string> Generator::tryFold(const ast::Expression* expr) const
    }, *expr);
 }
 
+/// @todo if hit error anywhere, return and parse the next statement
 #pragma region Statements
 
 template <>
-inline std::optional<std::string> Generator::generate(const ast::Declaration* declaration) {
+void Generator::generate(const ast::Declaration* declaration) {
    const std::string& varName = declaration->identifier->name;
 
-   if(isDeclared(varName))
-      return std::format("Redeclaration of identifier '{}'!", varName);
+   if(isDeclared(varName)) {
+
+      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+            /* @todo */ {}, std::format("Redeclaration of identifier '{}'!", varName), true);
+      return;
+   }
 
    if(declaration->expression) {
       if(auto folded = tryFold(*declaration->expression)) {
          emit(ir::OpCode::DEF_VAR, varName, *folded);
       } else {
-         if(auto exprError = generate<ast::Expression>(*declaration->expression)) return exprError;
+         generate<ast::Expression>(*declaration->expression);
          emit(ir::OpCode::DEF_VAR, varName, ir::TOS);
       }
    } else {
@@ -98,82 +101,91 @@ inline std::optional<std::string> Generator::generate(const ast::Declaration* de
    }
 
    m_scopes.back()[varName] = declaration->isMutable;
-   return std::nullopt;
 }
 
 template <>
-std::optional<std::string> Generator::generate(const ast::Assignment* assignment) {
+void Generator::generate(const ast::Assignment* assignment) {
    const std::string& varName = assignment->identifier->name;
-   auto mutability = findMutability(varName);
+   std::optional<bool> mutability = findMutability(varName);
 
-   if(!mutability.has_value())
-      return std::format("Use of undeclared identifier '{}'!", varName);
-   else if(!*mutability)
-      return std::format("Tried to modify immutable variable '{}'!", varName);
+   if(!mutability.has_value()) {
+      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+            /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", varName), true);
+      return;
+   } else if(!*mutability) {
+      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+            /* @todo */ {}, std::format("Tried to modify immutable variable '{}'!", varName), true);
+      return;
+   }
 
+   std::string arg2;
    if(auto folded = tryFold(assignment->expression)) {
-      emit(ir::OpCode::STORE_VAR, varName, *folded);
+      arg2 = *folded;
    } else {
-      if(auto exprError = generate<ast::Expression>(assignment->expression)) return exprError;
-      emit(ir::OpCode::STORE_VAR, varName, ir::TOS);
+      generate<ast::Expression>(assignment->expression);
+      arg2 = ir::TOS;
    }
 
-   return std::nullopt;
+   emit(ir::OpCode::STORE_VAR, varName, arg2);
 }
 
 template <>
-std::optional<std::string> Generator::generate(const ast::Exit* exit) {
+void Generator::generate(const ast::Exit* exit) {
+   std::string arg;
    if(auto folded = tryFold(exit->expression))
-      emit(ir::OpCode::EXIT, *folded);
+      arg = *folded;
    else {
-      if(auto exprError = generate<ast::Expression>(exit->expression))
-         return exprError;
-
-      emit(ir::OpCode::EXIT, ir::TOS);
+      generate<ast::Expression>(exit->expression);
+      arg = ir::TOS;
    }
 
-   return std::nullopt;
+   emit(ir::OpCode::EXIT, arg);
 }
 
 template <>
-std::optional<std::string> Generator::generate(const ast::Increment* increment) {
+void Generator::generate(const ast::Increment* increment) {
    const std::string& varName = increment->identifier->name;
-   auto mutability = findMutability(varName);
+   std::optional<bool> mutability = findMutability(varName);
 
-   if(!mutability.has_value())
-      return std::format("Use of undeclared identifier '{}'!", varName);
-   else if(!*mutability)
-      return std::format("Tried to modify immutable variable '{}'!", varName);
+   if(!mutability.has_value()) {
+      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+            /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", varName), true);
+      return;
+   } else if(!*mutability) {
+      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+            /* @todo */ {}, std::format("Tried to modify immutable variable '{}'!", varName), true);
+      return;
+   }
 
    emit(ir::OpCode::INCR, varName);
-   return std::nullopt;
 }
 
 template <>
-std::optional<std::string> Generator::generate(const ast::Decrement* decrement) {
+void Generator::generate(const ast::Decrement* decrement) {
    const std::string& varName = decrement->identifier->name;
-   auto mutability = findMutability(varName);
+   std::optional<bool> mutability = findMutability(varName);
 
-   if(!mutability.has_value())
-      return std::format("Use of undeclared identifier '{}'!", varName);
-   else if(!*mutability)
-      return std::format("Tried to modify immutable variable '{}'!", varName);
-
-   emit(ir::OpCode::DECR, varName);
-   return std::nullopt;
-}
-
-template <>
-std::optional<std::string> Generator::generate(const ast::Block* block) {
-   pushScope();
-
-   for(const ast::Statement& stmt : block->statements) {
-      if(auto stmtError = generate<ast::Statement>(&stmt))
-         return stmtError;
+   if(!mutability.has_value()) {
+      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+            /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", varName), true);
+      return;
+   } else if(!*mutability) {
+      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+            /* @todo */ {}, std::format("Tried to modify immutable variable '{}'!", varName), true);
+      return;
    }
 
+   emit(ir::OpCode::DECR, varName);
+}
+
+template <>
+void Generator::generate(const ast::Block* block) {
+   pushScope();
+
+   for(const ast::Statement& stmt : block->statements)
+      generate<ast::Statement>(&stmt);
+
    popScope();
-   return std::nullopt;
 }
 
 #pragma endregion
@@ -181,57 +193,53 @@ std::optional<std::string> Generator::generate(const ast::Block* block) {
 #pragma region Expressions
 
 template <>
-std::optional<std::string> Generator::generate(const ast::IntegerLiteral* integerLiteral) {
+void Generator::generate(const ast::IntegerLiteral* integerLiteral) {
    emit(ir::OpCode::PUSH_INT, integerLiteral->to_string());
-   return std::nullopt;
 }
 
 template <>
-std::optional<std::string> Generator::generate(const ast::Identifier* identifier) {
+void Generator::generate(const ast::Identifier* identifier) {
    const std::string& varName = identifier->name;
-   if(!isDeclared(varName))
-      return std::format("Use of undeclared '{}!", varName);
-
-   emit(ir::OpCode::PUSH_VAR, varName);
-   return std::nullopt;
-}
-
-template <>
-std::optional<std::string> Generator::generate(const ast::Negative* negative) {
-   if(auto folded = tryFold(negative->operand)) {
-      emit(ir::OpCode::NEG, *folded);
-   } else {
-      if(auto exprError = generate<ast::Expression>(negative->operand))
-         return exprError;
-
-      emit(ir::OpCode::NEG, ir::TOS);
+   if(!isDeclared(varName)) {
+      m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+            /* todo */ {}, std::format("Use of undeclared '{}!", varName), true);
+      return;
    }
 
-   return std::nullopt;
+   emit(ir::OpCode::PUSH_VAR, varName);
+}
+
+template <>
+void Generator::generate(const ast::Negative* negative) {
+   std::string operand;
+   if(auto folded = tryFold(negative->operand)) {
+      operand = *folded;
+   } else {
+      generate<ast::Expression>(negative->operand);
+      operand = ir::TOS;
+   }
+
+   emit(ir::OpCode::NEG, operand);
 }
 
 /// @todo fix: both should not be tos. maybe add sos (second on stack as a value)
 /// sub tos, tos should result in 0 basically (tos - tos = 0)
 /// but instead it assumes left tos to be below right tos which is not good
 template <>
-std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr) {
+void Generator::generate(const ast::BinaryExpr* binaryExpr) {
    std::string left, right;
 
    if(auto folded = tryFold(binaryExpr->left)) {
       left = *folded;
    } else {
-      if(auto exprError = generate<ast::Expression>(binaryExpr->left))
-         return exprError;
-
+      generate<ast::Expression>(binaryExpr->left);
       left = ir::TOS;
    }
 
    if(auto folded = tryFold(binaryExpr->right)) {
       right = *folded;
    } else {
-      if(auto exprError = generate<ast::Expression>(binaryExpr->right))
-         return exprError;
-
+      generate<ast::Expression>(binaryExpr->right);
       right = ir::TOS;
    }
 
@@ -261,11 +269,12 @@ std::optional<std::string> Generator::generate(const ast::BinaryExpr* binaryExpr
          /// @todo calling exponentiation
 
       default:
-         return std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op));
+         m_reporter.report(Phase::GENERATING, Category::NAME_RESOLUTION,
+               /* todo */ {}, std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op)), true);
+         return;
    }
 
    emit(opcode, left, right);
-   return std::nullopt;
 }
 
 #pragma endregion

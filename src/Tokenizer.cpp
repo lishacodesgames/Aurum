@@ -14,10 +14,22 @@ std::optional<char> Tokenizer::peek(int offset) const noexcept {
 
 char Tokenizer::consume(std::uint32_t count) noexcept {
    if(!peek(count - 1))
-      FATAL_ERROR("Tried to consume end of file character!");
+      m_reporter.report(Phase::TOKENIZING, Category::INTERNAL, m_location, "Tried to consume end of file character!", true);
 
    char current = m_src[m_pos];
    m_pos += count;
+
+   while(count != 0) {
+      if(m_src.at(m_pos) == '\n') {
+         m_location.row = 0;
+         m_location.column++;
+      } else {
+         m_location.row++;
+      }
+
+      m_pos++;
+      count--;
+   }
 
    return current;
 }
@@ -42,7 +54,96 @@ void Tokenizer::emplaceNumber(std::vector<Token>& tokens, std::string& buffer) {
    buffer.clear();
 }
 
-std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
+void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
+   switch(current) {
+      case '$':
+         switch(*peek()) {
+            case '$':
+               do consume();
+               while(peek() && *peek() != '\n');
+
+               consume(); // consume newline
+               break;
+
+            case '~':
+               do consume();
+               while(peek() && peek() != '~');
+
+               consume(); // consume '~'
+               if(!peek() || *peek() != '$')
+                  m_reporter.report(Phase::TOKENIZING, Category::SYNTAX, m_location, "Multi-line comment unclosed!", true);
+
+               consume(); // consume '$'
+               break;
+
+            default:
+               return; // the while loop's else case will handle unknown character error msg
+         }
+
+      case '-':
+         if(peek() == '-') {
+            consume();
+            tokens.emplace_back(TokenType::DECREMENT, m_location);
+         } else {
+            tokens.emplace_back(TokenType::MINUS, m_location);
+         }
+         break;
+
+      case '+':
+         if(peek() == '+') {
+            consume();
+            tokens.emplace_back(TokenType::INCREMENT, m_location);
+         } else {
+            tokens.emplace_back(TokenType::PLUS, m_location);
+         }
+         break;
+
+      case ';':
+         tokens.emplace_back(TokenType::SEMICOLON, m_location);
+         break;
+
+      case '=':
+         tokens.emplace_back(TokenType::EQUALS, m_location);
+         break;
+
+      case '*':
+         tokens.emplace_back(TokenType::STAR, m_location);
+         break;
+
+      case '/':
+         tokens.emplace_back(TokenType::FSLASH, m_location);
+         break;
+
+      case '%':
+         tokens.emplace_back(TokenType::PERCENT, m_location);
+         break;
+
+      case '^':
+         tokens.emplace_back(TokenType::CARET, m_location);
+         break;
+
+      case '(':
+         tokens.emplace_back(TokenType::OPEN_PAREN, m_location);
+         break;
+
+      case ')':
+         tokens.emplace_back(TokenType::CLOSE_PAREN, m_location);
+         break;
+
+      case '{':
+         tokens.emplace_back(TokenType::OPEN_CURLY, m_location);
+         break;
+
+      case '}':
+         tokens.emplace_back(TokenType::CLOSE_CURLY, m_location);
+         break;
+
+      default:
+         m_reporter.report(Phase::TOKENIZING, Category::SYNTAX, m_location, std::format("Unexpected character '{}'!", current), true);
+   }
+}
+
+std::vector<Token> Tokenizer::tokenize() {
    /// @todo use a better, lighter data structure than vector
    std::vector<Token> tokens{};
    std::string buffer;
@@ -61,97 +162,12 @@ std::expected<std::vector<Token>, std::string>Tokenizer::tokenize() {
 
          emplaceNumber(tokens, buffer);
 
-      } else if(*peek() == '$') { // comments. ignored in compilation completely
-         consume();
-         switch(*peek()) {
-            case '$':
-               do consume();
-               while(peek() && *peek() != '\n');
-
-               consume(); // consume newline
-               break;
-
-            case '~':
-               do consume();
-               while(peek() && peek() != '~');
-
-               if(!peek(1) || *peek(1) != '$')
-                  return std::unexpected("Comment unclosed at end of file!");
-               consume(2); // consume ~$
-
-            default:
-               continue; // the while loop's else case will handle unknown character error msg
-         }
-
       } else if(std::isspace(static_cast<unsigned char>(*peek()))) {
          do consume();
          while(peek() && std::isspace(static_cast<unsigned char>(*peek())));
 
       } else {
-         char next = consume();
-
-         switch(next) {
-            case ';':
-               tokens.emplace_back(TokenType::SEMICOLON);
-               break;
-
-            case '=':
-               tokens.emplace_back(TokenType::EQUALS);
-               break;
-
-            case '-':
-               if(peek() == '-') {
-                  consume();
-                  tokens.emplace_back(TokenType::DECREMENT);
-               } else {
-                  tokens.emplace_back(TokenType::MINUS);
-               }
-               break;
-
-            case '+':
-               if(peek() == '+') {
-                  consume();
-                  tokens.emplace_back(TokenType::INCREMENT);
-               } else {
-                  tokens.emplace_back(TokenType::PLUS);
-               }
-               break;
-
-            case '*':
-               tokens.emplace_back(TokenType::STAR);
-               break;
-
-            case '/':
-               tokens.emplace_back(TokenType::FSLASH);
-               break;
-
-            case '%':
-               tokens.emplace_back(TokenType::PERCENT);
-               break;
-
-            case '^':
-               tokens.emplace_back(TokenType::CARET);
-               break;
-
-            case '(':
-               tokens.emplace_back(TokenType::OPEN_PAREN);
-               break;
-
-            case ')':
-               tokens.emplace_back(TokenType::CLOSE_PAREN);
-               break;
-
-            case '{':
-               tokens.emplace_back(TokenType::OPEN_CURLY);
-               break;
-
-            case '}':
-               tokens.emplace_back(TokenType::CLOSE_CURLY);
-               break;
-
-            default:
-               return std::unexpected(std::format("Unexpected character '{}'!", next));
-         }
+         emplaceChar(tokens, consume());
       }
    }
 

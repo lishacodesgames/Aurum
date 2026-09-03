@@ -15,9 +15,9 @@ namespace ast
          try {
             this->value = std::stoi(value);
          } catch(const std::invalid_argument& e) {
-            FATAL_ERROR("Tried to convert {} to an integer literal!", value);
+            throw std::runtime_error(std::format("Tried to convert {} to an integer literal!", value));
          } catch(const std::out_of_range& e) {
-            FATAL_ERROR("'{}' is too large for an integer literal!", value);
+            throw std::runtime_error(std::format("'{}' is too large for an integer literal!", value));
          }
       }
 

@@ -34,40 +34,41 @@ std::vector<std::string> AsmEmitter::getRequiredLibs() const {
    return files;
 }
 
-std::optional<std::string> AsmEmitter::pushValue(std::string_view value) {
-   bool isNumeric = std::isdigit(static_cast<unsigned char>(value[0]));
-
-   if(isNumeric) {
-      m_stack.push(m_output, value);
+void AsmEmitter::pushValue(std::string_view value) {
+   if(std::isdigit(static_cast<unsigned char>(value[0]))) {
+      m_stack.push(value);
    } else {
       if(auto symbol = m_stack.find(value))
-         m_stack.push(m_output, std::format("QWORD [rbp - {}] ; '{}'", symbol->offset, value));
-      else
-         return std::format("Use of undeclared identifier '{}'!", value);
+         m_stack.push(std::format("QWORD [rbp - {}] ; '{}'", symbol->offset, value));
+      else {
+         m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
+               /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", value), true);
+         return;
+      }
    }
-
-   return std::nullopt;
 }
 
-std::optional<std::string> AsmEmitter::movFoldedValue(std::string_view dest, std::string_view value) {
-   bool isNumeric = std::isdigit(static_cast<unsigned char>(value[0]));
-
-   if(isNumeric) {
+void AsmEmitter::movFoldedValue(std::string_view dest, std::string_view value) {
+   if(std::isdigit(static_cast<unsigned char>(value[0]))) {
       write(std::format("mov {}, {}", dest, value));
    } else {
       if(auto symbol = m_stack.find(value))
          write(std::format("mov {}, QWORD [rbp - {}] ; '{}'", dest, symbol->offset, value));
-      else
-         return std::format("Use of undeclared identifier '{}'!", value);
+      else {
+         m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
+               /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", value), true);
+         return;
+      }
    }
-
-   return std::nullopt;
 }
 
-std::optional<std::string> AsmEmitter::movToVar(std::string_view varName, std::string_view value, bool valueIsReg) {
+void AsmEmitter::movToVar(std::string_view varName, std::string_view value, bool valueIsReg) {
    auto symbol = m_stack.find(varName);
-   if(!symbol)
-      return std::format("Use of undeclared identifier '{}'!", varName);
+   if(!symbol) {
+      m_reporter.report(Phase::EMITTING_ASSEMBLY, Category::NAME_RESOLUTION,
+            /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", value), true);
+      return;
+   }
 
    if(!valueIsReg) {
       // also validates value's existence if it's an identifier
@@ -79,7 +80,7 @@ std::optional<std::string> AsmEmitter::movToVar(std::string_view varName, std::s
    return std::nullopt;
 }
 
-std::optional<std::string> AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
+void AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
    const std::string& left = *instr.operandLeft;
    const std::string& right = *instr.operandRight;
 
@@ -113,7 +114,7 @@ std::optional<std::string> AsmEmitter::resolveBinaryOperands(const ir::Instructi
    return std::nullopt;
 }
 
-std::optional<std::string> AsmEmitter::handleBinary(const ir::Instruction& instr, std::string_view asmMnemonic) {
+void AsmEmitter::handleBinary(const ir::Instruction& instr, std::string_view asmMnemonic) {
    if(auto resolveError = resolveBinaryOperands(instr)) return resolveError;
 
    write(std::format("{} rax, rbx", asmMnemonic));
@@ -121,7 +122,7 @@ std::optional<std::string> AsmEmitter::handleBinary(const ir::Instruction& instr
    return std::nullopt;
 }
 
-std::optional<std::string> AsmEmitter::handleDivMod(const ir::Instruction& instr, bool wantRemainder) {
+void AsmEmitter::handleDivMod(const ir::Instruction& instr, bool wantRemainder) {
    if(auto resolveError = resolveBinaryOperands(instr)) return resolveError;
 
    write("cqo ; prep rdx:rax for division");
@@ -135,7 +136,7 @@ std::optional<std::string> AsmEmitter::handleDivMod(const ir::Instruction& instr
    return std::nullopt;
 }
 
-std::optional<std::string> AsmEmitter::handle(const ir::Instruction& instr) {
+void AsmEmitter::handle(const ir::Instruction& instr) {
    switch(instr.opcode) {
       case ir::OpCode::PUSH_INT: {
          if(auto pushError = pushValue(*instr.operandLeft)) return pushError;

@@ -1,4 +1,5 @@
 #pragma once
+#include "Errors.h"
 
 #define TOKEN_TYPES \
    /* Keywords */ \
@@ -43,7 +44,7 @@ enum class TokenType {
 };
 
 std::string to_string(TokenType type);
-std::string getCharsOf(TokenType type); /// eg. returns ( for OPEN_PAREN
+std::string getCharsOf(TokenType type); /// eg. returns '(' for OPEN_PAREN or 'if' for IF
 
 bool isBinaryOperator(TokenType type);
 bool isUnaryOperator(TokenType type);
@@ -53,10 +54,12 @@ bool isLeftAssociative(TokenType type);
 
 struct Token {
    TokenType type;
+   SourceLocation location;
    std::optional<std::string> value = std::nullopt;
 
-   Token(TokenType type) : type(type) {} // for implicit conversion
-   Token(TokenType type, std::string value) : type(type), value(value) {}
+   Token(TokenType type, SourceLocation location) : type(type), location(location) {} // for implicit conversion
+   // might need to change value(value) to value{value} bcz param is string VIEW
+   Token(TokenType type, SourceLocation location, std::string_view value) : type(type), location(location), value(value) {}
 
    std::string to_string() const;
 

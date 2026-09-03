@@ -11,9 +11,10 @@
  */
 class Generator {
 public:
-   explicit Generator(ast::Program program) : m_program(std::move(program)) {}
+   explicit Generator(ast::Program program, ErrorReporter& reporter)
+      : m_program(std::move(program)), m_reporter(reporter) {}
 
-   std::expected<std::vector<ir::Instruction>, std::string> generate();
+   std::vector<ir::Instruction> generate();
    std::string getIR() const;
 
 private:
@@ -23,6 +24,8 @@ private:
    /// name -> isMutable, per scope. Purely for semantic validity, not layout
    /// start with 1 empty global scope
    std::vector<std::unordered_map<std::string, bool>> m_scopes{{}};
+
+   ErrorReporter& m_reporter;
 
 private:
    void emit(ir::OpCode op, std::optional<std::string_view> operand1 = std::nullopt, std::optional<std::string_view> operand2 = std::nullopt);
@@ -54,33 +57,33 @@ private:
    /// @retval error striing if falied
    /// @retval nullopt if everything went well
    template<ast::AstNode T>
-   [[nodiscard]] std::optional<std::string> generate(const T*);
+   void generate(const T*);
 
    // -- statements --
-   template<> std::optional<std::string> generate(const ast::Declaration* declaration);
-   template<> std::optional<std::string> generate(const ast::Assignment* assignment);
-   template<> std::optional<std::string> generate(const ast::Exit* exit);
-   template<> std::optional<std::string> generate(const ast::Increment* increment);
-   template<> std::optional<std::string> generate(const ast::Decrement* decrement);
-   template<> std::optional<std::string> generate(const ast::Block* block);
+   template<> void generate(const ast::Declaration* declaration);
+   template<> void generate(const ast::Assignment* assignment);
+   template<> void generate(const ast::Exit* exit);
+   template<> void generate(const ast::Increment* increment);
+   template<> void generate(const ast::Decrement* decrement);
+   template<> void generate(const ast::Block* block);
 
    // -- expressions --
-   template<> std::optional<std::string> generate(const ast::IntegerLiteral* integerLiteral);
-   template<> std::optional<std::string> generate(const ast::Identifier* identifier);
-   template<> std::optional<std::string> generate(const ast::Negative* negative);
-   template<> std::optional<std::string> generate(const ast::BinaryExpr* binaryExpr);
+   template<> void generate(const ast::IntegerLiteral* integerLiteral);
+   template<> void generate(const ast::Identifier* identifier);
+   template<> void generate(const ast::Negative* negative);
+   template<> void generate(const ast::BinaryExpr* binaryExpr);
 
    // -- variant's overload
    template<ast::VariantNode V>
-   [[nodiscard]] std::optional<std::string> generate(const V* varNode) {
-      return std::visit([this](auto&& arg) -> std::optional<std::string> {
+   void generate(const V* varNode) {
+      return std::visit([this](auto&& arg) -> void {
          using PtrT = std::decay_t<decltype(arg)>;
          if constexpr(!std::is_same_v<PtrT, std::monostate>) {
             using T = std::remove_pointer_t<PtrT>;
-            return generate<T>(arg);
+            generate<T>(arg);
          }
 
-         return "Tried to call generate on monostate!";
+         m_reporter.report(Phase::GENERATING, Category::INTERNAL, { "Generator.h" }, "Tried to call generate on monostate!", true);
       }, *varNode);
    }
 };

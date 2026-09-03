@@ -10,17 +10,18 @@
 
 class Parser {
 public:
-   explicit Parser(std::vector<Token> tokens)
-      : m_tokens(std::move(tokens)), m_arena(4 * 1024 * 1024) {} // 4MB stack frame (for now)
+   explicit Parser(std::vector<Token> tokens, ErrorReporter& reporter)
+      : m_tokens(std::move(tokens)), m_arena(4 * 1024 * 1024), m_reporter(reporter) {} // 4MB stack frame (for now)
 
    ~Parser() { m_arena.reset(); }
 
-   std::expected<ast::Program, std::string> parse();
+   ast::Program parse();
 
 private:
    std::vector<Token> m_tokens{};
    std::size_t m_pos = 0;
    mem::ArenaAllocator m_arena;
+   ErrorReporter& m_reporter;
 
 private:
    Token peek(int offset = 0) const noexcept; // exit(1) doesn't count as an exception
@@ -34,11 +35,11 @@ private:
 
    /**
     * @brief tries to consume type. If not, the throws errMsg.
-    * @param errMsg if empty, throws "Expected `TYPE`!"
+    * @param errMsg if nullopt, throws "Expected `TYPE`!"
     * @param hasValue whether not having value should also throw
     * @return consumed token
     */
-   Token tryConsume(TokenType type, std::optional<std::string_view> errMsg, bool hasValue = false);
+   Token tryConsume(TokenType type, std::optional<std::string_view> errMsg, Category errCategory, bool hasValue = false);
 
    /**
     * @brief confirms whether the next token is type. If yes, then it consumes it. Otherwise does nothing
@@ -49,32 +50,32 @@ private:
 
 private:
    template<ast::AstNode T>
-   std::expected<T*, std::string> parse();
+   T* parse();
 
    // by value because there's no circular dependencies here and we don't want them in the arena
 
    // --- EXPLICIT SPECIALISATIONS ---
    // statements
-   std::expected<ast::Statement, std::string> parseStatement();
+   ast::Statement parseStatement();
 
-   template<> std::expected<ast::Declaration*, std::string> parse<ast::Declaration>();
-   template<> std::expected<ast::Assignment*, std::string> parse<ast::Assignment>();
-   template<> std::expected<ast::Exit*, std::string> parse<ast::Exit>();
-   template<> std::expected<ast::Increment*, std::string> parse<ast::Increment>();
-   template<> std::expected<ast::Decrement*, std::string> parse<ast::Decrement>();
-   template<> std::expected<ast::Block*, std::string> parse<ast::Block>();
+   template<> ast::Declaration* parse();
+   template<> ast::Assignment* parse();
+   template<> ast::Exit* parse();
+   template<> ast::Increment* parse();
+   template<> ast::Decrement* parse();
+   template<> ast::Block* parse();
 
    // expressions
    /// @param minPrec the minimum precedence that has to be parsed from the expression
-   std::expected<ast::Expression, std::string> parseExpression(int minPrec = 0);
+   ast::Expression parseExpression(int minPrec = 0);
 
-   template<> std::expected<ast::IntegerLiteral*, std::string> parse<ast::IntegerLiteral>();
-   template<> std::expected<ast::Identifier*, std::string> parse<ast::Identifier>();
-   template<> std::expected<ast::Negative*, std::string> parse<ast::Negative>();
+   template<> ast::IntegerLiteral* parse();
+   template<> ast::Identifier* parse();
+   template<> ast::Negative* parse();
 
    /// @return BinaryExpr containing op and rhs, left will be assigned by caller
-   template<> std::expected<ast::BinaryExpr*, std::string> parse<ast::BinaryExpr>();
+   template<> ast::BinaryExpr* parse();
 
    // helpers
-   std::expected<ast::Expression, std::string> parseTerm();
+   ast::Expression parseTerm();
 };
