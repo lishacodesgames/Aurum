@@ -20,6 +20,7 @@ private:
    std::set<std::string> m_requiredExterns{};
 
 private:
+   void error(Category category, std::string_view message, bool isFatal) const;
    void comment(std::string_view comment) { m_output += std::format("\t; {}\n", comment); }
    void write(std::string_view cmd, std::optional<std::string_view> comment = std::nullopt); 
 

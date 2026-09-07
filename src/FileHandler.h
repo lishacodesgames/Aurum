@@ -21,4 +21,7 @@ private:
    std::string assemblyFilePath;
    std::string executableFilePath;
    std::string assembleCommand;
+
+private:
+   void error(std::string_view message) const;
 };

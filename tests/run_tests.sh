@@ -81,7 +81,7 @@ run_one_test() {
    local first_line_lower
    first_line_lower=$(echo "$first_line" | tr '[:upper:]' '[:lower:]')
 
-   if [[ "first_line_lower" == "fail" ]]; then
+   if [[ "$first_line_lower" == "fail" ]]; then
       # --- NEGATIVE TEST: compiler must refuse to compile this file ---
       if [[ $compiler_exit -eq 0 ]]; then
          echo "${RED}FAIL${RESET}  $name  (expected compilation to fail, but it succeeded)"
@@ -101,6 +101,8 @@ run_one_test() {
       fi
 
       echo "${GREEN}PASS${RESET}  $name"
+      echo "        Compile successfully failed with output:"
+      echo "$compiler_output" | sed 's/^/        /'
       ((PASS_COUNT++))
    else
       # --- POSITIVE TEST: compiler must succeed, executable must exit with N ---

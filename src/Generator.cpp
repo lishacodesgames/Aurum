@@ -75,6 +75,14 @@ std::optional<std::string> Generator::tryFold(const ast::Expression* expr) const
    }, *expr);
 }
 
+void Generator::error(Category category, std::string_view message, bool isFatal) {
+   SourceLocation location{};
+   if(category == Category::INTERNAL)
+      location.file = "Generator.cpp";
+
+   g_errors.report(Phase::GENERATING, category, location, message, isFatal);
+}
+
 /// @todo if hit error anywhere, return and parse the next statement
 #pragma region Statements
 
@@ -83,8 +91,7 @@ void Generator::generate(const ast::Declaration* declaration) {
    const std::string& varName = declaration->identifier->name;
 
    if(isDeclared(varName)) {
-      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-         /* @todo */ {}, std::format("Redeclaration of identifier '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, std::format("Redeclaration of identifier '{}'!", varName), true);
       return;
    }
 
@@ -108,12 +115,10 @@ void Generator::generate(const ast::Assignment* assignment) {
    std::optional<bool> mutability = findMutability(varName);
 
    if(!mutability.has_value()) {
-      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-            /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", varName), true);
       return;
    } else if(!*mutability) {
-      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-            /* @todo */ {}, std::format("Tried to modify immutable variable '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, std::format("Tried to modify immutable variable '{}'!", varName), true);
       return;
    }
 
@@ -147,12 +152,10 @@ void Generator::generate(const ast::Increment* increment) {
    std::optional<bool> mutability = findMutability(varName);
 
    if(!mutability.has_value()) {
-      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-         /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", varName), true);
       return;
    } else if(!*mutability) {
-      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-         /* @todo */ {}, std::format("Tried to modify immutable variable '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, std::format("Tried to modify immutable variable '{}'!", varName), true);
       return;
    }
 
@@ -165,12 +168,10 @@ void Generator::generate(const ast::Decrement* decrement) {
    std::optional<bool> mutability = findMutability(varName);
 
    if(!mutability.has_value()) {
-      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-         /* @todo */ {}, std::format("Use of undeclared identifier '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", varName), true);
       return;
    } else if(!*mutability) {
-      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-         /* @todo */ {}, std::format("Tried to modify immutable variable '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, std::format("Tried to modify immutable variable '{}'!", varName), true);
       return;
    }
 
@@ -200,8 +201,7 @@ template <>
 void Generator::generate(const ast::Identifier* identifier) {
    const std::string& varName = identifier->name;
    if(!isDeclared(varName)) {
-      g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-         /* todo */ {}, std::format("Use of undeclared '{}!", varName), true);
+      error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", varName), true);
       return;
    }
 
@@ -271,8 +271,7 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
          /// @todo calling exponentiation
 
       default:
-         g_errors.report(Phase::GENERATING, Category::NAME_RESOLUTION,
-            /* todo */ {}, std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op)), true);
+         error(Category::INTERNAL, std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op)), true);
          return;
    }
 

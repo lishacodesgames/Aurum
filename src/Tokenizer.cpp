@@ -144,6 +144,7 @@ std::vector<Token> Tokenizer::tokenize() {
          while(peek() && std::isspace(static_cast<unsigned char>(*peek())));
 
       } else if(*peek() == '$') {
+         consume();
          switch(*peek()) {
             case '$':
                do consume();
@@ -161,6 +162,7 @@ std::vector<Token> Tokenizer::tokenize() {
                   g_errors.report(Phase::TOKENIZING, Category::SYNTAX, m_location, "Multi-line comment unclosed!", true);
 
                consume(); // consume '$'
+               break;
 
             default:
                continue; // while loop will handle unknown character error

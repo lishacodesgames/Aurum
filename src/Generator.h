@@ -26,8 +26,9 @@ private:
    std::vector<std::unordered_map<std::string, bool>> m_scopes{{}};
 
 private:
-   void emit(ir::OpCode op, std::optional<std::string_view> operand1 = std::nullopt, std::optional<std::string_view> operand2 = std::nullopt);
-   
+   void emit(ir::OpCode op, std::optional<std::string_view> operand1 = std::nullopt,
+      std::optional<std::string_view> operand2 = std::nullopt);
+
    /// add an empty map to m_scopes
    void pushScope() {
       m_scopes.emplace_back();
@@ -50,6 +51,8 @@ private:
    /// @retval folded string: ONLY for leaf expressions (literal/identifier)
    /// @retval nullopt: for compound expressions (negative/binary)
    std::optional<std::string> tryFold(const ast::Expression* expr) const;
+
+   void error(Category category, std::string_view message, bool isFatal);
 
 private:
    /// @retval error striing if falied

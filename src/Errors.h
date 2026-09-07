@@ -3,6 +3,11 @@
 // currently only has 2, so I'm keeping a bool in Error. But might add more severities later
 // enum class Severity { WARNING, FATAL };
 
+namespace err
+{
+   /// @todo
+}
+
 enum class Phase { NONE, SETUP, TOKENIZING, PARSING, GENERATING, EMITTING_ASSEMBLY };
 
 enum class Category {

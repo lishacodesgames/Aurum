@@ -30,6 +30,14 @@ ast::Program Parser::parse() {
    return program;
 }
 
+void Parser::error(Category category, std::string_view message, bool isFatal) {
+   SourceLocation location{};
+   if(category == Category::INTERNAL)
+      location.file = "Parser.cpp";
+
+   g_errors.report(Phase::PARSING, category, location, message, isFatal);
+}
+
 Token Parser::peek(int offset) const noexcept {
    if(m_pos + offset < m_tokens.size() - 1)
       return m_tokens.at(m_pos + offset);
@@ -51,9 +59,9 @@ Token Parser::tryConsume(TokenType type, std::optional<std::string_view> errMsg,
 
    /// @todo fatal vs non fatal distinction
    if(errMsg)
-      g_errors.report(Phase::PARSING, errCategory, peek().location, *errMsg, true);
+      error(errCategory, *errMsg, true);
    else
-      g_errors.report(Phase::PARSING, errCategory, peek().location, std::format("Expected `{}`!", getCharsOf(type)), true);
+      error(errCategory, std::format("Expected `{}`!", getCharsOf(type)), true);
 
    throw std::runtime_error("@todo idk how to fix tryConsume");
 }
@@ -112,8 +120,7 @@ ast::Statement Parser::parseStatement() {
             }
 
             default: {
-               g_errors.report(Phase::PARSING, Category::SYNTAX, consume().location,
-                  "Expected a unary postfix operator! Got: " + getCharsOf(peek(1).type));
+               error(Category::SYNTAX, "Expected a unary postfix operator! Got: " + getCharsOf(peek(1).type), true);
                return std::monostate{};
             }
          }
@@ -127,8 +134,7 @@ ast::Statement Parser::parseStatement() {
       }
 
       default: {
-         g_errors.report(Phase::PARSING, Category::SYNTAX, consume().location,
-            "Unexpected token, unable to parse statement beginning with: " + to_string(consume().type));
+         error(Category::SYNTAX, "Unexpected token, unable to parse statement beginning with: " + to_string(consume().type), true);
          return std::monostate{};
       }
    }
@@ -258,8 +264,7 @@ ast::Expression Parser::parseTerm() {
       }
 
       default:
-         g_errors.report(Phase::PARSING, Category::SYNTAX, consume().location,
-            "Unexpected token, unable to parse term beginning with: " + to_string(consume().type));
+         error(Category::SYNTAX, "Unexpected token, unable to parse term beginning with: " + to_string(consume().type), true);
          return std::monostate{};
    }
 }

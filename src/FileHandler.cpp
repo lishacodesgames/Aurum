@@ -5,8 +5,7 @@
 
 FileHandler::FileHandler(std::string_view aurumFilePath) : aurumFilePath(aurumFilePath) {
    if(!std::filesystem::exists("scripts"))
-      g_errors.report(Phase::SETUP, Category::INTERNAL, { "FileHandler.cpp", __LINE__ },
-         "Please run from the root of the project, where the 'scripts' folder is located.", true);
+      error("Please run from the root of the project, where the 'scripts' folder is located.");
 
    std::filesystem::path outDir("out");
    std::filesystem::create_directories(outDir); // does nothing if it already exists
@@ -21,14 +20,12 @@ FileHandler::FileHandler(std::string_view aurumFilePath) : aurumFilePath(aurumFi
 std::string FileHandler::getSourceCode() const {
    std::ifstream srcFile(aurumFilePath);
    if(!srcFile)
-      g_errors.report(Phase::SETUP, Category::INTERNAL,
-         { "FileHandler.cpp", __LINE__ }, "Could not open file: " + aurumFilePath, true);
+      error("Could not open file: " + aurumFilePath);
 
    std::ostringstream contents;
    contents << srcFile.rdbuf();
    if(contents.view().empty()) // check empty with 0 allocations
-      g_errors.report(Phase::SETUP, Category::INTERNAL,
-         { "FileHandler.cpp", __LINE__ }, "Empty Aurum file: " + aurumFilePath, true);
+      error("Empty Aurum file: " + aurumFilePath);
 
    return contents.str();
 }
@@ -58,8 +55,7 @@ void FileHandler::assemble(const std::vector<std::string>& args) const {
    if(!assembleResult)
       std::println("Successfully assembled to executable '{}'!", executableFilePath);
    else
-      g_errors.report(Phase::SETUP, Category::INTERNAL,
-         { "FileHandler.cpp", __LINE__ }, std::format("Assembling failed with exit code {}!", assembleResult));
+      error(std::format("Assembling failed with exit code {}!", assembleResult));
 }
 
 void FileHandler::runExecutable() const {
@@ -72,4 +68,8 @@ void FileHandler::runExecutable() const {
    // On macOS, std::system does not return the program's raw exit code directly. Instead, it returns a 16-bit wait status integer encoded by the operating system
    // to get the real exit code, we must divide by 256
    std::println("Successfully ran executable! Exited with exit code: \033[4m{}\033[0m", result / 256); // prints exit code underlined
+}
+
+void FileHandler::error(std::string_view message) const {
+   g_errors.report(Phase::SETUP, Category::INTERNAL, { "FileHandler.cpp" }, message, true);
 }
