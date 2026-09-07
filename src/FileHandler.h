@@ -12,6 +12,7 @@ public:
    void outputAssembly(std::string_view assembly) const;
 
    /// runs the assemble script
+   /// @throws runtime_error if assembling failed
    void assemble(const std::vector<std::string>& args) const;
    void runExecutable() const;
 

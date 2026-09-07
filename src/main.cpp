@@ -21,33 +21,25 @@ int main(int argc, char* argv[]) {
    // parse & generate assembly
    Tokenizer tokenizer(fileHandler.getSourceCode());
    std::vector<Token> tokens = tokenizer.tokenize();
-   if(std::size_t count = g_errors.count(); count > 0) {
-      g_errors.printAll();
-      throw std::runtime_error(std::format("{} error{} generated during tokenizing.", count, count > 1 ? "s" : ""));
-   }
+   if(g_errors.count() > 0)
+      g_errors.throwAll(Phase::TOKENIZING);
 
    Parser parser(std::move(tokens));
    ast::Program program = parser.parse();
-   if(std::size_t count = g_errors.count(); count > 0) {
-      g_errors.printAll();
-      throw std::runtime_error(std::format("{} error{} generated during parsing.", count, count > 1 ? "s" : ""));
-   }
+   if(g_errors.count() > 0)
+      g_errors.throwAll(Phase::PARSING);
 
    Generator generator(std::move(program));
    std::vector<ir::Instruction> instructions = generator.generate();
    fileHandler.outputIR(generator.getIR());
-   if(std::size_t count = g_errors.count(); count > 0) {
-      g_errors.printAll();
-      throw std::runtime_error(std::format("{} error{} generated during generating.", count, count > 1 ? "s" : ""));
-   }
+   if(g_errors.count() > 0)
+      g_errors.throwAll(Phase::GENERATING);
 
    AsmEmitter emitter(std::move(instructions));
    std::string assembly = emitter.emitAssembly();
    fileHandler.outputAssembly(assembly);
-   if(std::size_t count = g_errors.count(); count > 0) {
-      g_errors.printAll();
-      throw std::runtime_error(std::format("{} error{} generated during generating.", count, count > 1 ? "s" : ""));
-   }
+   if(g_errors.count() > 0)
+      g_errors.throwAll(Phase::EMITTING_ASSEMBLY);
 
    fileHandler.assemble(emitter.getRequiredLibs());
    fileHandler.runExecutable();

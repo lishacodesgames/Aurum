@@ -1,3 +1,1 @@
-bar a = 5;
-bar b = 3;
-exit (a + b) / 2 + 100;
+a;

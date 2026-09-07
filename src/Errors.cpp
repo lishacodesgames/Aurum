@@ -28,17 +28,21 @@ std::string to_string(Category category) {
 
 std::string Error::to_string() const {
    return std::format(
-      "\033[38:5:98m{}{} ERROR during {} at {}:\033[0m {}\n",
+      "\033[38:5:98m{}{} ERROR during {} at {}:\033[0m {}",
       isFatal ? "FATAL " : "", ::to_string(category), ::to_string(phase), location.to_string(), message);
 }
 
 void ErrorReporter::report(Phase phase, Category category, SourceLocation location, std::string_view message, bool isFatal) {
-   m_errors.emplace_back(phase, category, location, message, isFatal);
+   m_errors.emplace_back(Error{ phase, category, location, std::string(message), isFatal });
 
-   if(isFatal) {
-      printAll();
-      throw std::runtime_error(std::string(message));
-   }
+   if(isFatal)
+      throwAll(phase);
+}
+
+void ErrorReporter::throwAll(Phase phase) const {
+   printAll();
+   throw std::runtime_error(std::format("\n\033[38:5:196m{} error{} generated during {}.\033[0m",
+      m_errors.size(), m_errors.size() > 1 ? "s" : "", to_string(phase)));
 }
 
 void ErrorReporter::printAll() const {

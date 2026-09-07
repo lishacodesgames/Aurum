@@ -116,7 +116,8 @@ void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
          break;
 
       default:
-         g_errors.report(Phase::TOKENIZING, Category::SYNTAX, m_location, std::format("Unexpected character '{}'!", current), true);
+         using namespace std::string_literals; // need the ""s operator to concatenate a temp string with char
+         g_errors.report(Phase::TOKENIZING, Category::SYNTAX, m_location, "Unexpected character: "s + current);
    }
 }
 
@@ -150,18 +151,18 @@ std::vector<Token> Tokenizer::tokenize() {
                do consume();
                while(peek() && *peek() != '\n');
 
-               consume(); // consume newline
+               if(peek())
+                  consume(); // consume newline
                break;
 
             case '~':
                do consume();
-               while(peek() && peek() != '~');
+               while(peek() && *peek() != '~');
 
-               consume(); // consume '~'
-               if(!peek() || *peek() != '$')
+               if(!peek() || *peek() != '~' || !peek(1) || *peek(1) != '$')
                   g_errors.report(Phase::TOKENIZING, Category::SYNTAX, m_location, "Multi-line comment unclosed!", true);
 
-               consume(); // consume '$'
+               consume(2); // consume '~$'
                break;
 
             default:

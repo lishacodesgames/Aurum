@@ -23,7 +23,7 @@ private:
    mem::ArenaAllocator m_arena;
 
 private:
-   void error(Category category, std::string_view message, bool isFatal);
+   void error(Category category, SourceLocation location, std::string_view message, bool isFatal);
    Token peek(int offset = 0) const noexcept; // exit(1) doesn't count as an exception
 
    /** 
@@ -34,19 +34,13 @@ private:
    Token consume(std::uint32_t count = 1) noexcept;
 
    /**
-    * @brief tries to consume type. If not, the throws errMsg.
-    * @param errMsg if nullopt, throws "Expected `TYPE`!"
-    * @param hasValue whether not having value should also throw
-    * @return consumed token
+    * @brief confirms whether the next token is 'valid'. If yes, then it consumes it. Otherwise logs error
+    * @note next token is 'valid' if it is type and has value if hasValue is set
+    * @param error if nullopt, error isn't reported. Else, it should contain `category, location, msg, isFatal`. Rest all will be overridden by error() helper method
+    * @param hasValue whether not having value contributes to next token being 'valid'
+    * @return if next token is valid, returns the token, else nullopt
     */
-   Token tryConsume(TokenType type, std::optional<std::string_view> errMsg, Category errCategory, bool hasValue = false);
-
-   /**
-    * @brief confirms whether the next token is type. If yes, then it consumes it. Otherwise does nothing
-    * @param hasValue whether not having value contributes to next token being valid
-    * @return if next token is valid (is type and/or hasValue), returns true. Else false
-    */
-   std::optional<Token> tryConsume(TokenType type, bool hasValue = false);
+   [[nodiscard]] std::optional<Token> tryConsume(TokenType type, std::optional<Error> error = std::nullopt, bool hasValue = false);
 
 private:
    template<ast::AstNode T>

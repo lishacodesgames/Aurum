@@ -21,7 +21,7 @@ enum class Category {
 struct SourceLocation {
    /// @todo make input based
    std::string file = "gold.aura"; /// only base name, no path
-   std::uint32_t row = 0, column = 0;
+   std::uint32_t row = 1, column = 1;
 
    std::string to_string() const;
 };
@@ -37,9 +37,6 @@ struct Error {
    std::string message;
    bool isFatal = false;
 
-   Error(Phase phase, Category category, SourceLocation location, std::string_view message, bool isFatal = false)
-      : phase(phase), category(category), location(location), message(message), isFatal(isFatal) {}
-
    /// Formats as "[FATAL ]{CATEGORY} ERROR during {PHASE} at {file}:{row}:{col}: {message}"
    std::string to_string() const;
 };
@@ -48,6 +45,7 @@ class ErrorReporter {
 public:
    /// appends FIRST, then checks if it's fatal. If fatal, calls printAll and throws runtime_error with fatal's msg
    void report(Phase phase, Category category, SourceLocation location, std::string_view message, bool isFatal = false);
+   void throwAll(Phase phase) const;
    void printAll() const;
 
    bool empty() const noexcept { return m_errors.empty(); }

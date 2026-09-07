@@ -75,11 +75,7 @@ std::optional<std::string> Generator::tryFold(const ast::Expression* expr) const
    }, *expr);
 }
 
-void Generator::error(Category category, std::string_view message, bool isFatal) {
-   SourceLocation location{};
-   if(category == Category::INTERNAL)
-      location.file = "Generator.cpp";
-
+void Generator::error(Category category, SourceLocation location, std::string_view message, bool isFatal) {
    g_errors.report(Phase::GENERATING, category, location, message, isFatal);
 }
 

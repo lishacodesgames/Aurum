@@ -1,26 +1,23 @@
 #include <pch/Precompiled.h>
 #include "Parser.h"
 
-#define VALIDATE_VARIANT_RETURN_MONO(var) if(std::holds_alternative<std::monostate>((var))) return std::monostate{};
-#define VALIDATE_VARIANT_RETURN_NULL(var) if(std::holds_alternative<std::monostate>((var))) return nullptr;
+#define VALIDATE_VARIANT_RETURN_MONO(var) if(std::holds_alternative<std::monostate>((var))) return std::monostate{}
+#define VALIDATE_VARIANT_RETURN_NULL(var) if(std::holds_alternative<std::monostate>((var))) return nullptr
 
-#define VALIDATE_PTR_RETURN_MONO(ptr) if(!(ptr)) return std::monostate{};
-#define VALIDATE_PTR_RETURN_NULL(ptr) if(!(ptr)) return nullptr;
+#define VALIDATE_PTR_RETURN_MONO(ptr) if(!(ptr)) return std::monostate{}
+#define VALIDATE_PTR_RETURN_NULL(ptr) if(!(ptr)) return nullptr
 
 ast::Program Parser::parse() {
    ast::Program program;
    while(peek() != TokenType::END_OF_FILE) {
-      /// @todo error save system that
-      /// 1. confirms ; at the end of each statement (don't check inside parseStatement, do it here)
-      /// 2. if ANY error occurs ANYWHERE, don't return, but LOG it or save the string error wtv
-      /// 3. consume till the next ; and then begin parsing the next statement
-
       ast::Statement statement = parseStatement();
+
       if(std::holds_alternative<std::monostate>(statement)) {
-         while(peek() != TokenType::SEMICOLON)
+         while(peek() != TokenType::SEMICOLON && peek() != TokenType::END_OF_FILE)
             consume();
 
-         consume(); // consume semicolon
+         if(peek() == TokenType::SEMICOLON)
+            consume(); // consume semicolon, not eof
          continue;
       }
 
@@ -30,11 +27,7 @@ ast::Program Parser::parse() {
    return program;
 }
 
-void Parser::error(Category category, std::string_view message, bool isFatal) {
-   SourceLocation location{};
-   if(category == Category::INTERNAL)
-      location.file = "Parser.cpp";
-
+void Parser::error(Category category, SourceLocation location, std::string_view message, bool isFatal) {
    g_errors.report(Phase::PARSING, category, location, message, isFatal);
 }
 
@@ -42,7 +35,7 @@ Token Parser::peek(int offset) const noexcept {
    if(m_pos + offset < m_tokens.size() - 1)
       return m_tokens.at(m_pos + offset);
    else
-      return m_tokens.back();
+      return TokenType::END_OF_FILE;
 }
 
 Token Parser::consume(std::uint32_t count) noexcept {
@@ -52,23 +45,13 @@ Token Parser::consume(std::uint32_t count) noexcept {
    return current;
 }
 
-/// @todo fix both tryConsumes my brain is not working
-Token Parser::tryConsume(TokenType type, std::optional<std::string_view> errMsg, Category errCategory, bool hasValue) {
-   if(auto token = tryConsume(type, hasValue))
-      return *token;
+std::optional<Token> Parser::tryConsume(TokenType type, std::optional<Error> error, bool hasValue) {
+   if(peek().type != type || (hasValue && !peek().value)) {
+      if(error)
+         this->error(error->category, error->location, error->message, error->isFatal);
 
-   /// @todo fatal vs non fatal distinction
-   if(errMsg)
-      error(errCategory, *errMsg, true);
-   else
-      error(errCategory, std::format("Expected `{}`!", getCharsOf(type)), true);
-
-   throw std::runtime_error("@todo idk how to fix tryConsume");
-}
-
-std::optional<Token> Parser::tryConsume(TokenType type, bool hasValue) {
-   if(peek().type != type || (hasValue && !peek().value))
       return std::nullopt;
+   }
 
    return consume();
 }
@@ -107,7 +90,7 @@ ast::Statement Parser::parseStatement() {
 
             case TokenType::DECREMENT: {
                ast::Decrement* decrement = parse<ast::Decrement>();
-               VALIDATE_PTR_RETURN_MONO(decrement)
+               VALIDATE_PTR_RETURN_MONO(decrement);
 
                return ast::Statement(std::in_place_type<ast::Decrement*>, decrement);
             }
@@ -120,7 +103,7 @@ ast::Statement Parser::parseStatement() {
             }
 
             default: {
-               error(Category::SYNTAX, "Expected a unary postfix operator! Got: " + getCharsOf(peek(1).type), true);
+               error(Category::SYNTAX, peek(1).location, std::format("Unexpected token {} after identifier {}", getCharsOf(peek(1).type), *peek(1).value), false);
                return std::monostate{};
             }
          }
@@ -134,7 +117,7 @@ ast::Statement Parser::parseStatement() {
       }
 
       default: {
-         error(Category::SYNTAX, "Unexpected token, unable to parse statement beginning with: " + to_string(consume().type), true);
+         error(Category::SYNTAX, peek().location, "Unexpected token, unable to parse statement beginning with: " + to_string(peek().type), true);
          return std::monostate{};
       }
    }
@@ -155,7 +138,7 @@ template<> ast::Declaration* Parser::parse() {
       expression = m_arena.create<ast::Expression>(std::move(expr));
    }
 
-   tryConsume(TokenType::SEMICOLON, std::nullopt, Category::SYNTAX);
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
 
    if(expression)
       return m_arena.create<ast::Declaration>(identifier, expression, isMutable);
@@ -168,54 +151,54 @@ ast::Assignment* Parser::parse<ast::Assignment>() {
    ast::Identifier* identifier = parse<ast::Identifier>();
    VALIDATE_PTR_RETURN_NULL(identifier);
 
-   tryConsume(TokenType::EQUALS, std::nullopt, Category::SYNTAX);
+   consume(); // consume =
 
    ast::Expression expression = parseExpression();
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
-   tryConsume(TokenType::SEMICOLON, std::nullopt, Category::SYNTAX);
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
    return m_arena.create<ast::Assignment>(identifier, m_arena.create<ast::Expression>(std::move(expression)));
 }
 
 template<>
 ast::Exit* Parser::parse<ast::Exit>() {
-   tryConsume(TokenType::EXIT, std::nullopt, Category::SYNTAX);
+   consume(); // consume exit keyword
 
    ast::Expression expression = parseExpression();
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
-   tryConsume(TokenType::SEMICOLON, std::nullopt, Category::SYNTAX);
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
    return m_arena.create<ast::Exit>(m_arena.create<ast::Expression>(std::move(expression)));
 }
 
 template<>
 ast::Increment* Parser::parse<ast::Increment>() {
-   auto identifier = parse<ast::Identifier>();
-   if(!identifier) return nullptr;
+   ast::Identifier* identifier = parse<ast::Identifier>();
+   VALIDATE_PTR_RETURN_NULL(identifier);
 
-   tryConsume(TokenType::INCREMENT, std::nullopt, Category::SYNTAX);
-   tryConsume(TokenType::SEMICOLON, std::nullopt, Category::SYNTAX);
+   consume(); // consume ++
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
    return m_arena.create<ast::Increment>(identifier);
 }
 
 template<>
 ast::Decrement* Parser::parse<ast::Decrement>() {
-   auto identifier = parse<ast::Identifier>();
-   if(!identifier) return nullptr;
+   ast::Identifier* identifier = parse<ast::Identifier>();
+   VALIDATE_PTR_RETURN_NULL(identifier);
 
-   tryConsume(TokenType::DECREMENT, std::nullopt, Category::SYNTAX);
-   tryConsume(TokenType::SEMICOLON, std::nullopt, Category::SYNTAX);
+   consume(); // consume --
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
    return m_arena.create<ast::Decrement>(identifier);
 }
 
 template<>
 ast::Block* Parser::parse<ast::Block>() {
    std::vector<ast::Statement> stmts;
-   tryConsume(TokenType::OPEN_CURLY, std::nullopt, Category::SYNTAX);
+   consume(); // consume {
 
-   while(tryConsume(TokenType::CLOSE_CURLY) == std::nullopt) {
+   while(!tryConsume(TokenType::CLOSE_CURLY)) {
       ast::Statement statement = parseStatement();
-      if(std::holds_alternative<std::monostate>(statement)) return nullptr;
+      VALIDATE_VARIANT_RETURN_NULL(statement);
 
       stmts.push_back(std::move(statement));
    }
@@ -259,12 +242,12 @@ ast::Expression Parser::parseTerm() {
          consume();
          ast::Expression expression = parseExpression();
 
-         tryConsume(TokenType::CLOSE_PAREN, std::nullopt, Category::SYNTAX);
+         VALIDATE_PTR_RETURN_MONO(tryConsume(TokenType::CLOSE_PAREN, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Unclosed parentheses!" }));
          return expression; // same return type so we don't need to unwrap and rewrap
       }
 
       default:
-         error(Category::SYNTAX, "Unexpected token, unable to parse term beginning with: " + to_string(consume().type), true);
+         error(Category::SYNTAX, peek().location, "Unexpected token, unable to parse term beginning with: " + to_string(peek().type), false);
          return std::monostate{};
    }
 }
@@ -287,23 +270,28 @@ ast::Expression Parser::parseExpression(int minPrec) {
 
 template<>
 ast::IntegerLiteral* Parser::parse<ast::IntegerLiteral>() {
-   Token integerLiteral = tryConsume(TokenType::INTEGER_LITERAL, "Expected an integer literal!", Category::SYNTAX, true);
-   return m_arena.create<ast::IntegerLiteral>(*integerLiteral.value);
+   std::optional<Token> integerLiteral = tryConsume(TokenType::INTEGER_LITERAL,
+      Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected an integer literal!" }, true);
+   VALIDATE_PTR_RETURN_NULL(integerLiteral);
+
+   return m_arena.create<ast::IntegerLiteral>(*integerLiteral->value);
 }
 
 template<>
 ast::Identifier* Parser::parse<ast::Identifier>() {
-   Token identifier = tryConsume(TokenType::IDENTIFIER, "Expected an identifier!", Category::SYNTAX, true);
-   return m_arena.create<ast::Identifier>(*identifier.value);
+   std::optional<Token> identifier = tryConsume(TokenType::IDENTIFIER,
+      Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected an identifier!" }, true);
+   VALIDATE_PTR_RETURN_NULL(identifier);
+
+   return m_arena.create<ast::Identifier>(*identifier->value);
 }
 
 template<>
 ast::Negative* Parser::parse<ast::Negative>() {
-   tryConsume(TokenType::MINUS, std::nullopt, Category::SYNTAX);
+   consume(); // consume -
 
    ast::Expression expression = parseTerm(); // recursion
-   if(std::holds_alternative<std::monostate>(expression))
-      return nullptr;
+   VALIDATE_VARIANT_RETURN_NULL(expression);
 
    return m_arena.create<ast::Negative>(m_arena.create<ast::Expression>(std::move(expression)));
 }
