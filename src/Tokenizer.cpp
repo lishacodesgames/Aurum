@@ -14,7 +14,7 @@ std::optional<char> Tokenizer::peek(int offset) const noexcept {
 
 char Tokenizer::consume(std::uint32_t count) noexcept {
    if(!peek(count - 1))
-      g_errors.report(Phase::TOKENIZING, Category::INTERNAL, m_location, "Tried to consume end of file character!", true);
+      g_errors.report(err::Phase::TOKENIZING, err::Category::INTERNAL, m_location, "Tried to consume end of file character!", true);
 
    char current = m_src[m_pos];
 
@@ -117,7 +117,7 @@ void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
 
       default:
          using namespace std::string_literals; // need the ""s operator to concatenate a temp string with char
-         g_errors.report(Phase::TOKENIZING, Category::SYNTAX, m_location, "Unexpected character: "s + current);
+         g_errors.report(err::Phase::TOKENIZING, err::Category::SYNTAX, m_location, "Unexpected character: "s + current);
    }
 }
 
@@ -160,7 +160,7 @@ std::vector<Token> Tokenizer::tokenize() {
                while(peek() && *peek() != '~');
 
                if(!peek() || *peek() != '~' || !peek(1) || *peek(1) != '$')
-                  g_errors.report(Phase::TOKENIZING, Category::SYNTAX, m_location, "Multi-line comment unclosed!", true);
+                  g_errors.report(err::Phase::TOKENIZING, err::Category::SYNTAX, m_location, "Multi-line comment unclosed!", true);
 
                consume(2); // consume '~$'
                break;

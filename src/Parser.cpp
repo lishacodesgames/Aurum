@@ -27,8 +27,8 @@ ast::Program Parser::parse() {
    return program;
 }
 
-void Parser::error(Category category, SourceLocation location, std::string_view message, bool isFatal) {
-   g_errors.report(Phase::PARSING, category, location, message, isFatal);
+void Parser::error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal) {
+   g_errors.report(err::Phase::PARSING, category, location, message, isFatal);
 }
 
 Token Parser::peek(int offset) const noexcept {

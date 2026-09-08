@@ -22,24 +22,24 @@ int main(int argc, char* argv[]) {
    Tokenizer tokenizer(fileHandler.getSourceCode());
    std::vector<Token> tokens = tokenizer.tokenize();
    if(g_errors.count() > 0)
-      g_errors.throwAll(Phase::TOKENIZING);
+      g_errors.throwAll(err::Phase::TOKENIZING);
 
    Parser parser(std::move(tokens));
    ast::Program program = parser.parse();
    if(g_errors.count() > 0)
-      g_errors.throwAll(Phase::PARSING);
+      g_errors.throwAll(err::Phase::PARSING);
 
    Generator generator(std::move(program));
    std::vector<ir::Instruction> instructions = generator.generate();
    fileHandler.outputIR(generator.getIR());
    if(g_errors.count() > 0)
-      g_errors.throwAll(Phase::GENERATING);
+      g_errors.throwAll(err::Phase::GENERATING);
 
    AsmEmitter emitter(std::move(instructions));
    std::string assembly = emitter.emitAssembly();
    fileHandler.outputAssembly(assembly);
    if(g_errors.count() > 0)
-      g_errors.throwAll(Phase::EMITTING_ASSEMBLY);
+      g_errors.throwAll(err::Phase::EMITTING_ASSEMBLY);
 
    fileHandler.assemble(emitter.getRequiredLibs());
    fileHandler.runExecutable();

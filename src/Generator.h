@@ -52,7 +52,7 @@ private:
    /// @retval nullopt: for compound expressions (negative/binary)
    std::optional<std::string> tryFold(const ast::Expression* expr) const;
 
-   void error(Category category, SourceLocation location, std::string_view message, bool isFatal = false);
+   void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false);
 
 private:
    /// @retval error striing if falied

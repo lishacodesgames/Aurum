@@ -32,12 +32,12 @@ std::vector<std::string> AsmEmitter::getRequiredLibs() const {
    return files;
 }
 
-void AsmEmitter::error(Category category, std::string_view message, bool isFatal) const {
-   SourceLocation location{};
-   if(category == Category::INTERNAL)
+void AsmEmitter::error(err::Category category, int line, std::string_view message, bool isFatal) const {
+   err::SourceLocation location{ .row = line };
+   if(category == err::Category::INTERNAL)
       location.file = "AsmEmitter.cpp";
 
-   g_errors.report(Phase::EMITTING_ASSEMBLY, category, location, message, isFatal);
+   g_errors.report(err::Phase::EMITTING_ASSEMBLY, category, location, message, isFatal);
 }
 
 void AsmEmitter::write(std::string_view cmd, std::optional<std::string_view> comment) {
@@ -62,7 +62,7 @@ void AsmEmitter::pushValue(std::string_view value, std::optional<std::string_vie
             m_stack.push(std::format("QWORD [rbp - {}] ; '{}'", symbol->offset, value));
 
       } else {
-         error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", value), true);
+         error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", value), true);
          return;
       }
    }
@@ -80,7 +80,7 @@ void AsmEmitter::movFoldedValue(std::string_view dest, std::string_view value, s
             write(std::format("mov {}, QWORD [rbp - {}]", dest, symbol->offset), std::format("'{}'", value));
 
       } else {
-         error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", value), true);
+         error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", value), true);
          return;
       }
    }
@@ -89,7 +89,7 @@ void AsmEmitter::movFoldedValue(std::string_view dest, std::string_view value, s
 void AsmEmitter::movToVar(std::string_view varName, std::string_view value, bool valueIsReg, std::optional<std::string_view> comment) {
    auto symbol = m_stack.find(varName);
    if(!symbol) {
-      error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", value), true);
+      error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", value), true);
       return;
    }
 
@@ -105,7 +105,7 @@ void AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
    std::string opcode = to_string(instr.opcode);
 
    if(left == ir::TOS && right == ir::TOS) {
-      error(Category::INTERNAL, "Both operands of binary expression are TOS!", true);
+      error(err::Category::INTERNAL, __LINE__, "Both operands of binary expression are TOS!", true);
       return;
    }
 
@@ -201,7 +201,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          if(auto symbol = m_stack.find(*instr.operandLeft))
             write(std::format("inc QWORD [rbp - {}]", symbol->offset), std::format("{}++", symbol->name));
          else
-            error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", *instr.operandLeft), true);
+            error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", *instr.operandLeft), true);
 
          break;
       }
@@ -210,7 +210,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          if(auto symbol = m_stack.find(*instr.operandLeft))
             write(std::format("dec QWORD [rbp - {}]", symbol->offset), std::format("{}--", symbol->name));
          else
-            error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", *instr.operandLeft), true);
+            error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", *instr.operandLeft), true);
 
          break;
       }
@@ -267,7 +267,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
 
       default:
-         error(Category::INTERNAL, std::format("Unhandled opcode: '{}'!", to_string(instr.opcode)), true);
+         error(err::Category::INTERNAL, __LINE__, std::format("Unhandled opcode: '{}'!", to_string(instr.opcode)), true);
          break;
    }
 }

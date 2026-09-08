@@ -20,10 +20,10 @@ public:
 private:
    std::vector<Token> m_tokens{};
    std::size_t m_pos = 0;
-   mem::ArenaAllocator m_arena;
+   ArenaAllocator m_arena;
 
 private:
-   void error(Category category, SourceLocation location, std::string_view message, bool isFatal);
+   void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal);
    Token peek(int offset = 0) const noexcept; // exit(1) doesn't count as an exception
 
    /** 

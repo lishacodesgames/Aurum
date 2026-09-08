@@ -71,5 +71,5 @@ void FileHandler::runExecutable() const {
 }
 
 void FileHandler::error(std::string_view message) const {
-   g_errors.report(Phase::SETUP, Category::INTERNAL, { "FileHandler.cpp" }, message, true);
+   g_errors.report(err::Phase::SETUP, err::Category::INTERNAL, { "FileHandler.cpp" }, message, true);
 }

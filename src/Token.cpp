@@ -74,7 +74,7 @@ int getPrecedence(TokenType type) {
          return 2;
 
       default:
-         g_errors.report(Phase::PARSING, Category::INTERNAL, { "Token.cpp", __LINE__ },
+         g_errors.report(err::Phase::PARSING, err::Category::INTERNAL, { "Token.cpp", __LINE__ },
             std::format("Unknown token '{}'. Can't find precedence!", to_string(type)), true);
          return -1;
    }

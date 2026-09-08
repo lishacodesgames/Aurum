@@ -1,11 +1,12 @@
 #include <pch/Precompiled.h>
 #include "Errors.h"
 
-std::string SourceLocation::to_string() const {
+std::string err::SourceLocation::to_string() const {
    return std::format("{}:{}:{}", file, row, column);
 }
 
-std::string to_string(Phase phase) {
+std::string to_string(err::Phase phase) {
+   using namespace err;
    switch(phase) {
       case Phase::NONE:              return "NONE";
       case Phase::SETUP:             return "SETUP";
@@ -16,7 +17,8 @@ std::string to_string(Phase phase) {
    }
 }
 
-std::string to_string(Category category) {
+std::string to_string(err::Category category) {
+   using namespace err;
    switch(category) {
       case Category::NONE:             return "NONE";
       case Category::SYNTAX:           return "SYNTAX";
@@ -32,14 +34,14 @@ std::string Error::to_string() const {
       isFatal ? "FATAL " : "", ::to_string(category), ::to_string(phase), location.to_string(), message);
 }
 
-void ErrorReporter::report(Phase phase, Category category, SourceLocation location, std::string_view message, bool isFatal) {
+void ErrorReporter::report(err::Phase phase, err::Category category, err::SourceLocation location, std::string_view message, bool isFatal) {
    m_errors.emplace_back(Error{ phase, category, location, std::string(message), isFatal });
 
    if(isFatal)
       throwAll(phase);
 }
 
-void ErrorReporter::throwAll(Phase phase) const {
+void ErrorReporter::throwAll(err::Phase phase) const {
    printAll();
    throw std::runtime_error(std::format("\n\033[38:5:196m{} error{} generated during {}.\033[0m",
       m_errors.size(), m_errors.size() > 1 ? "s" : "", to_string(phase)));

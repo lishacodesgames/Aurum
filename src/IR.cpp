@@ -1,6 +1,8 @@
 #include <pch/Precompiled.h>
 #include "IR.h"
 
+#include "Errors.h"
+
 uint8_t operands(OpCode opcode) {
    switch(opcode) {
       case OpCode::SCOPE_START:
@@ -35,8 +37,10 @@ uint8_t operands(OpCode opcode) {
       case OpCode::JUMP_FALSE:
          return 2;
 
+
       default:
-         throw std::runtime_error(std::format("How many operands does this opcode have: '{}?!", to_string(opcode)));
+         g_errors.report(err::Phase::GENERATING, err::Category::INTERNAL, { "IR.cpp", __LINE__ },
+            std::format("How many operands does this opcode have: '{}?!", to_string(opcode)), true);
    }
 }
 
@@ -49,5 +53,6 @@ std::string to_string(OpCode opcode) {
       OP_CODES
    #undef X
 
-   return "silver"; // should never run
+   // should never run
+   g_errors.report(err::Phase::GENERATING, err::Category::INTERNAL, { "IR.cpp", __LINE__ }, "idk", true);
 }

@@ -5,35 +5,32 @@
 
 namespace err
 {
-   /// @todo
+   enum class Phase { NONE, SETUP, TOKENIZING, PARSING, GENERATING, EMITTING_ASSEMBLY };
+
+   enum class Category {
+      NONE, // fallback, unitialised value (of this enum, not an error category)
+      SYNTAX, // unexpected character/token, unclosed comment
+      NAME_RESOLUTION, // undeclared identifier, redeclaration
+      MUTABILITY, // modifying immutable variable
+      INTERNAL // compiler-side violations; opcode vs operand mismatch, etc.
+   };
+
+   /// @todo remove and replace with c++'s source_location
+   struct SourceLocation {
+      std::string file = "gold.aura"; /// only base name, no path
+      std::uint32_t row = 1, column = 1;
+
+      std::string to_string() const;
+   };
 }
 
-enum class Phase { NONE, SETUP, TOKENIZING, PARSING, GENERATING, EMITTING_ASSEMBLY };
-
-enum class Category {
-   NONE, // fallback, unitialised value (of this enum, not an error category)
-   SYNTAX, // unexpected character/token, unclosed comment
-   NAME_RESOLUTION, // undeclared identifier, redeclaration
-   MUTABILITY, // modifying immutable variable
-   INTERNAL // compiler-side violations; opcode vs operand mismatch, etc.
-};
-
-struct SourceLocation {
-   /// @todo make input based
-   std::string file = "gold.aura"; /// only base name, no path
-   std::uint32_t row = 1, column = 1;
-
-   std::string to_string() const;
-};
-
-/// @todo put into cpp
-std::string to_string(Phase phase); 
-std::string to_string(Category category);
+std::string to_string(err::Phase phase); 
+std::string to_string(err::Category category);
 
 struct Error {
-   Phase phase;
-   Category category;
-   SourceLocation location;
+   err::Phase phase;
+   err::Category category;
+   err::SourceLocation location;
    std::string message;
    bool isFatal = false;
 
@@ -44,8 +41,8 @@ struct Error {
 class ErrorReporter {
 public:
    /// appends FIRST, then checks if it's fatal. If fatal, calls printAll and throws runtime_error with fatal's msg
-   void report(Phase phase, Category category, SourceLocation location, std::string_view message, bool isFatal = false);
-   void throwAll(Phase phase) const;
+   void report(err::Phase phase, err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false);
+   void throwAll(err::Phase phase) const;
    void printAll() const;
 
    bool empty() const noexcept { return m_errors.empty(); }

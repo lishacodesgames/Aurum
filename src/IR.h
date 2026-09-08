@@ -29,8 +29,10 @@ uint8_t operands(OpCode opcode); /// how many operands does this opcode require
 std::string to_string(OpCode opcode);
 namespace ir
 {
-   inline const std::string TOS = "$tos"; /// an operand that says: the value that is currently on the stack, before the running of this operation
-   inline const std::string SOS = "$sos"; /// an operand that says: the value that is currently SECOND on the stack, before running of this operation
+   /// an operand that says: the value that is currently on the stack, before the running of this operation
+   inline const std::string TOS = "$tos";
+   /// an operand that says: the value that is currently SECOND on the stack, before running of this operation
+   inline const std::string SOS = "$sos";
 
    struct Instruction {
       OpCode opcode;

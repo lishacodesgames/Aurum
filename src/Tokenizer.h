@@ -10,7 +10,7 @@ public:
 private:
    std::string m_src;
    std::size_t m_pos = 0;
-   SourceLocation m_location;
+   err::SourceLocation m_location;
 
 private:
    [[nodiscard]] std::optional<char> peek(int offset = 0) const noexcept;
