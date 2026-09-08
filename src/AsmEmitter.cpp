@@ -156,15 +156,25 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          pushValue(*instr.operandLeft);
          break;
 
-      case ir::OpCode::DEF_VAR: {
+      case ir::OpCode::DEF_VAR_MUT: {
          const std::string& varName = *instr.operandLeft;
          const std::string& value = *instr.operandRight;
 
          if(value != ir::TOS)
-            pushValue(value, std::format("'{}'", varName));
+            pushValue(value, std::format("Declaration of mutable '{}'", varName));
 
-         /// @todo mutability
          m_stack.setTop(varName, true);
+         break;
+      }
+
+      case ir::OpCode::DEF_VAR_CONST: {
+         const std::string& varName = *instr.operandLeft;
+         const std::string& value = *instr.operandRight;
+
+         if(value != ir::TOS)
+            pushValue(value, std::format("Declaration of const '{}'", varName));
+
+         m_stack.setTop(varName, false);
          break;
       }
 

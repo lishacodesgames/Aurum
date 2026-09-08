@@ -24,7 +24,8 @@ namespace ir
             return 1;
 
 
-         case OpCode::DEF_VAR:
+         case OpCode::DEF_VAR_CONST:
+         case OpCode::DEF_VAR_MUT:
          case OpCode::STORE_VAR:
 
          case OpCode::ADD:

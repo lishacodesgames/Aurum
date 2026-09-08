@@ -242,8 +242,9 @@ ast::Expression Parser::parseTerm() {
          consume();
          ast::Expression expression = parseExpression();
 
+         /// @todo store and then pass to macro, i dont like this long ugly string
          VALIDATE_PTR_RETURN_MONO(tryConsume(TokenType::CLOSE_PAREN, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Unclosed parentheses!" }));
-         return expression; // same return type so we don't need to unwrap and rewrap
+         return expression;
       }
 
       default:
@@ -265,7 +266,7 @@ ast::Expression Parser::parseExpression(int minPrec) {
       }
    }
 
-   return expression; // also returns monostate if parseTerm failed
+   return expression;
 }
 
 template<>
@@ -274,7 +275,7 @@ ast::IntegerLiteral* Parser::parse<ast::IntegerLiteral>() {
       Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected an integer literal!" }, true);
    VALIDATE_PTR_RETURN_NULL(integerLiteral);
 
-   return m_arena.create<ast::IntegerLiteral>(*integerLiteral->value);
+   return m_arena.create<ast::IntegerLiteral>(*integerLiteral);
 }
 
 template<>
@@ -283,7 +284,7 @@ ast::Identifier* Parser::parse<ast::Identifier>() {
       Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected an identifier!" }, true);
    VALIDATE_PTR_RETURN_NULL(identifier);
 
-   return m_arena.create<ast::Identifier>(*identifier->value);
+   return m_arena.create<ast::Identifier>(*identifier);
 }
 
 template<>
@@ -298,9 +299,9 @@ ast::Negative* Parser::parse<ast::Negative>() {
 
 template<>
 ast::BinaryExpr* Parser::parse<ast::BinaryExpr>() {
-   TokenType op = consume().type;
-   int precedence = getPrecedence(op);
-   int nextMinPrec = isLeftAssociative(op) ? precedence + 1 : precedence;
+   Token op = consume();
+   int precedence = getPrecedence(op.type);
+   int nextMinPrec = isLeftAssociative(op.type) ? precedence + 1 : precedence;
 
    ast::Expression rhs = parseExpression(nextMinPrec);
    VALIDATE_VARIANT_RETURN_NULL(rhs);

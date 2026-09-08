@@ -41,7 +41,7 @@ void Generator::emit(ir::OpCode op, std::optional<std::string_view> operand1, st
    else if(requiredOperands == 2 && operand1 && operand2)
       m_instructions.emplace_back(op, *operand1, *operand2);
    else
-      throw std::runtime_error(std::format("Expected {} operands for opcode '{}'!", requiredOperands, ir::to_string(op)));
+      error(Category::INTERNAL, { "Generator.cpp", __LINE__ }, std::format("Expected {} operands for opcode '{}'!", requiredOperands, ir::to_string(op)), true);
 }
 
 bool Generator::isDeclared(const std::string& name) const {
@@ -66,10 +66,8 @@ std::optional<std::string> Generator::tryFold(const ast::Expression* expr) const
    return std::visit([](auto&& arg) -> std::optional<std::string> {
       using PtrT = std::decay_t<decltype(arg)>;
 
-      if constexpr(std::is_same_v<PtrT, ast::IntegerLiteral*>)
-         return arg->to_string();
-      else if constexpr(std::is_same_v<PtrT, ast::Identifier*>)
-         return arg->name;
+      if constexpr(std::is_same_v<PtrT, ast::IntegerLiteral*> || std::is_same_v<PtrT, ast::Identifier*>)
+         return arg->token.value.value();
 
       return std::nullopt;
    }, *expr);
@@ -79,26 +77,33 @@ void Generator::error(Category category, SourceLocation location, std::string_vi
    g_errors.report(Phase::GENERATING, category, location, message, isFatal);
 }
 
-/// @todo if hit error anywhere, return and parse the next statement
 #pragma region Statements
 
 template <>
 void Generator::generate(const ast::Declaration* declaration) {
-   const std::string& varName = declaration->identifier->name;
+   const std::string& varName = declaration->identifier->token.value.value();
 
    if(isDeclared(varName)) {
-      error(Category::NAME_RESOLUTION, std::format("Redeclaration of identifier '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, declaration->identifier->token.location, std::format("Redeclaration of identifier '{}'!", varName));
       return;
    }
 
+   ir::OpCode op = declaration->isMutable ? ir::OpCode::DEF_VAR_MUT : ir::OpCode::DEF_VAR_CONST;
+
    if(declaration->expression) {
       if(auto folded = tryFold(*declaration->expression)) {
-         emit(ir::OpCode::DEF_VAR, varName, *folded);
+         emit(op, varName, *folded);
       } else {
          generate<ast::Expression>(*declaration->expression);
-         emit(ir::OpCode::DEF_VAR, varName, ir::TOS);
+         emit(op, varName, ir::TOS);
       }
    } else {
+      if(!declaration->isMutable) {
+         error(Category::MUTABILITY, declaration->identifier->token.location,
+            std::format("Cannot declare immutable variable '{}' without initializing it!", varName));
+         return;
+      }
+
       emit(ir::OpCode::ALLOC_VAR, varName);
    }
 
@@ -107,14 +112,14 @@ void Generator::generate(const ast::Declaration* declaration) {
 
 template <>
 void Generator::generate(const ast::Assignment* assignment) {
-   const std::string& varName = assignment->identifier->name;
+   const std::string& varName = assignment->identifier->token.value.value();
    std::optional<bool> mutability = findMutability(varName);
 
    if(!mutability.has_value()) {
-      error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, assignment->identifier->token.location, std::format("Use of undeclared identifier '{}'!", varName));
       return;
    } else if(!*mutability) {
-      error(Category::NAME_RESOLUTION, std::format("Tried to modify immutable variable '{}'!", varName), true);
+      error(Category::MUTABILITY, assignment->identifier->token.location, std::format("Tried to modify immutable variable '{}'!", varName));
       return;
    }
 
@@ -144,14 +149,14 @@ void Generator::generate(const ast::Exit* exit) {
 
 template <>
 void Generator::generate(const ast::Increment* increment) {
-   const std::string& varName = increment->identifier->name;
+   const std::string& varName = increment->identifier->token.value.value();
    std::optional<bool> mutability = findMutability(varName);
 
    if(!mutability.has_value()) {
-      error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, increment->identifier->token.location, std::format("Use of undeclared identifier '{}'!", varName));
       return;
    } else if(!*mutability) {
-      error(Category::NAME_RESOLUTION, std::format("Tried to modify immutable variable '{}'!", varName), true);
+      error(Category::MUTABILITY, increment->identifier->token.location, std::format("Tried to modify immutable variable '{}'!", varName));
       return;
    }
 
@@ -160,14 +165,14 @@ void Generator::generate(const ast::Increment* increment) {
 
 template <>
 void Generator::generate(const ast::Decrement* decrement) {
-   const std::string& varName = decrement->identifier->name;
+   const std::string& varName = decrement->identifier->token.value.value();
    std::optional<bool> mutability = findMutability(varName);
 
    if(!mutability.has_value()) {
-      error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, decrement->identifier->token.location, std::format("Use of undeclared identifier '{}'!", varName));
       return;
    } else if(!*mutability) {
-      error(Category::NAME_RESOLUTION, std::format("Tried to modify immutable variable '{}'!", varName), true);
+      error(Category::MUTABILITY, decrement->identifier->token.location, std::format("Tried to modify immutable variable '{}'!", varName));
       return;
    }
 
@@ -190,14 +195,14 @@ void Generator::generate(const ast::Block* block) {
 
 template <>
 void Generator::generate(const ast::IntegerLiteral* integerLiteral) {
-   emit(ir::OpCode::PUSH_INT, integerLiteral->to_string());
+   emit(ir::OpCode::PUSH_INT, integerLiteral->token.value.value());
 }
 
 template <>
 void Generator::generate(const ast::Identifier* identifier) {
-   const std::string& varName = identifier->name;
+   const std::string& varName = identifier->token.value.value();
    if(!isDeclared(varName)) {
-      error(Category::NAME_RESOLUTION, std::format("Use of undeclared identifier '{}'!", varName), true);
+      error(Category::NAME_RESOLUTION, identifier->token.location, std::format("Use of undeclared identifier '{}'!", varName));
       return;
    }
 
@@ -242,7 +247,7 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
       left = ir::SOS; // left was pushed first so it's SECOND ON STACK
 
    ir::OpCode opcode;
-   switch(binaryExpr->op) {
+   switch(binaryExpr->op.type) {
       case TokenType::PLUS:
          opcode = ir::OpCode::ADD;
          break;
@@ -267,7 +272,7 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
          /// @todo calling exponentiation
 
       default:
-         error(Category::INTERNAL, std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op)), true);
+         error(Category::INTERNAL, { "Generator.cpp", __LINE__ }, std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op.type)));
          return;
    }
 

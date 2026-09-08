@@ -3,7 +3,7 @@
 #define OP_CODES \
    /* pushing / declaring / popping */ \
    X(PUSH_INT) X(PUSH_VAR) \
-   X(DEF_VAR) X(ALLOC_VAR) X(STORE_VAR) \
+   X(DEF_VAR_MUT) X(DEF_VAR_CONST) X(ALLOC_VAR) X(STORE_VAR) \
 \
    /* in-place, no push/pop involved */ \
    X(INCR) X(DECR) \
@@ -24,7 +24,6 @@ namespace ir
    inline const std::string SOS = "$sos"; /// an operand that says: the value that is currently SECOND on the stack, before running of this operation
 
    /// @todo implement SOS
-
    enum class OpCode {
       #define X(name) name,
          OP_CODES

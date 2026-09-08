@@ -8,26 +8,15 @@ namespace ast
    // --- EXPRESSIONS ---
 
    struct IntegerLiteral {
-      int value;
+      Token token = TokenType::INTEGER_LITERAL;
 
-      /// @param value type = string because Token stores value as a string
-      explicit IntegerLiteral(const std::string& value) {
-         try {
-            this->value = std::stoi(value);
-         } catch(const std::invalid_argument& e) {
-            throw std::runtime_error(std::format("Tried to convert {} to an integer literal!", value));
-         } catch(const std::out_of_range& e) {
-            throw std::runtime_error(std::format("'{}' is too large for an integer literal!", value));
-         }
-      }
-
-      std::string to_string() const { return std::to_string(value); }
+      explicit IntegerLiteral(Token token) : token(token) {}
    };
 
    struct Identifier {
-      std::string name;
+      Token token = TokenType::IDENTIFIER;
 
-      explicit Identifier(std::string_view value) : name(value) {}
+      explicit Identifier(Token token) : token(token) {}
    };
 
    // expressions that contain an expression
@@ -44,9 +33,9 @@ namespace ast
 
    struct BinaryExpr {
       Expression* left, *right;
-      TokenType op;
+      Token op;
 
-      explicit BinaryExpr(Expression* left, TokenType op, Expression* right)
+      explicit BinaryExpr(Expression* left, Token op, Expression* right)
          : left(left), right(right), op(op) {}
    };
 
