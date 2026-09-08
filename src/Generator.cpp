@@ -5,7 +5,7 @@ std::vector<ir::Instruction> Generator::generate() {
    for(const ast::Statement& stmt : m_program.statements)
       generate<ast::Statement>(&stmt);
 
-   emit(ir::OpCode::EXIT, "0"); // in case user hasn't exited
+   emit(OpCode::EXIT, "0"); // in case user hasn't exited
    return m_instructions; // NOT to be moved bcz it needs to be accessed later
 }
 
@@ -16,7 +16,7 @@ std::string Generator::getIR() const {
    IR += "_main:\n"; /// @todo function definition opcodes
 
    for(const ir::Instruction& instr : m_instructions) {
-      IR += "\t" + ir::to_string(instr.opcode);
+      IR += "\t" + to_string(instr.opcode);
 
       if(instr.operandLeft) {
          IR += " " + *instr.operandLeft;
@@ -30,8 +30,8 @@ std::string Generator::getIR() const {
    return IR;
 }
 
-void Generator::emit(ir::OpCode op, std::optional<std::string_view> operand1, std::optional<std::string_view> operand2) {
-   uint8_t requiredOperands = ir::operands(op);
+void Generator::emit(OpCode op, std::optional<std::string_view> operand1, std::optional<std::string_view> operand2) {
+   uint8_t requiredOperands = operands(op);
 
    // verifying if they're correct
    if(requiredOperands == 0 && !operand1 && !operand2)
@@ -41,7 +41,8 @@ void Generator::emit(ir::OpCode op, std::optional<std::string_view> operand1, st
    else if(requiredOperands == 2 && operand1 && operand2)
       m_instructions.emplace_back(op, *operand1, *operand2);
    else
-      error(Category::INTERNAL, { "Generator.cpp", __LINE__ }, std::format("Expected {} operands for opcode '{}'!", requiredOperands, ir::to_string(op)), true);
+      error(Category::INTERNAL, { "Generator.cpp", __LINE__ },
+         std::format("Expected {} operands for opcode '{}'!", requiredOperands, to_string(op)), true);
 }
 
 bool Generator::isDeclared(const std::string& name) const {
@@ -88,7 +89,7 @@ void Generator::generate(const ast::Declaration* declaration) {
       return;
    }
 
-   ir::OpCode op = declaration->isMutable ? ir::OpCode::DEF_VAR_MUT : ir::OpCode::DEF_VAR_CONST;
+   OpCode op = declaration->isMutable ? OpCode::DEF_VAR_MUT : OpCode::DEF_VAR_CONST;
 
    if(declaration->expression) {
       if(auto folded = tryFold(*declaration->expression)) {
@@ -104,7 +105,7 @@ void Generator::generate(const ast::Declaration* declaration) {
          return;
       }
 
-      emit(ir::OpCode::ALLOC_VAR, varName);
+      emit(OpCode::ALLOC_VAR, varName);
    }
 
    m_scopes.back()[varName] = declaration->isMutable;
@@ -131,7 +132,7 @@ void Generator::generate(const ast::Assignment* assignment) {
       arg2 = ir::TOS;
    }
 
-   emit(ir::OpCode::STORE_VAR, varName, arg2);
+   emit(OpCode::STORE_VAR, varName, arg2);
 }
 
 template <>
@@ -144,7 +145,7 @@ void Generator::generate(const ast::Exit* exit) {
       arg = ir::TOS;
    }
 
-   emit(ir::OpCode::EXIT, arg);
+   emit(OpCode::EXIT, arg);
 }
 
 template <>
@@ -160,7 +161,7 @@ void Generator::generate(const ast::Increment* increment) {
       return;
    }
 
-   emit(ir::OpCode::INCR, varName);
+   emit(OpCode::INCR, varName);
 }
 
 template <>
@@ -176,7 +177,7 @@ void Generator::generate(const ast::Decrement* decrement) {
       return;
    }
 
-   emit(ir::OpCode::DECR, varName);
+   emit(OpCode::DECR, varName);
 }
 
 template <>
@@ -195,7 +196,7 @@ void Generator::generate(const ast::Block* block) {
 
 template <>
 void Generator::generate(const ast::IntegerLiteral* integerLiteral) {
-   emit(ir::OpCode::PUSH_INT, integerLiteral->token.value.value());
+   emit(OpCode::PUSH_INT, integerLiteral->token.value.value());
 }
 
 template <>
@@ -206,7 +207,7 @@ void Generator::generate(const ast::Identifier* identifier) {
       return;
    }
 
-   emit(ir::OpCode::PUSH_VAR, varName);
+   emit(OpCode::PUSH_VAR, varName);
 }
 
 template <>
@@ -219,7 +220,7 @@ void Generator::generate(const ast::Negative* negative) {
       operand = ir::TOS;
    }
 
-   emit(ir::OpCode::NEG, operand);
+   emit(OpCode::NEG, operand);
 }
 
 /// @todo fix: both should not be tos. maybe add sos (second on stack as a value)
@@ -246,26 +247,26 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
    if(right == ir::TOS && left == ir::TOS)
       left = ir::SOS; // left was pushed first so it's SECOND ON STACK
 
-   ir::OpCode opcode;
+   OpCode opcode;
    switch(binaryExpr->op.type) {
       case TokenType::PLUS:
-         opcode = ir::OpCode::ADD;
+         opcode = OpCode::ADD;
          break;
 
       case TokenType::STAR:
-         opcode = ir::OpCode::MUL;
+         opcode = OpCode::MUL;
          break;
 
       case TokenType::MINUS:
-         opcode = ir::OpCode::SUB;
+         opcode = OpCode::SUB;
          break;
 
       case TokenType::FSLASH:
-         opcode = ir::OpCode::DIV;
+         opcode = OpCode::DIV;
          break;
 
       case TokenType::PERCENT:
-         opcode = ir::OpCode::MOD;
+         opcode = OpCode::MOD;
          break;
 
       case TokenType::CARET:

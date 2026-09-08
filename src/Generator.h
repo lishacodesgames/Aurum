@@ -26,19 +26,19 @@ private:
    std::vector<std::unordered_map<std::string, bool>> m_scopes{{}};
 
 private:
-   void emit(ir::OpCode op, std::optional<std::string_view> operand1 = std::nullopt,
+   void emit(OpCode op, std::optional<std::string_view> operand1 = std::nullopt,
       std::optional<std::string_view> operand2 = std::nullopt);
 
    /// add an empty map to m_scopes
    void pushScope() {
       m_scopes.emplace_back();
-      emit(ir::OpCode::SCOPE_START);
+      emit(OpCode::SCOPE_START);
    }
 
    /// pop latest scope
    void popScope() {
       m_scopes.pop_back();
-      emit(ir::OpCode::SCOPE_END);
+      emit(OpCode::SCOPE_END);
    }
 
    bool isDeclared(const std::string& name) const; /// check each scope starting from latest for identifier

@@ -102,7 +102,7 @@ void AsmEmitter::movToVar(std::string_view varName, std::string_view value, bool
 void AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
    const std::string& left = *instr.operandLeft;
    const std::string& right = *instr.operandRight;
-   std::string opcode = ir::to_string(instr.opcode);
+   std::string opcode = to_string(instr.opcode);
 
    if(left == ir::TOS && right == ir::TOS) {
       error(Category::INTERNAL, "Both operands of binary expression are TOS!", true);
@@ -148,15 +148,15 @@ void AsmEmitter::handleDivMod(const ir::Instruction& instr, bool wantRemainder) 
 
 void AsmEmitter::handle(const ir::Instruction& instr) {
    switch(instr.opcode) {
-      case ir::OpCode::PUSH_INT:
+      case OpCode::PUSH_INT:
          pushValue(*instr.operandLeft);
          break;
 
-      case ir::OpCode::PUSH_VAR:
+      case OpCode::PUSH_VAR:
          pushValue(*instr.operandLeft);
          break;
 
-      case ir::OpCode::DEF_VAR_MUT: {
+      case OpCode::DEF_VAR_MUT: {
          const std::string& varName = *instr.operandLeft;
          const std::string& value = *instr.operandRight;
 
@@ -167,7 +167,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
-      case ir::OpCode::DEF_VAR_CONST: {
+      case OpCode::DEF_VAR_CONST: {
          const std::string& varName = *instr.operandLeft;
          const std::string& value = *instr.operandRight;
 
@@ -178,11 +178,11 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
-      case ir::OpCode::ALLOC_VAR:
+      case OpCode::ALLOC_VAR:
          m_stack.push(std::nullopt, true, *instr.operandLeft);
          break;
 
-      case ir::OpCode::STORE_VAR: {
+      case OpCode::STORE_VAR: {
          const std::string& varName = *instr.operandLeft;
          const std::string& value = *instr.operandRight;
 
@@ -197,7 +197,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
-      case ir::OpCode::INCR: {
+      case OpCode::INCR: {
          if(auto symbol = m_stack.find(*instr.operandLeft))
             write(std::format("inc QWORD [rbp - {}]", symbol->offset), std::format("{}++", symbol->name));
          else
@@ -206,7 +206,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
-      case ir::OpCode::DECR: {
+      case OpCode::DECR: {
          if(auto symbol = m_stack.find(*instr.operandLeft))
             write(std::format("dec QWORD [rbp - {}]", symbol->offset), std::format("{}--", symbol->name));
          else
@@ -215,27 +215,27 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
-      case ir::OpCode::ADD:
+      case OpCode::ADD:
          handleBinary(instr, "add");
          break;
 
-      case ir::OpCode::SUB:
+      case OpCode::SUB:
          handleBinary(instr, "sub");
          break;
 
-      case ir::OpCode::MUL:
+      case OpCode::MUL:
          handleBinary(instr, "imul"); // signed multiplication
          break;
 
-      case ir::OpCode::DIV:
+      case OpCode::DIV:
          handleDivMod(instr, false);
          break;
 
-      case ir::OpCode::MOD:
+      case OpCode::MOD:
          handleDivMod(instr, true);
          break;
 
-      case ir::OpCode::NEG: {
+      case OpCode::NEG: {
          if(*instr.operandLeft == ir::TOS)
             m_stack.pop("rax");
          else
@@ -246,7 +246,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
-      case ir::OpCode::EXIT: {
+      case OpCode::EXIT: {
          if(*instr.operandLeft == ir::TOS)
             m_stack.pop("rdi");
          else
@@ -258,16 +258,16 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
-      case ir::OpCode::SCOPE_START:
+      case OpCode::SCOPE_START:
          m_stack.startScope();
          break;
 
-      case ir::OpCode::SCOPE_END:
+      case OpCode::SCOPE_END:
          m_stack.endScope();
          break;
 
       default:
-         error(Category::INTERNAL, std::format("Unhandled opcode: '{}'!", ir::to_string(instr.opcode)), true);
+         error(Category::INTERNAL, std::format("Unhandled opcode: '{}'!", to_string(instr.opcode)), true);
          break;
    }
 }
