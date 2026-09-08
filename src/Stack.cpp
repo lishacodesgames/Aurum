@@ -7,14 +7,14 @@ void Stack::push(std::optional<std::string_view> value, bool isMutable, std::str
    m_stack.emplace_back(name, (m_stack.size() + 1) * 8, isMutable);
 
    if(value)
-      m_output += std::format("\tpush {}\n", *value);
+      m_emitterOutput += std::format("\tpush {}\n", *value);
    else
-      m_output += "\tsub rsp, 8\n";
+      m_emitterOutput += "\tsub rsp, 8\n";
 }
 
 void Stack::pop(std::string_view reg) {
    m_stack.pop_back();
-   m_output += std::format("\tpop {}\n", reg);
+   m_emitterOutput += std::format("\tpop {}\n", reg);
 }
 
 std::optional<Symbol> Stack::find(std::string_view name) const {
@@ -36,14 +36,14 @@ std::uint32_t Stack::offset(std::string_view name) const {
 
 void Stack::startScope() {
    m_scopeMarks.push_back(m_stack.size());
-   m_output += std::format("\n\t; Entering scope {}...\n", m_scopeMarks.size());
+   m_emitterOutput += std::format("\n\t; Entering scope {}...\n", m_scopeMarks.size());
 }
 
 void Stack::endScope() {
    if(m_scopeMarks.empty())
       g_errors.report(err::Phase::EMITTING_ASSEMBLY, err::Category::INTERNAL, { "Stack.cpp" }, "Tried to end a non-existent scope!", true);
 
-   m_output += std::format("\t; Leaving scope {}...\n", m_scopeMarks.size());
+   m_emitterOutput += std::format("\t; Leaving scope {}...\n", m_scopeMarks.size());
    std::size_t mark = m_scopeMarks.back();
    m_scopeMarks.pop_back();
 
@@ -51,7 +51,7 @@ void Stack::endScope() {
    if(count == 0) 
       return; // no new memory, nothing to cleanup
 
-   m_output += std::format("\tadd rsp, {} ; reclaiming scope memory of {} variable(s)\n", count * 8, count);
+   m_emitterOutput += std::format("\tadd rsp, {} ; reclaiming scope memory of {} variable(s)\n", count * 8, count);
    m_stack.erase(m_stack.begin() + mark, m_stack.end());
 }
 

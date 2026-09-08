@@ -44,7 +44,7 @@ while True: {
 
 ### Functions
 ```
-craft doThis(arg1, arg2): returntypehint {
+craft doThis(arg1, arg2) => returntypehint {
 
 }
 

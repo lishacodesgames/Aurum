@@ -83,7 +83,7 @@ private:
             using T = std::remove_pointer_t<PtrT>;
             generate<T>(arg);
          } else {
-            g_errors.report(Phase::GENERATING, Category::INTERNAL,
+            g_errors.report(err::Phase::GENERATING, err::Category::INTERNAL,
                { "Generator.h" }, "Tried to call generate on monostate!", true);
          }
       }, *varNode);

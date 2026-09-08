@@ -228,9 +228,6 @@ void Generator::generate(const ast::Negative* negative) {
    emit(OpCode::NEG, operand);
 }
 
-/// @todo fix: both should not be tos. maybe add sos (second on stack as a value)
-/// sub tos, tos should result in 0 basically (tos - tos = 0)
-/// but instead it assumes left tos to be below right tos which is not good
 template <>
 void Generator::generate(const ast::BinaryExpr* binaryExpr) {
    std::string left, right;

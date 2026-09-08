@@ -33,7 +33,7 @@ std::vector<std::string> AsmEmitter::getRequiredLibs() const {
 }
 
 void AsmEmitter::error(err::Category category, int line, std::string_view message, bool isFatal) const {
-   err::SourceLocation location{ .row = line };
+   err::SourceLocation location{ .row = static_cast<std::uint32_t>(line) };
    if(category == err::Category::INTERNAL)
       location.file = "AsmEmitter.cpp";
 

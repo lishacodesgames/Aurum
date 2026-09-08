@@ -122,8 +122,8 @@ void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
 }
 
 std::vector<Token> Tokenizer::tokenize() {
-   /// @todo use a better, lighter data structure than vector
    std::vector<Token> tokens{};
+   tokens.reserve(m_src.size() / 4); // rough heuristic of 4 chars per token
    std::string buffer;
 
    while(peek()) {

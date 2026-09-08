@@ -103,7 +103,7 @@ ast::Statement Parser::parseStatement() {
             }
 
             default: {
-               error(Category::SYNTAX, peek(1).location, std::format("Unexpected token {} after identifier {}", getCharsOf(peek(1).type), *peek(1).value), false);
+               error(err::Category::SYNTAX, peek(1).location, std::format("Unexpected token {} after identifier {}", getCharsOf(peek(1).type), *peek(1).value), false);
                return std::monostate{};
             }
          }
@@ -117,7 +117,7 @@ ast::Statement Parser::parseStatement() {
       }
 
       default: {
-         error(Category::SYNTAX, peek().location, "Unexpected token, unable to parse statement beginning with: " + to_string(peek().type), true);
+         error(err::Category::SYNTAX, peek().location, "Unexpected token, unable to parse statement beginning with: " + to_string(peek().type), true);
          return std::monostate{};
       }
    }
@@ -138,7 +138,7 @@ template<> ast::Declaration* Parser::parse() {
       expression = m_arena.create<ast::Expression>(std::move(expr));
    }
 
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
 
    if(expression)
       return m_arena.create<ast::Declaration>(identifier, expression, isMutable);
@@ -156,7 +156,7 @@ ast::Assignment* Parser::parse<ast::Assignment>() {
    ast::Expression expression = parseExpression();
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
    return m_arena.create<ast::Assignment>(identifier, m_arena.create<ast::Expression>(std::move(expression)));
 }
 
@@ -167,7 +167,7 @@ ast::Exit* Parser::parse<ast::Exit>() {
    ast::Expression expression = parseExpression();
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
    return m_arena.create<ast::Exit>(m_arena.create<ast::Expression>(std::move(expression)));
 }
 
@@ -177,7 +177,7 @@ ast::Increment* Parser::parse<ast::Increment>() {
    VALIDATE_PTR_RETURN_NULL(identifier);
 
    consume(); // consume ++
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
    return m_arena.create<ast::Increment>(identifier);
 }
 
@@ -187,7 +187,7 @@ ast::Decrement* Parser::parse<ast::Decrement>() {
    VALIDATE_PTR_RETURN_NULL(identifier);
 
    consume(); // consume --
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
    return m_arena.create<ast::Decrement>(identifier);
 }
 
@@ -243,12 +243,13 @@ ast::Expression Parser::parseTerm() {
          ast::Expression expression = parseExpression();
 
          /// @todo store and then pass to macro, i dont like this long ugly string
-         VALIDATE_PTR_RETURN_MONO(tryConsume(TokenType::CLOSE_PAREN, Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Unclosed parentheses!" }));
+         VALIDATE_PTR_RETURN_MONO(tryConsume(TokenType::CLOSE_PAREN, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Unclosed parentheses!" }));
          return expression;
       }
 
       default:
-         error(Category::SYNTAX, peek().location, "Unexpected token, unable to parse term beginning with: " + to_string(peek().type), false);
+         error(err::Category::SYNTAX, peek().location,
+            "Unexpected token, unable to parse term beginning with: " + to_string(peek().type), false);
          return std::monostate{};
    }
 }
@@ -272,7 +273,7 @@ ast::Expression Parser::parseExpression(int minPrec) {
 template<>
 ast::IntegerLiteral* Parser::parse<ast::IntegerLiteral>() {
    std::optional<Token> integerLiteral = tryConsume(TokenType::INTEGER_LITERAL,
-      Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected an integer literal!" }, true);
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected an integer literal!" }, true);
    VALIDATE_PTR_RETURN_NULL(integerLiteral);
 
    return m_arena.create<ast::IntegerLiteral>(*integerLiteral);
@@ -281,7 +282,7 @@ ast::IntegerLiteral* Parser::parse<ast::IntegerLiteral>() {
 template<>
 ast::Identifier* Parser::parse<ast::Identifier>() {
    std::optional<Token> identifier = tryConsume(TokenType::IDENTIFIER,
-      Error{ .category = Category::SYNTAX, .location = peek().location, .message = "Expected an identifier!" }, true);
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected an identifier!" }, true);
    VALIDATE_PTR_RETURN_NULL(identifier);
 
    return m_arena.create<ast::Identifier>(*identifier);

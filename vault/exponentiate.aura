@@ -1,0 +1,15 @@
+$$ T is a numeric type
+$$ if base and exponent are float, then function returns float. If int, then int, and so on.
+
+$$ the compiler for the syntax is not implemented yet
+
+type T = numeric;
+craft exponentiate(base: T, exponent: T) => T {
+   bar<T> result = 1;
+   while exponent > 0: {
+      result *= base;
+      exponent--;
+   }
+
+   return result;
+}

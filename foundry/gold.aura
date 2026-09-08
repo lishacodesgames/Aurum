@@ -1,2 +1,3 @@
-bar x = 1 + 2;
-exit x;
+x y;
+a b;
+exit 0;

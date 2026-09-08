@@ -14,8 +14,8 @@ struct Symbol { // for now, can only be a variable
 
 class Stack {
 public:
-   Stack(std::string& emitter_output)
-      : m_output(emitter_output) {}
+   Stack(std::string& emitterOutput)
+      : m_emitterOutput(emitterOutput) {}
 
    /**
     * @param name name of variable being pushed
@@ -52,9 +52,7 @@ private:
    std::vector<Symbol> m_stack{};
    std::vector<std::size_t> m_scopeMarks{}; /// how many vars existed when each scope was added
 
-   /// @todo test if it works
-   /// @todo store the entire emitter?
-   std::string& m_output;
+   std::string& m_emitterOutput;
 
 private:
    /// private helper function for the 3 public ones: contains, find, offset

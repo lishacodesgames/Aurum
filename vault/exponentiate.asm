@@ -3,25 +3,26 @@
 global exponentiate
 
 exponentiate:
-   ; --- assumes: rax = base, rbx = exponent ---
-   ; returns result in rax
+   ; --- arg1: rdi = base, arg2: rsi = exponent ---
+   ; --- returns result in rax ---
 
-   mov rcx, rax ; save the base, since rax will store the answer
    mov rax, 1
+   test rsi, rsi
+   jz .pow_done ; if exponent is 0, result is already 1
 
 .pow_loop:
-;  while rbx != 0 : {
+;  while rsi != 0 : {
 ;     result *= base
 ;     exponent--
 ;  }
+; where result = rax, base = rdi, exponent = rsi
 
-   ; we use while and not do-while because rbx can be 0, in that case result should be 1
-   test rbx, rbx
-   jz .pow_done ; exit if rbx == 0
+   ; we use while and not do-while because exponent can be 0, in that case result should be 1
 
-   imul rax, rcx
-   dec rbx  ; sub rbx, 1
-   jmp .pow_loop
+   imul rax, rdi  ; rax *= rdi
+   dec rsi ; if rsi = 0, ZF will be set.
+   jnz .pow_loop  ; if exponent != 0, continue loop
+   ; jnz checks the last mathematical operation, not any specific register, so we are correctly checking rsi
 
 .pow_done:
-   ret
+   ret ; return with result in rax

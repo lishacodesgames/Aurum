@@ -15,7 +15,6 @@ namespace err
       INTERNAL // compiler-side violations; opcode vs operand mismatch, etc.
    };
 
-   /// @todo remove and replace with c++'s source_location
    struct SourceLocation {
       std::string file = "gold.aura"; /// only base name, no path
       std::uint32_t row = 1, column = 1;
