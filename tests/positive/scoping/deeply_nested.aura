@@ -1,0 +1,8 @@
+bar x = 1;
+{
+   bar y = 2;
+   {
+      bar z = 3;
+      exit x + y + z;
+   }
+}

@@ -1,0 +1,7 @@
+bar x = 1;
+{
+   bar y = 10;
+   x = x + y;
+}
+x = x + 5;
+exit x;
