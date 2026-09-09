@@ -63,7 +63,7 @@ private:
    /// @param minPrec the minimum precedence that has to be parsed from the expression
    ast::Expression parseExpression(int minPrec = 0);
 
-   template<> ast::IntegerLiteral* parse();
+   template<> ast::Literal* parse();
    template<> ast::Identifier* parse();
    template<> ast::Negative* parse();
 

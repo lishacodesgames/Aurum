@@ -40,6 +40,14 @@ void Tokenizer::emplaceKeyword(std::vector<Token>& tokens, std::string& buffer) 
       tokens.emplace_back(TokenType::BAR, m_location);
    else if(buffer == "exit")
       tokens.emplace_back(TokenType::EXIT, m_location);
+   else if(buffer == "True")
+      tokens.emplace_back(TokenType::TRUE, m_location);
+   else if(buffer == "False")
+      tokens.emplace_back(TokenType::FALSE, m_location);
+   else if(buffer == "int")
+      tokens.emplace_back(TokenType::INT, m_location);
+   else if(buffer == "bool")
+      tokens.emplace_back(TokenType::BOOL, m_location);
    else
       tokens.emplace_back(TokenType::IDENTIFIER, buffer, m_location);
 

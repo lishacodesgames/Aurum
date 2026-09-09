@@ -9,7 +9,11 @@
 \
    /* Literals & identifiers */ \
    X(INTEGER_LITERAL) \
+   X(TRUE) X(FALSE) \
    X(IDENTIFIER) \
+\
+   /* Types */ \
+   X(INT) X(BOOL) \
 \
    /* Punctuation */ \
    X(EQUALS) \

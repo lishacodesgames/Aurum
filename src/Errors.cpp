@@ -24,6 +24,7 @@ std::string to_string(err::Category category) {
       case Category::SYNTAX:           return "SYNTAX";
       case Category::NAME_RESOLUTION:  return "NAME RESOLUTION";
       case Category::MUTABILITY:       return "MUTABILITY";
+      case Category::TYPE_MISMATCH:    return "TYPE MISMATCH";
       case Category::INTERNAL:         return "INTERNAL";
    }
 }

@@ -1,6 +1,23 @@
 #include <pch/Precompiled.h>
 #include "Generator.h"
 
+namespace
+{
+   err::SourceLocation getLocation(const ast::Expression* expr) {
+      return std::visit([](auto&& arg) -> err::SourceLocation {
+         using PtrT = std::decay_t<decltype(arg)>;
+         if constexpr(std::is_same_v<PtrT, ast::BinaryExpr*>)
+            return arg->op.location;
+         else if constexpr(std::is_same_v<PtrT, ast::Literal*> || std::is_same_v<PtrT, ast::Identifier*>)
+            return arg->token.location;
+         else if constexpr(std::is_same_v<PtrT, ast::Negative*>)
+            return getLocation(arg->operand);
+         else // monostate
+            return {};
+      }, *expr);
+   }
+}
+
 std::vector<ir::Instruction> Generator::generate() {
    for(const ast::Statement& stmt : m_program.statements)
       generate<ast::Statement>(&stmt);
@@ -54,7 +71,7 @@ bool Generator::isDeclared(const std::string& name) const {
    return false;
 }
 
-std::optional<bool> Generator::findMutability(const std::string& name) const {
+std::optional<Generator::SymbolInfo> Generator::findSymbol(const std::string& name) const {
    for(auto it = m_scopes.rbegin(); it != m_scopes.rend(); ++it) {
       if(auto found = it->find(name); found != it->end())
          return found->second;
@@ -67,14 +84,67 @@ std::optional<std::string> Generator::tryFold(const ast::Expression* expr) const
    return std::visit([](auto&& arg) -> std::optional<std::string> {
       using PtrT = std::decay_t<decltype(arg)>;
 
-      if constexpr(std::is_same_v<PtrT, ast::IntegerLiteral*> || std::is_same_v<PtrT, ast::Identifier*>)
+      if constexpr(std::is_same_v<PtrT, ast::Identifier*>)
          return arg->token.value.value();
+      else if constexpr(std::is_same_v<PtrT, ast::Literal*>) {
+         if(arg->type == Type::INT)
+            return arg->token.value.value();
+         if(arg->token.type == TokenType::TRUE)
+            return "TRUE";
+         if(arg->token.type == TokenType::FALSE)
+            return "FALSE";
+      }
 
       return std::nullopt;
    }, *expr);
 }
 
-void Generator::error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal) {
+Type Generator::inferType(const ast::Expression* expr) const {
+   return std::visit([this](auto&& arg) -> Type {
+      using PtrT = std::decay_t<decltype(arg)>;
+
+      if constexpr(std::is_same_v<PtrT, ast::Literal*>) {
+         return arg->type;
+
+      } else if constexpr(std::is_same_v<PtrT, ast::Identifier*>) {
+         const std::string& varName = arg->token.value.value();
+         std::optional<SymbolInfo> symbol = findSymbol(varName);
+
+         if(!symbol) {
+            error(err::Category::NAME_RESOLUTION, arg->token.location,
+               std::format("Use of undeclared identifier '{}'!", varName));
+            return Type::NONE;
+
+         } else if(symbol->type == Type::NONE) {
+            error(err::Category::TYPE_MISMATCH, arg->token.location,
+               std::format("Use of uninitialized identifier '{}'!", varName));
+         }
+
+         return symbol->type;
+
+      } else if constexpr(std::is_same_v<PtrT, ast::Negative*>) {
+         if(inferType(arg->operand) != Type::INT) {
+            error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Unary '-' requires an int operand!");
+            return Type::NONE;
+         }
+
+         return Type::INT;
+
+      } else if constexpr(std::is_same_v<PtrT, ast::BinaryExpr*>) {
+         if(inferType(arg->left) != Type::INT || inferType(arg->right) != Type::INT) {
+            error(err::Category::TYPE_MISMATCH, arg->op.location,
+               std::format("Operator '{}' requires int operands!", getCharsOf(arg->op.type)));
+            return Type::NONE;
+         }
+
+         return Type::INT;
+      }
+
+      return Type::NONE;
+   }, *expr);
+}
+
+void Generator::error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal) const {
    g_errors.report(err::Phase::GENERATING, category, location, message, isFatal);
 }
 
@@ -83,6 +153,10 @@ void Generator::error(err::Category category, err::SourceLocation location, std:
 template <>
 void Generator::generate(const ast::Declaration* declaration) {
    const std::string& varName = declaration->identifier->token.value.value();
+   SymbolInfo symbol{
+      .valueMutable = declaration->valueMutable,
+      .typeMutable = declaration->lockedType == Type::NONE,
+   };
 
    if(isDeclared(varName)) {
       error(err::Category::NAME_RESOLUTION, declaration->identifier->token.location,
@@ -90,9 +164,13 @@ void Generator::generate(const ast::Declaration* declaration) {
       return;
    }
 
-   OpCode op = declaration->isMutable ? OpCode::DEF_VAR_MUT : OpCode::DEF_VAR_CONST;
+   OpCode op = declaration->valueMutable ? OpCode::DEF_VAR_MUT : OpCode::DEF_VAR_CONST;
 
    if(declaration->expression) {
+      symbol.type = inferType(*declaration->expression);
+      if(symbol.type == Type::NONE)
+         return;
+
       if(auto folded = tryFold(*declaration->expression)) {
          emit(op, varName, *folded);
       } else {
@@ -100,7 +178,7 @@ void Generator::generate(const ast::Declaration* declaration) {
          emit(op, varName, ir::TOS);
       }
    } else {
-      if(!declaration->isMutable) {
+      if(!declaration->valueMutable) {
          error(err::Category::MUTABILITY, declaration->identifier->token.location,
             std::format("Cannot declare immutable variable '{}' without initializing it!", varName));
          return;
@@ -109,58 +187,79 @@ void Generator::generate(const ast::Declaration* declaration) {
       emit(OpCode::ALLOC_VAR, varName);
    }
 
-   m_scopes.back()[varName] = declaration->isMutable;
+   m_scopes.back()[varName] = symbol;
 }
 
 template <>
 void Generator::generate(const ast::Assignment* assignment) {
    const std::string& varName = assignment->identifier->token.value.value();
-   std::optional<bool> mutability = findMutability(varName);
+   std::optional<SymbolInfo> symbol = findSymbol(varName);
 
-   if(!mutability.has_value()) {
-      error(err::Category::NAME_RESOLUTION, assignment->identifier->token.location, std::format("Use of undeclared identifier '{}'!", varName));
+   if(!symbol) {
+      error(err::Category::NAME_RESOLUTION, assignment->identifier->token.location,
+         std::format("Use of undeclared identifier '{}'!", varName));
       return;
-   } else if(!*mutability) {
-      error(err::Category::MUTABILITY, assignment->identifier->token.location, std::format("Tried to modify immutable variable '{}'!", varName));
+   } else if(!symbol->valueMutable) {
+      error(err::Category::MUTABILITY, assignment->identifier->token.location,
+         std::format("Tried to modify immutable variable '{}'!", varName));
       return;
    }
 
-   std::string arg2;
+   Type expressionType = inferType(assignment->expression);
+   if(expressionType == Type::NONE)
+      return;
+
+   std::string value;
    if(auto folded = tryFold(assignment->expression)) {
-      arg2 = *folded;
+      value = *folded;
    } else {
       generate<ast::Expression>(assignment->expression);
-      arg2 = ir::TOS;
+      value = ir::TOS;
    }
 
-   emit(OpCode::STORE_VAR, varName, arg2);
+   emit(OpCode::STORE_VAR, varName, value);
+
+   for(auto it = m_scopes.rbegin(); it != m_scopes.rend(); ++it) {
+      if(auto found = it->find(varName); found != it->end()) {
+         found->second.type = expressionType;
+         break;
+      }
+   }
 }
 
 template <>
 void Generator::generate(const ast::Exit* exit) {
-   std::string arg;
-   if(auto folded = tryFold(exit->expression))
-      arg = *folded;
-   else {
-      generate<ast::Expression>(exit->expression);
-      arg = ir::TOS;
-   }
+   Type expressionType = inferType(exit->expression);
+   if(expressionType == Type::NONE)
+      return;
 
-   emit(OpCode::EXIT, arg);
+   std::string code;
+   if(auto folded = tryFold(exit->expression)) {
+      emit(OpCode::EXIT, *folded);
+   } else {
+      generate<ast::Expression>(exit->expression);
+      emit(OpCode::EXIT, ir::TOS);
+   }
 }
 
 template <>
 void Generator::generate(const ast::Increment* increment) {
    const std::string& varName = increment->identifier->token.value.value();
-   std::optional<bool> mutability = findMutability(varName);
+   std::optional<SymbolInfo> symbol = findSymbol(varName);
 
-   if(!mutability.has_value()) {
+   if(!symbol) {
       error(err::Category::NAME_RESOLUTION, increment->identifier->token.location,
          std::format("Use of undeclared identifier '{}'!", varName));
       return;
-   } else if(!*mutability) {
+
+   } else if(!symbol->valueMutable) {
       error(err::Category::MUTABILITY, increment->identifier->token.location,
          std::format("Tried to modify immutable variable '{}'!", varName));
+      return;
+
+   } else if(symbol->type != Type::INT) {
+      error(err::Category::TYPE_MISMATCH, increment->identifier->token.location,
+         std::format("Cannot increment non-int identifier '{}' of type {}!", varName, to_string(symbol->type)));
       return;
    }
 
@@ -170,15 +269,21 @@ void Generator::generate(const ast::Increment* increment) {
 template <>
 void Generator::generate(const ast::Decrement* decrement) {
    const std::string& varName = decrement->identifier->token.value.value();
-   std::optional<bool> mutability = findMutability(varName);
+   std::optional<SymbolInfo> symbol = findSymbol(varName);
 
-   if(!mutability.has_value()) {
+   if(!symbol) {
       error(err::Category::NAME_RESOLUTION, decrement->identifier->token.location,
          std::format("Use of undeclared identifier '{}'!", varName));
       return;
-   } else if(!*mutability) {
+
+   } else if(!symbol->valueMutable) {
       error(err::Category::MUTABILITY, decrement->identifier->token.location,
          std::format("Tried to modify immutable variable '{}'!", varName));
+      return;
+
+   } else if(symbol->type != Type::INT) {
+      error(err::Category::TYPE_MISMATCH, decrement->identifier->token.location,
+         std::format("Cannot decrement non-int identifier '{}' of type {}!", varName, to_string(symbol->type)));
       return;
    }
 
@@ -200,8 +305,13 @@ void Generator::generate(const ast::Block* block) {
 #pragma region Expressions
 
 template <>
-void Generator::generate(const ast::IntegerLiteral* integerLiteral) {
-   emit(OpCode::PUSH_INT, integerLiteral->token.value.value());
+void Generator::generate(const ast::Literal* literal) {
+   if(literal->type == Type::INT)
+      emit(OpCode::PUSH_INT, literal->token.value.value());
+   else if(literal->token.type == TokenType::TRUE)
+      emit(OpCode::PUSH_BOOL, "TRUE");
+   else if(literal->token.type == TokenType::FALSE)
+      emit(OpCode::PUSH_BOOL, "FALSE");
 }
 
 template <>

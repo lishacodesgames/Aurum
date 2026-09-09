@@ -1,3 +1,4 @@
-x y;
-a b;
-exit 0;
+bar x;
+x = True;
+x = 100;
+exit x;

@@ -2,15 +2,33 @@
 #include "Token.h"
 #include "Errors.h"
 
+enum class Type {
+   NONE, INT, BOOL
+};
+
+inline std::string to_string(Type type) {
+   switch(type) {
+      case Type::NONE:  return "NONE";
+      case Type::INT:   return "INT";
+      case Type::BOOL:  return "BOOL";
+
+      default:
+         g_errors.report(err::Phase::GENERATING, err::Category::INTERNAL, { "ast.h", __LINE__ },
+            "Unhandled Type in to_string(Type)!", true);
+         return "";
+   }
+}
+
 /// Abstract Syntax Tree
 namespace ast
 {
-   // --- EXPRESSIONS ---
+#pragma region Expressions
 
-   struct IntegerLiteral {
-      Token token = TokenType::INTEGER_LITERAL;
+   struct Literal {
+      Type type;
+      Token token;
 
-      explicit IntegerLiteral(Token token) : token(token) {}
+      explicit Literal(Type type, Token token) : type(type), token(token) {}
    };
 
    struct Identifier {
@@ -23,7 +41,7 @@ namespace ast
    struct Negative;
    struct BinaryExpr;
 
-   using Expression = std::variant<std::monostate, IntegerLiteral*, Identifier*, Negative*, BinaryExpr*>;
+   using Expression = std::variant<std::monostate, Literal*, Identifier*, Negative*, BinaryExpr*>;
 
    struct Negative {
       Expression* operand;
@@ -39,18 +57,21 @@ namespace ast
          : left(left), right(right), op(op) {}
    };
 
-   // --- STATEMENTS ---
+#pragma endregion
 
-   /// @todo type constraints: bar vs bar<>
+#pragma region Statements
+
    struct Declaration {
       Identifier* identifier;
       std::optional<Expression*> expression;
-      bool isMutable; /// TRUE = bar, FALSE = mint.
+      bool valueMutable; /// TRUE = bar, FALSE = mint.
+      Type lockedType = Type::NONE; /// NONE = mutable type
 
-      explicit Declaration(Identifier* identifier, bool isMutable) : identifier(identifier), isMutable(isMutable) {}
+      explicit Declaration(Identifier* identifier, bool valueMutable, Type lockedType = Type::NONE)
+         : identifier(identifier), valueMutable(valueMutable), lockedType(lockedType) {}
 
-      explicit Declaration(Identifier* identifier, Expression* expression, bool isMutable)
-         : identifier(identifier), expression(expression), isMutable(isMutable) {}
+      explicit Declaration(Identifier* identifier, Expression* expression, bool valueMutable, Type lockedType = Type::NONE)
+         : identifier(identifier), expression(expression), valueMutable(valueMutable), lockedType(lockedType) {}
    };
 
    struct Assignment {
@@ -89,7 +110,7 @@ namespace ast
       explicit Block(std::vector<Statement> statements) : statements(statements) {}
    };
 
-   // --- PROGRAM ---
+#pragma endregion
 
    struct Program {
       std::vector<Statement> statements;

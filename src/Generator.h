@@ -18,12 +18,19 @@ public:
    std::string getIR() const;
 
 private:
+   /// Purely for semantic validity, not layout
+   struct SymbolInfo {
+      bool valueMutable = true;
+      bool typeMutable = true;
+      Type type = Type::NONE;
+   };
+
+private:
    const ast::Program m_program;
    std::vector<ir::Instruction> m_instructions;
 
-   /// name -> isMutable, per scope. Purely for semantic validity, not layout
-   /// start with 1 empty global scope
-   std::vector<std::unordered_map<std::string, bool>> m_scopes{{}};
+   /// starts with 1 empty global scope
+   std::vector<std::unordered_map<std::string, SymbolInfo>> m_scopes{ {} };
 
 private:
    void emit(OpCode op, std::optional<std::string_view> operand1 = std::nullopt,
@@ -43,16 +50,14 @@ private:
 
    bool isDeclared(const std::string& name) const; /// check each scope starting from latest for identifier
 
-   /// @retval TRUE: if found and mutable
-   /// @retval FALSE: if found but not mutable
-   /// @retval NULLOPT: if name not found
-   std::optional<bool> findMutability(const std::string& name) const;
+   std::optional<SymbolInfo> findSymbol(const std::string& name) const;
 
    /// @retval folded string: ONLY for leaf expressions (literal/identifier)
    /// @retval nullopt: for compound expressions (negative/binary)
    std::optional<std::string> tryFold(const ast::Expression* expr) const;
+   Type inferType(const ast::Expression* expr) const;
 
-   void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false);
+   void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false) const;
 
 private:
    /// @retval error striing if falied
@@ -69,7 +74,7 @@ private:
    template<> void generate(const ast::Block* block);
 
    // -- expressions --
-   template<> void generate(const ast::IntegerLiteral* integerLiteral);
+   template<> void generate(const ast::Literal* literal);
    template<> void generate(const ast::Identifier* identifier);
    template<> void generate(const ast::Negative* negative);
    template<> void generate(const ast::BinaryExpr* binaryExpr);

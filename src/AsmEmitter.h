@@ -25,15 +25,15 @@ private:
    void comment(std::string_view comment) { m_output += std::format("\t; {}\n", comment); }
    void write(std::string_view cmd, std::optional<std::string_view> comment = std::nullopt); 
 
-   /// @param value an integer literal or an identifier
+   /// @param value an integer/Boolean literal or an identifier
    void pushValue(std::string_view value, std::optional<std::string_view> comment = std::nullopt);
 
    /// @param dest a register or the stack location of a variable
-   /// @param value an integer literal or an identifier
+   /// @param value an integer/Boolean literal or an identifier
    void movFoldedValue(std::string_view dest, std::string_view value, std::optional<std::string_view> comment = std::nullopt);
 
    /// @param varName name of destination variable
-   /// @param value integer literal, identifier, or a register depending on valueIsReg
+   /// @param value integer/Boolean literal, identifier, or a register depending on valueIsReg
    /// @param valueIsReg if true, value won't be looked for in the symbol table
    void movToVar(std::string_view varName, std::string_view value, bool valueIsReg, std::optional<std::string_view> comment = std::nullopt);
 

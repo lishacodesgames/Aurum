@@ -2,7 +2,7 @@
 
 #define OP_CODES \
    /* pushing / declaring / popping */ \
-   X(PUSH_INT) X(PUSH_VAR) \
+   X(PUSH_INT) X(PUSH_BOOL) X(PUSH_VAR) \
    X(DEF_VAR_MUT) X(DEF_VAR_CONST) X(ALLOC_VAR) X(STORE_VAR) \
 \
    /* in-place, no push/pop involved */ \

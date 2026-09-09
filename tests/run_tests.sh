@@ -28,7 +28,7 @@
 set -uo pipefail  # NOTE: deliberately not -e — a failing test must not kill the whole run
 
 # -------------------- path to built compiler binary ------------------------
-COMPILER_BIN="${COMPILER_BIN:-build/Debug/aurum}" # @todo adjust for release and symbols too
+COMPILER_BIN="${COMPILER_BIN:-build/Debug/Aurum}" # @todo adjust for release and symbols too
 # ---------------------------------------------------------------------------
 
 FILTER="${1:-}"       # optional substring filter, e.g. "arithmetic"

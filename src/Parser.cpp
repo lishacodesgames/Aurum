@@ -212,11 +212,13 @@ ast::Block* Parser::parse<ast::Block>() {
 
 ast::Expression Parser::parseTerm() {
    switch(peek().type) {
-      case TokenType::INTEGER_LITERAL: {
-         ast::IntegerLiteral* integerLiteral = parse<ast::IntegerLiteral>();
-         VALIDATE_PTR_RETURN_MONO(integerLiteral);
+      case TokenType::INTEGER_LITERAL:
+      case TokenType::TRUE:
+      case TokenType::FALSE: {
+         ast::Literal* literal = parse<ast::Literal>();
+         VALIDATE_PTR_RETURN_MONO(literal);
 
-         return ast::Expression(std::in_place_type<ast::IntegerLiteral*>, integerLiteral);
+         return ast::Expression(std::in_place_type<ast::Literal*>, literal);
       }
 
       case TokenType::IDENTIFIER: {
@@ -271,12 +273,19 @@ ast::Expression Parser::parseExpression(int minPrec) {
 }
 
 template<>
-ast::IntegerLiteral* Parser::parse<ast::IntegerLiteral>() {
-   std::optional<Token> integerLiteral = tryConsume(TokenType::INTEGER_LITERAL,
-      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected an integer literal!" }, true);
-   VALIDATE_PTR_RETURN_NULL(integerLiteral);
+ast::Literal* Parser::parse<ast::Literal>() {
+   switch(peek().type) {
+      case TokenType::INTEGER_LITERAL:
+         return m_arena.create<ast::Literal>(Type::INT, consume());
 
-   return m_arena.create<ast::IntegerLiteral>(*integerLiteral);
+      case TokenType::TRUE:
+      case TokenType::FALSE:
+         return m_arena.create<ast::Literal>(Type::BOOL, consume());
+
+      default:
+         error(err::Category::SYNTAX, peek().location, "Expected a literal!", true);
+         return nullptr;
+   }
 }
 
 template<>
@@ -290,9 +299,9 @@ ast::Identifier* Parser::parse<ast::Identifier>() {
 
 template<>
 ast::Negative* Parser::parse<ast::Negative>() {
-   consume(); // consume -
+   consume(); // consume minus
 
-   ast::Expression expression = parseTerm(); // recursion
+   ast::Expression expression = parseTerm();
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
    return m_arena.create<ast::Negative>(m_arena.create<ast::Expression>(std::move(expression)));

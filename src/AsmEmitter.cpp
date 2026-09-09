@@ -1,6 +1,21 @@
 #include <pch/Precompiled.h>
 #include "AsmEmitter.h"
 
+namespace
+{
+   bool isImmediate(std::string_view value) {
+      return std::isdigit(static_cast<unsigned char>(value[0])) || value == "TRUE" || value == "FALSE";
+   }
+
+   std::string_view lowerBoolean(std::string_view value) {
+      if(value == "TRUE")
+         return "1";
+      if(value == "FALSE")
+         return "0";
+      return value;
+   }
+}
+
 std::string AsmEmitter::emitAssembly() {
    for(const ir::Instruction& instr : m_instructions)
       handle(instr);
@@ -48,7 +63,8 @@ void AsmEmitter::write(std::string_view cmd, std::optional<std::string_view> com
 }
 
 void AsmEmitter::pushValue(std::string_view value, std::optional<std::string_view> comment) {
-   if(std::isdigit(static_cast<unsigned char>(value[0]))) {
+   if(isImmediate(value)) {
+      value = lowerBoolean(value);
       if(comment)
          m_stack.push(std::format("{} ; {}", value, *comment));
       else
@@ -69,8 +85,8 @@ void AsmEmitter::pushValue(std::string_view value, std::optional<std::string_vie
 }
 
 void AsmEmitter::movFoldedValue(std::string_view dest, std::string_view value, std::optional<std::string_view> comment) {
-   if(std::isdigit(static_cast<unsigned char>(value[0]))) {
-      write(std::format("mov {}, {}", dest, value), comment);
+   if(isImmediate(value)) {
+      write(std::format("mov {}, {}", dest, lowerBoolean(value)), comment);
 
    } else {
       if(auto symbol = m_stack.find(value)) {
@@ -149,32 +165,23 @@ void AsmEmitter::handleDivMod(const ir::Instruction& instr, bool wantRemainder) 
 void AsmEmitter::handle(const ir::Instruction& instr) {
    switch(instr.opcode) {
       case OpCode::PUSH_INT:
-         pushValue(*instr.operandLeft);
-         break;
-
+      case OpCode::PUSH_BOOL:
       case OpCode::PUSH_VAR:
          pushValue(*instr.operandLeft);
          break;
 
-      case OpCode::DEF_VAR_MUT: {
-         const std::string& varName = *instr.operandLeft;
-         const std::string& value = *instr.operandRight;
-
-         if(value != ir::TOS)
-            pushValue(value, std::format("Declaration of mutable '{}'", varName));
-
-         m_stack.setTop(varName, true);
-         break;
-      }
-
+      case OpCode::DEF_VAR_MUT:
       case OpCode::DEF_VAR_CONST: {
          const std::string& varName = *instr.operandLeft;
          const std::string& value = *instr.operandRight;
+         bool isMutable = instr.opcode == OpCode::DEF_VAR_MUT;
 
-         if(value != ir::TOS)
-            pushValue(value, std::format("Declaration of const '{}'", varName));
+         if(value != ir::TOS) {
+            pushValue(value,
+               std::format("Declaration of {} '{}'", isMutable ? "mutable" : "const", varName));
+         }
 
-         m_stack.setTop(varName, false);
+         m_stack.setTop(varName, isMutable);
          break;
       }
 
@@ -193,7 +200,6 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          } else {
             movToVar(varName, value, false, std::format("{} = {}", varName, value));
          }
-
          break;
       }
 
@@ -215,25 +221,12 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
-      case OpCode::ADD:
-         handleBinary(instr, "add");
-         break;
+      case OpCode::ADD: handleBinary(instr, "add"); break;
+      case OpCode::SUB: handleBinary(instr, "sub"); break;
+      case OpCode::MUL: handleBinary(instr, "imul"); break;
 
-      case OpCode::SUB:
-         handleBinary(instr, "sub");
-         break;
-
-      case OpCode::MUL:
-         handleBinary(instr, "imul"); // signed multiplication
-         break;
-
-      case OpCode::DIV:
-         handleDivMod(instr, false);
-         break;
-
-      case OpCode::MOD:
-         handleDivMod(instr, true);
-         break;
+      case OpCode::DIV: handleDivMod(instr, false); break;
+      case OpCode::MOD: handleDivMod(instr, true); break;
 
       case OpCode::NEG: {
          if(*instr.operandLeft == ir::TOS)
@@ -258,13 +251,8 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
-      case OpCode::SCOPE_START:
-         m_stack.startScope();
-         break;
-
-      case OpCode::SCOPE_END:
-         m_stack.endScope();
-         break;
+      case OpCode::SCOPE_START: m_stack.startScope(); break;
+      case OpCode::SCOPE_END: m_stack.endScope(); break;
 
       default:
          error(err::Category::INTERNAL, __LINE__, std::format("Unhandled opcode: '{}'!", to_string(instr.opcode)), true);

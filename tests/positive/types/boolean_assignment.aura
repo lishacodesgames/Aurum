@@ -1,0 +1,3 @@
+bar value = True;
+value = False;
+exit value;

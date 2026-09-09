@@ -12,6 +12,7 @@ namespace err
       SYNTAX, // unexpected character/token, unclosed comment
       NAME_RESOLUTION, // undeclared identifier, redeclaration
       MUTABILITY, // modifying immutable variable
+      TYPE_MISMATCH, // incompatible value or operation types
       INTERNAL // compiler-side violations; opcode vs operand mismatch, etc.
    };
 
