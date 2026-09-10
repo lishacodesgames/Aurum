@@ -58,6 +58,7 @@ private:
    /// @retval nullopt: for compound expressions (negative/binary)
    std::optional<std::string> tryFold(const ast::Expression* expr) const;
    std::optional<Type> inferType(const ast::Expression* expr) const;
+   bool isAssignable(Type dest, Type value); /// whether dest <- value can happen
 
    void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false) const;
 

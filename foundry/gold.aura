@@ -1,4 +1,2 @@
 bar x = 5;
-x = True;
-bar<int> y = x;
-exit x;
+exit False;

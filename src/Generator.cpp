@@ -157,6 +157,10 @@ std::optional<Type> Generator::inferType(const ast::Expression* expr) const {
    }, *expr);
 }
 
+bool Generator::isAssignable(Type dest, Type value) {
+   return true; /// right now, int bool and none can all be converted to each other.
+}
+
 void Generator::error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal) const {
    g_errors.report(err::Phase::GENERATING, category, location, message, isFatal);
 }
@@ -185,8 +189,7 @@ void Generator::generate(const ast::Declaration* declaration) {
       else
          return; // error msg is handled by inferType()
 
-      /// @todo allow some type conversions
-      if(declaration->lockedType != Type::NONE && symbol.type != declaration->lockedType) {
+      if(declaration->lockedType != Type::NONE && !isAssignable(declaration->lockedType, symbol.type)) {
          error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
             "Expected expression of type {} but got {}! (for declaration of identifier '{}')",
             to_string(declaration->lockedType), to_string(symbol.type), declaration->identifier->token.value.value()));
@@ -230,7 +233,7 @@ void Generator::generate(const ast::Assignment* assignment) {
       return;
 
    if(symbol->type != *exprType) {
-      if(!symbol->typeMutable) {
+      if(!symbol->typeMutable && !isAssignable(symbol->type, *exprType)) {
          error(err::Category::TYPE_MISMATCH, assignment->identifier->token.location,
             "Tried to change type of locked variable " + varName);
          return;
@@ -255,7 +258,7 @@ void Generator::generate(const ast::Exit* exit) {
    std::optional<Type> exprType = inferType(exit->expression);
    if(!exprType)
       return;
-   if(*exprType != Type::INT) {
+   if(!isAssignable(Type::INT, *exprType)) {
       error(err::Category::INTERNAL, getLocation(exit->expression),
          "Exit code must be of type INT, but is " + to_string(*exprType));
       return;

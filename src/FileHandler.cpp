@@ -45,7 +45,7 @@ void FileHandler::outputAssembly(std::string_view assembly) const {
 }
 
 void FileHandler::assemble(const std::vector<std::string>& args) const {
-   std::println("Compiling assembly file '{}' to executable...", executableFilePath);
+   std::println("Assembling assembly file '{}' into executable...", assemblyFilePath);
 
    std::string command = assembleCommand;
    for(const std::string& file : args)
