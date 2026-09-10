@@ -8,10 +8,16 @@
 #include "Errors.h"
 
 int main(int argc, char* argv[]) {
-   // make sure the correct number of arguments is provided
-   std::string aurumFilePath = argv[1]; // is not accessed if it is not provided, so this is safe
-   if(argc != 2 || !aurumFilePath.ends_with(".aura")) {
-      std::println("Incorrect usage!\nCorrect usage: {} /path/to/file.aura", argv[0]);
+   if(argc < 2 || argc > 3) {
+      std::println("Incorrect usage!\nCorrect usage: {} /path/to/file.aura [--no-run]", argv[0]);
+      return EXIT_FAILURE;
+   }
+
+   std::string aurumFilePath = argv[1];
+   // Test runners compile first and run the produced executable themselves.
+   const bool noRun = argc == 3 && std::string_view(argv[2]) == "--no-run";
+   if(!aurumFilePath.ends_with(".aura") || (argc == 3 && !noRun)) {
+      std::println("Incorrect usage!\nCorrect usage: {} /path/to/file.aura [--no-run]", argv[0]);
       return EXIT_FAILURE;
    }
 
@@ -42,7 +48,8 @@ int main(int argc, char* argv[]) {
       g_errors.throwAll(err::Phase::EMITTING_ASSEMBLY);
 
    fileHandler.assemble(emitter.getRequiredLibs());
-   fileHandler.runExecutable();
+   if(!noRun)
+      fileHandler.runExecutable();
 
    return EXIT_SUCCESS;
 }
