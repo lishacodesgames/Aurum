@@ -61,14 +61,27 @@ namespace ast
 
 #pragma region Statements
 
+   /// @todo change hintType and lockedType to just type and typeMutable
    struct Declaration {
       Identifier* identifier;
       Expression* expression; /// nullptr = declaration without definition
       bool valueMutable; /// TRUE = bar, FALSE = mint.
-      Type lockedType = Type::NONE; /// NONE = mutable type
+      std::optional<Type> hintType = std::nullopt; /// can never be NONE
+      std::optional<Type> lockedType = std::nullopt; /// can never be NONE
 
-      explicit Declaration(Identifier* identifier, Expression* expression, bool valueMutable, Type lockedType = Type::NONE)
-         : identifier(identifier), expression(expression), valueMutable(valueMutable), lockedType(lockedType) {}
+      /// type (if expression defined) must be inferred
+      explicit Declaration(Identifier* identifier, Expression* expression, bool valueMutable)
+         : identifier(identifier), expression(expression), valueMutable(valueMutable) {}
+
+      /// For when some type annotation is given
+      explicit Declaration(Identifier* identifier, Expression* expression, bool valueMutable, Type type, bool typeMutable)
+         : identifier(identifier), expression(expression), valueMutable(valueMutable)
+      {
+         if(typeMutable)
+            hintType = type;
+         else
+            lockedType = type;
+      }
    };
 
    struct Assignment {

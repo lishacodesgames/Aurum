@@ -16,6 +16,26 @@ namespace
             return {};
       }, *expr);
    }
+
+   /// @return whether dest <- value is a valid Type conversion
+   bool isAssignable(Type dest, Type value) {
+      switch(value) {
+         case Type::NONE: return true; // NONE can be converted to any value
+
+         case Type::INT:
+         case Type::BOOL:
+            switch(dest) {
+               case Type::NONE:
+               case Type::INT:
+               case Type::BOOL:
+                  return true;
+
+               default: return false;
+            }
+
+         default: return false;
+      }
+   }
 }
 
 std::vector<ir::Instruction> Generator::generate() {
@@ -157,10 +177,6 @@ std::optional<Type> Generator::inferType(const ast::Expression* expr) const {
    }, *expr);
 }
 
-bool Generator::isAssignable(Type dest, Type value) {
-   return true; /// right now, int bool and none can all be converted to each other.
-}
-
 void Generator::error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal) const {
    g_errors.report(err::Phase::GENERATING, category, location, message, isFatal);
 }
@@ -189,11 +205,25 @@ void Generator::generate(const ast::Declaration* declaration) {
       else
          return; // error msg is handled by inferType()
 
-      if(declaration->lockedType != Type::NONE && !isAssignable(declaration->lockedType, symbol.type)) {
-         error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
-            "Expected expression of type {} but got {}! (for declaration of identifier '{}')",
-            to_string(declaration->lockedType), to_string(symbol.type), declaration->identifier->token.value.value()));
-         return;
+      if(declaration->lockedType) {
+         if(!isAssignable(*declaration->lockedType, symbol.type)) {
+            error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
+               "Expected expression of type {} but got {}! (for declaration of identifier '{}')",
+               to_string(*declaration->lockedType), to_string(symbol.type), declaration->identifier->token.value.value()));
+            return;
+         }
+
+         symbol.type = *declaration->lockedType;
+
+      } else if(declaration->hintType) {
+         if(!isAssignable(*declaration->hintType, symbol.type)) {
+            error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
+               "WARNING: Type hint {} is incorrect, cannot convert {} to it! (for declaration of identifier '{}')",
+               to_string(*declaration->hintType), to_string(symbol.type), declaration->identifier->token.value.value()));
+            // no return bcz it's just a hint
+         }
+
+         symbol.type = *declaration->hintType;
       }
 
       if(auto folded = tryFold(declaration->expression)) {

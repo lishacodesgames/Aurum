@@ -83,6 +83,10 @@ void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
 
          break;
 
+      case ':':
+         tokens.emplace_back(TokenType::COLON, m_location);
+         break;
+
       case ';':
          tokens.emplace_back(TokenType::SEMICOLON, m_location);
          break;

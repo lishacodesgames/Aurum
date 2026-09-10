@@ -7,6 +7,21 @@
 #define VALIDATE_PTR_RETURN_MONO(ptr) if(!(ptr)) return std::monostate{}
 #define VALIDATE_PTR_RETURN_NULL(ptr) if(!(ptr)) return nullptr
 
+namespace
+{
+   /// @return never returns NONE, only actual data types
+   std::optional<Type> getType(Token token) {
+      switch(token.type) {
+         case TokenType::INT:    return Type::INT;
+         case TokenType::BOOL:   return Type::BOOL;
+
+         default:
+            g_errors.report(err::Phase::PARSING, err::Category::INTERNAL, token.location, "Unhandled datatype token: " + to_string(token.type));
+            return std::nullopt;
+      }
+   }
+}
+
 ast::Program Parser::parse() {
    ast::Program program;
    while(peek() != TokenType::END_OF_FILE) {
@@ -125,26 +140,32 @@ ast::Statement Parser::parseStatement() {
 
 template<> ast::Declaration* Parser::parse<ast::Declaration>() {
    bool valueMutable = consume().type == TokenType::BAR;
-   Type lockedType = Type::NONE;
+   bool typeMutable = false;
+   Type type = Type::NONE;
 
+   bool typeAnnotations = true;
    if(tryConsume(TokenType::LESS_THAN)) {
-      Token declType = consume();
-      switch(declType.type) {
-         case TokenType::INT:
-            lockedType = Type::INT;
-            break;
-
-         case TokenType::BOOL:
-            lockedType = Type::BOOL;
-            break;
-
-         default:
-            error(err::Category::TYPE_MISMATCH, declType.location, "Unhandled type: " + to_string(declType.type));
-            return nullptr;
+      if(!valueMutable) {
+         error(err::Category::SYNTAX, peek(-1).location, "Can only use type locking syntax on 'bar'! Use type hints for immutables.");
+         return nullptr;
       }
+
+      std::optional<Type> declType = getType(consume());
+      VALIDATE_PTR_RETURN_NULL(declType);
+
+      type = *declType;
 
       VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::GREATER_THAN,
          Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `>`!" }));
+
+   } else if(tryConsume(TokenType::COLON)) {
+      std::optional<Type> declType = getType(consume());
+      VALIDATE_PTR_RETURN_NULL(declType);
+
+      type = *declType;
+      typeMutable = valueMutable;
+   } else {
+      typeAnnotations = false;
    }
 
    ast::Identifier* identifier = parse<ast::Identifier>();
@@ -161,7 +182,10 @@ template<> ast::Declaration* Parser::parse<ast::Declaration>() {
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
       Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
 
-   return m_arena.create<ast::Declaration>(identifier, expression, valueMutable, lockedType);
+   if(typeAnnotations)
+      return m_arena.create<ast::Declaration>(identifier, expression, valueMutable, type, typeMutable);
+   else
+      return m_arena.create<ast::Declaration>(identifier, expression, valueMutable);
 }
 
 template<>

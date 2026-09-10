@@ -1,3 +1,2 @@
 bar<int> x = True;
-x++;
-exit x;
+exit x + 1;
