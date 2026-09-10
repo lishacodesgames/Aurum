@@ -103,7 +103,7 @@ ast::Statement Parser::parseStatement() {
             }
 
             default: {
-               error(err::Category::SYNTAX, peek(1).location, std::format("Unexpected token {} after identifier {}", getCharsOf(peek(1).type), *peek(1).value), false);
+               error(err::Category::SYNTAX, peek(1).location, std::format("Unexpected token {} after identifier {}", getCharsOf(peek(1).type), *peek(1).value));
                return std::monostate{};
             }
          }
@@ -117,33 +117,51 @@ ast::Statement Parser::parseStatement() {
       }
 
       default: {
-         error(err::Category::SYNTAX, peek().location, "Unexpected token, unable to parse statement beginning with: " + to_string(peek().type), true);
+         error(err::Category::SYNTAX, peek().location, "Unexpected token, unable to parse statement beginning with: " + to_string(peek().type));
          return std::monostate{};
       }
    }
 }
 
-template<> ast::Declaration* Parser::parse() {
-   bool isMutable = consume().type == TokenType::BAR;
+template<> ast::Declaration* Parser::parse<ast::Declaration>() {
+   bool valueMutable = consume().type == TokenType::BAR;
+   Type lockedType = Type::NONE;
+
+   if(tryConsume(TokenType::LESS_THAN)) {
+      Token declType = consume();
+      switch(declType.type) {
+         case TokenType::INT:
+            lockedType = Type::INT;
+            break;
+
+         case TokenType::BOOL:
+            lockedType = Type::BOOL;
+            break;
+
+         default:
+            error(err::Category::TYPE_MISMATCH, declType.location, "Unhandled type: " + to_string(declType.type));
+            return nullptr;
+      }
+
+      VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::GREATER_THAN,
+         Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `>`!" }));
+   }
 
    ast::Identifier* identifier = parse<ast::Identifier>();
    VALIDATE_PTR_RETURN_NULL(identifier);
 
    ast::Expression* expression = nullptr; // in case it's a Declaration without Definition
-
-   if(auto next = tryConsume(TokenType::EQUALS)) {
+   if(tryConsume(TokenType::EQUALS)) {
       ast::Expression expr = parseExpression();
       VALIDATE_VARIANT_RETURN_NULL(expr);
 
       expression = m_arena.create<ast::Expression>(std::move(expr));
    }
 
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
 
-   if(expression)
-      return m_arena.create<ast::Declaration>(identifier, expression, isMutable);
-   else
-      return m_arena.create<ast::Declaration>(identifier, isMutable);
+   return m_arena.create<ast::Declaration>(identifier, expression, valueMutable, lockedType);
 }
 
 template<>
@@ -156,7 +174,9 @@ ast::Assignment* Parser::parse<ast::Assignment>() {
    ast::Expression expression = parseExpression();
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+
    return m_arena.create<ast::Assignment>(identifier, m_arena.create<ast::Expression>(std::move(expression)));
 }
 
@@ -167,7 +187,9 @@ ast::Exit* Parser::parse<ast::Exit>() {
    ast::Expression expression = parseExpression();
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+
    return m_arena.create<ast::Exit>(m_arena.create<ast::Expression>(std::move(expression)));
 }
 
@@ -177,7 +199,9 @@ ast::Increment* Parser::parse<ast::Increment>() {
    VALIDATE_PTR_RETURN_NULL(identifier);
 
    consume(); // consume ++
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+
    return m_arena.create<ast::Increment>(identifier);
 }
 
@@ -187,7 +211,9 @@ ast::Decrement* Parser::parse<ast::Decrement>() {
    VALIDATE_PTR_RETURN_NULL(identifier);
 
    consume(); // consume --
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+
    return m_arena.create<ast::Decrement>(identifier);
 }
 
@@ -251,7 +277,7 @@ ast::Expression Parser::parseTerm() {
 
       default:
          error(err::Category::SYNTAX, peek().location,
-            "Unexpected token, unable to parse term beginning with: " + to_string(peek().type), false);
+            "Unexpected token, unable to parse term beginning with: " + to_string(peek().type));
          return std::monostate{};
    }
 }
@@ -283,18 +309,18 @@ ast::Literal* Parser::parse<ast::Literal>() {
          return m_arena.create<ast::Literal>(Type::BOOL, consume());
 
       default:
-         error(err::Category::SYNTAX, peek().location, "Expected a literal!", true);
+         error(err::Category::SYNTAX, peek().location, "Expected a literal!");
          return nullptr;
    }
 }
 
 template<>
 ast::Identifier* Parser::parse<ast::Identifier>() {
-   std::optional<Token> identifier = tryConsume(TokenType::IDENTIFIER,
-      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected an identifier!" }, true);
-   VALIDATE_PTR_RETURN_NULL(identifier);
+   std::optional<Token> identToken = tryConsume(TokenType::IDENTIFIER,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected an identifier!" });
 
-   return m_arena.create<ast::Identifier>(*identifier);
+   VALIDATE_PTR_RETURN_NULL(identToken);
+   return m_arena.create<ast::Identifier>(*identToken);
 }
 
 template<>

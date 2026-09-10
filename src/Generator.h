@@ -50,12 +50,14 @@ private:
 
    bool isDeclared(const std::string& name) const; /// check each scope starting from latest for identifier
 
-   std::optional<SymbolInfo> findSymbol(const std::string& name) const;
+   /// @return ptr to symbol info or nullptr if it doesn't exist
+   SymbolInfo* findSymbol(const std::string& name);
+   const SymbolInfo* findSymbol(const std::string& name) const;
 
    /// @retval folded string: ONLY for leaf expressions (literal/identifier)
    /// @retval nullopt: for compound expressions (negative/binary)
    std::optional<std::string> tryFold(const ast::Expression* expr) const;
-   Type inferType(const ast::Expression* expr) const;
+   std::optional<Type> inferType(const ast::Expression* expr) const;
 
    void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false) const;
 
@@ -87,10 +89,10 @@ private:
          if constexpr(!std::is_same_v<PtrT, std::monostate>) {
             using T = std::remove_pointer_t<PtrT>;
             generate<T>(arg);
-         } else {
-            g_errors.report(err::Phase::GENERATING, err::Category::INTERNAL,
-               { "Generator.h" }, "Tried to call generate on monostate!", true);
+            return;
          }
+
+         error(err::Category::INTERNAL, { "Generator.h", __LINE__ }, "Tried to call generate on monostate!", true);
       }, *varNode);
    }
 };

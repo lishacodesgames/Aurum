@@ -23,7 +23,7 @@ private:
    ArenaAllocator m_arena;
 
 private:
-   void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal);
+   void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false);
    Token peek(int offset = 0) const noexcept; // exit(1) doesn't count as an exception
 
    /** 
@@ -34,7 +34,7 @@ private:
    Token consume(std::uint32_t count = 1) noexcept;
 
    /**
-    * @brief confirms whether the next token is 'valid'. If yes, then it consumes it. Otherwise logs error
+    * @brief confirms whether the next token is 'valid'. If yes, then it consumes it. Otherwise logs error (if given)
     * @note next token is 'valid' if it is type and has value if hasValue is set
     * @param error if nullopt, error isn't reported. Else, it should contain `category, location, msg, isFatal`. Rest all will be overridden by error() helper method
     * @param hasValue whether not having value contributes to next token being 'valid'

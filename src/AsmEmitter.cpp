@@ -126,15 +126,15 @@ void AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
    }
 
    if(right == ir::TOS) {
-      m_stack.pop(std::format("rbx ; rhs for opcode '{}'", opcode));
+      m_stack.pop("rbx ; rhs for opcode " + opcode);
 
       if(left == ir::SOS)
-         m_stack.pop(std::format("rax ; lhs for opcode '{}'", opcode));
+         m_stack.pop("rax ; lhs for opcode " + opcode);
       else
          movFoldedValue("rax", left, "lhs for opcode " + opcode);
 
    } else if(left == ir::TOS) {
-      m_stack.pop(std::format("rax ; lhs for opcode '{}'", opcode));
+      m_stack.pop("rax ; lhs for opcode " + opcode);
       movFoldedValue("rbx", right, "rhs for opcode " + opcode);
 
    } else {
@@ -240,12 +240,12 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
       }
 
       case OpCode::EXIT: {
+         m_output += "\n";
          if(*instr.operandLeft == ir::TOS)
             m_stack.pop("rdi");
          else
             movFoldedValue("rdi", *instr.operandLeft);
 
-         m_output += "\n";
          write("mov rax, 1 | 0x2000000", "exit syscall number for macOS");
          write("syscall");
          break;

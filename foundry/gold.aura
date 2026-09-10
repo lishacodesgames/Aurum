@@ -1,4 +1,4 @@
-bar x;
+bar x = 5;
 x = True;
-x = 100;
+bar<int> y = x;
 exit x;

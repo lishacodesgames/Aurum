@@ -123,6 +123,14 @@ void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
          tokens.emplace_back(TokenType::CLOSE_CURLY, m_location);
          break;
 
+      case '<':
+         tokens.emplace_back(TokenType::LESS_THAN, m_location);
+         break;
+
+      case '>':
+         tokens.emplace_back(TokenType::GREATER_THAN, m_location);
+         break;
+
       default:
          using namespace std::string_literals; // need the ""s operator to concatenate a temp string with char
          g_errors.report(err::Phase::TOKENIZING, err::Category::SYNTAX, m_location, "Unexpected character: "s + current);

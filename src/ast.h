@@ -63,12 +63,9 @@ namespace ast
 
    struct Declaration {
       Identifier* identifier;
-      std::optional<Expression*> expression;
+      Expression* expression; /// nullptr = declaration without definition
       bool valueMutable; /// TRUE = bar, FALSE = mint.
       Type lockedType = Type::NONE; /// NONE = mutable type
-
-      explicit Declaration(Identifier* identifier, bool valueMutable, Type lockedType = Type::NONE)
-         : identifier(identifier), valueMutable(valueMutable), lockedType(lockedType) {}
 
       explicit Declaration(Identifier* identifier, Expression* expression, bool valueMutable, Type lockedType = Type::NONE)
          : identifier(identifier), expression(expression), valueMutable(valueMutable), lockedType(lockedType) {}
