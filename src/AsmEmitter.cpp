@@ -7,7 +7,7 @@ namespace
       return std::isdigit(static_cast<unsigned char>(value[0])) || value == "TRUE" || value == "FALSE";
    }
 
-   std::string_view lowerBoolean(std::string_view value) {
+   std::string_view getPushable(std::string_view value) {
       if(value == "TRUE")
          return "1";
       if(value == "FALSE")
@@ -17,7 +17,7 @@ namespace
 }
 
 std::string AsmEmitter::emitAssembly() {
-   for(const ir::Instruction& instr : m_instructions)
+  for(const ir::Instruction& instr : m_instructions)
       handle(instr);
 
    std::string externs;
@@ -48,11 +48,8 @@ std::vector<std::string> AsmEmitter::getRequiredLibs() const {
 }
 
 void AsmEmitter::error(err::Category category, int line, std::string_view message, bool isFatal) const {
-   err::SourceLocation location{ .row = static_cast<std::uint32_t>(line) };
-   if(category == err::Category::INTERNAL)
-      location.file = "AsmEmitter.cpp";
-
-   g_errors.report(err::Phase::EMITTING_ASSEMBLY, category, location, message, isFatal);
+   g_errors.report(err::Phase::EMITTING_ASSEMBLY, category,
+      { "AsmEmitter.cpp", static_cast<std::uint32_t>(line) }, message, isFatal);
 }
 
 void AsmEmitter::write(std::string_view cmd, std::optional<std::string_view> comment) {
@@ -64,7 +61,7 @@ void AsmEmitter::write(std::string_view cmd, std::optional<std::string_view> com
 
 void AsmEmitter::pushValue(std::string_view value, std::optional<std::string_view> comment) {
    if(isImmediate(value)) {
-      value = lowerBoolean(value);
+      value = getPushable(value);
       if(comment)
          m_stack.push(std::format("{} ; {}", value, *comment));
       else
@@ -86,7 +83,7 @@ void AsmEmitter::pushValue(std::string_view value, std::optional<std::string_vie
 
 void AsmEmitter::movFoldedValue(std::string_view dest, std::string_view value, std::optional<std::string_view> comment) {
    if(isImmediate(value)) {
-      write(std::format("mov {}, {}", dest, lowerBoolean(value)), comment);
+      write(std::format("mov {}, {}", dest, getPushable(value)), comment);
 
    } else {
       if(auto symbol = m_stack.find(value)) {

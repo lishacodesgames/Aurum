@@ -186,10 +186,7 @@ void Generator::error(err::Category category, err::SourceLocation location, std:
 template <>
 void Generator::generate(const ast::Declaration* declaration) {
    const std::string& varName = declaration->identifier->token.value.value();
-   SymbolInfo symbol{
-      .valueMutable = declaration->valueMutable,
-      .typeMutable = declaration->lockedType == Type::NONE,
-   };
+   SymbolInfo symbol{ declaration->valueMutable, declaration->typeMutable };
 
    if(isDeclared(varName)) {
       error(err::Category::NAME_RESOLUTION, declaration->identifier->token.location,
@@ -200,30 +197,30 @@ void Generator::generate(const ast::Declaration* declaration) {
    OpCode op = declaration->valueMutable ? OpCode::DEF_VAR_MUT : OpCode::DEF_VAR_CONST;
 
    if(declaration->expression) {
-      if(auto exprType = inferType(declaration->expression))
-         symbol.type = *exprType;
-      else
+      std::optional<Type> exprType = inferType(declaration->expression);
+      if(!exprType)
          return; // error msg is handled by inferType()
 
-      if(declaration->lockedType) {
-         if(!isAssignable(*declaration->lockedType, symbol.type)) {
-            error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
-               "Expected expression of type {} but got {}! (for declaration of identifier '{}')",
-               to_string(*declaration->lockedType), to_string(symbol.type), declaration->identifier->token.value.value()));
-            return;
+      symbol.type = *exprType;
+      if(declaration->type.has_value() && *declaration->type != *exprType) {
+         // if declaration should have a specific type and it doesn't match expression's: it should be reassigned
+         symbol.type = *declaration->type;
+
+         if(!isAssignable(*declaration->type, *exprType)) {
+            // if type is not assignable from expression's then smth's wrong
+
+            if(declaration->typeMutable) { // it's a type hint
+               error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
+                  "Type hint {} is incorrect, cannot convert {} to it! (for declaration of identifier '{}')",
+                  to_string(*declaration->type), to_string(*exprType), declaration->identifier->token.value.value()));
+               return;
+            } else {
+               error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
+                  "Expected expression of type {} but got {}! (for declaration of identifier '{}')",
+                  to_string(*declaration->type), to_string(*exprType), declaration->identifier->token.value.value()));
+               return;
+            }
          }
-
-         symbol.type = *declaration->lockedType;
-
-      } else if(declaration->hintType) {
-         if(!isAssignable(*declaration->hintType, symbol.type)) {
-            error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
-               "WARNING: Type hint {} is incorrect, cannot convert {} to it! (for declaration of identifier '{}')",
-               to_string(*declaration->hintType), to_string(symbol.type), declaration->identifier->token.value.value()));
-            // no return bcz it's just a hint
-         }
-
-         symbol.type = *declaration->hintType;
       }
 
       if(auto folded = tryFold(declaration->expression)) {

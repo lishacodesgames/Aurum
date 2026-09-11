@@ -140,32 +140,25 @@ ast::Statement Parser::parseStatement() {
 
 template<> ast::Declaration* Parser::parse<ast::Declaration>() {
    bool valueMutable = consume().type == TokenType::BAR;
-   bool typeMutable = false;
-   Type type = Type::NONE;
+   bool typeMutable = valueMutable;
+   std::optional<Type> type = std::nullopt;
 
-   bool typeAnnotations = true;
    if(tryConsume(TokenType::LESS_THAN)) {
       if(!valueMutable) {
          error(err::Category::SYNTAX, peek(-1).location, "Can only use type locking syntax on 'bar'! Use type hints for immutables.");
          return nullptr;
       }
 
-      std::optional<Type> declType = getType(consume());
-      VALIDATE_PTR_RETURN_NULL(declType);
-
-      type = *declType;
+      typeMutable = false;
+      type = getType(consume());
+      VALIDATE_PTR_RETURN_NULL(type);
 
       VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::GREATER_THAN,
          Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `>`!" }));
 
    } else if(tryConsume(TokenType::COLON)) {
-      std::optional<Type> declType = getType(consume());
-      VALIDATE_PTR_RETURN_NULL(declType);
-
-      type = *declType;
-      typeMutable = valueMutable;
-   } else {
-      typeAnnotations = false;
+      type = getType(consume());
+      VALIDATE_PTR_RETURN_NULL(type);
    }
 
    ast::Identifier* identifier = parse<ast::Identifier>();
@@ -182,10 +175,7 @@ template<> ast::Declaration* Parser::parse<ast::Declaration>() {
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
       Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
 
-   if(typeAnnotations)
-      return m_arena.create<ast::Declaration>(identifier, expression, valueMutable, type, typeMutable);
-   else
-      return m_arena.create<ast::Declaration>(identifier, expression, valueMutable);
+   return m_arena.create<ast::Declaration>(identifier, expression, valueMutable, typeMutable, type);
 }
 
 template<>

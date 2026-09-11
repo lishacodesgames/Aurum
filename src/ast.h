@@ -66,22 +66,12 @@ namespace ast
       Identifier* identifier;
       Expression* expression; /// nullptr = declaration without definition
       bool valueMutable; /// TRUE = bar, FALSE = mint.
-      std::optional<Type> hintType = std::nullopt; /// can never be NONE
-      std::optional<Type> lockedType = std::nullopt; /// can never be NONE
+      bool typeMutable;
+      std::optional<Type> type = std::nullopt; // if specified by hint or locking. Can be NONE by "bar: None x;" but it's redundant
 
-      /// type (if expression defined) must be inferred
-      explicit Declaration(Identifier* identifier, Expression* expression, bool valueMutable)
-         : identifier(identifier), expression(expression), valueMutable(valueMutable) {}
-
-      /// For when some type annotation is given
-      explicit Declaration(Identifier* identifier, Expression* expression, bool valueMutable, Type type, bool typeMutable)
-         : identifier(identifier), expression(expression), valueMutable(valueMutable)
-      {
-         if(typeMutable)
-            hintType = type;
-         else
-            lockedType = type;
-      }
+      /// @param type if nullopt, generator must infer identifier's type by expression (if defined. Else, null)
+      explicit Declaration(Identifier* identifier, Expression* expression, bool valueMutable, bool typeMutable, std::optional<Type> type = std::nullopt)
+         : identifier(identifier), expression(expression), valueMutable(valueMutable), typeMutable(typeMutable), type(type) {}
    };
 
    struct Assignment {
