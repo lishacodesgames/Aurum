@@ -9,7 +9,7 @@
 \
    /* Literals & identifiers */ \
    X(INTEGER_LITERAL) \
-   X(TRUE) X(FALSE) \
+   X(TRUE) X(FALSE) X(NONE) \
    X(IDENTIFIER) \
 \
    /* Types */ \

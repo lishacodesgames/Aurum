@@ -169,7 +169,7 @@ template<> ast::Declaration* Parser::parse<ast::Declaration>() {
    VALIDATE_PTR_RETURN_NULL(identifier);
 
    ast::Expression* expression = nullptr; // in case it's a Declaration without Definition
-   if(tryConsume(TokenType::EQUALS)) {
+   if(tryConsume(TokenType::EQUALS) && !tryConsume(TokenType::NONE)) { // bar x = None; is valid. In that case, don't try to parse expr
       ast::Expression expr = parseExpression();
       VALIDATE_VARIANT_RETURN_NULL(expr);
 

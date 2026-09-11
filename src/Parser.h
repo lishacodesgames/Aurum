@@ -52,23 +52,23 @@ private:
    // statements
    ast::Statement parseStatement();
 
-   template<> ast::Declaration* parse();
-   template<> ast::Assignment* parse();
-   template<> ast::Exit* parse();
-   template<> ast::Increment* parse();
-   template<> ast::Decrement* parse();
-   template<> ast::Block* parse();
+   template<> ast::Declaration* parse<ast::Declaration>();
+   template<> ast::Assignment* parse<ast::Assignment>();
+   template<> ast::Exit* parse<ast::Exit>();
+   template<> ast::Increment* parse<ast::Increment>();
+   template<> ast::Decrement* parse<ast::Decrement>();
+   template<> ast::Block* parse<ast::Block>();
 
    // expressions
    /// @param minPrec the minimum precedence that has to be parsed from the expression
    ast::Expression parseExpression(int minPrec = 0);
 
-   template<> ast::Literal* parse();
-   template<> ast::Identifier* parse();
-   template<> ast::Negative* parse();
+   template<> ast::Literal* parse<ast::Literal>();
+   template<> ast::Identifier* parse<ast::Identifier>();
+   template<> ast::Negative* parse<ast::Negative>();
 
    /// @return BinaryExpr containing op and rhs, left will be assigned by caller
-   template<> ast::BinaryExpr* parse();
+   template<> ast::BinaryExpr* parse<ast::BinaryExpr>();
 
    // helpers
    ast::Expression parseTerm();
