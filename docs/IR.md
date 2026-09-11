@@ -2,7 +2,8 @@
 
 |    OpCode   | Operand 1 | Operand 2 | Effect |
 | ----------- | --------- | --------- | ------ |
-| `PUSH_INT` | integer literal | - | Push a literal onto the stack
+| `PUSH_INT` | integer literal | - | Push an int literal onto the stack
+| `PUSH_BOOL` | `TRUE` or `FALSE` | - | Push a bool literal onto the stack
 | `PUSH_VAR` | *name* | - | Push variable's current value onto the stack
 | `DEF_VAR` | *name* | *value* | Push *value* onto the stack and name it
 | `ALLOC_VAR` | *name* | - | Reserve an uninitalised slot and name it
@@ -15,8 +16,8 @@
 | `LABEL` | label name | - | marks a position, no runtime effect |
 | `JUMP` | label name | - | unconditional goto
 | `JUMP_FALSE` | label name | condition (@todo shape) | conditional jump
-| `SCOPE_START` | - | - | marks beginning of new scope |
-| `SCOPE_END` | - | - | marks end of latest scope |
+| `SCOPE_START` | scope level (0 = global) | - | marks beginning of new scope |
+| `SCOPE_END` | scope level (0 = global) | - | marks end of latest scope |
 
 ### Legend
 - *value* = folded or `$tos` (top of stack)

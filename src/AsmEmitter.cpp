@@ -3,7 +3,7 @@
 
 namespace
 {
-   bool isImmediate(std::string_view value) {
+   bool isLiteral(std::string_view value) {
       return std::isdigit(static_cast<unsigned char>(value[0])) || value == "TRUE" || value == "FALSE";
    }
 
@@ -60,12 +60,11 @@ void AsmEmitter::write(std::string_view cmd, std::optional<std::string_view> com
 }
 
 void AsmEmitter::pushValue(std::string_view value, std::optional<std::string_view> comment) {
-   if(isImmediate(value)) {
-      value = getPushable(value);
+   if(isLiteral(value)) {
       if(comment)
-         m_stack.push(std::format("{} ; {}", value, *comment));
+         m_stack.push(std::format("{} ; {}", getPushable(value), *comment));
       else
-         m_stack.push(value);
+         m_stack.push(getPushable(value));
 
    } else {
       if(auto symbol = m_stack.find(value)) {
@@ -75,14 +74,14 @@ void AsmEmitter::pushValue(std::string_view value, std::optional<std::string_vie
             m_stack.push(std::format("QWORD [rbp - {}] ; '{}'", symbol->offset, value));
 
       } else {
-         error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", value), true);
+         error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", value));
          return;
       }
    }
 }
 
 void AsmEmitter::movFoldedValue(std::string_view dest, std::string_view value, std::optional<std::string_view> comment) {
-   if(isImmediate(value)) {
+   if(isLiteral(value)) {
       write(std::format("mov {}, {}", dest, getPushable(value)), comment);
 
    } else {
@@ -113,8 +112,8 @@ void AsmEmitter::movToVar(std::string_view varName, std::string_view value, bool
 }
 
 void AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
-   const std::string& left = *instr.operandLeft;
-   const std::string& right = *instr.operandRight;
+   const std::string& left = instr.operand1;
+   const std::string& right = *instr.operand2;
    std::string opcode = to_string(instr.opcode);
 
    if(left == ir::TOS && right == ir::TOS) {
@@ -164,31 +163,27 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
       case OpCode::PUSH_INT:
       case OpCode::PUSH_BOOL:
       case OpCode::PUSH_VAR:
-         pushValue(*instr.operandLeft);
+         pushValue(instr.operand1);
          break;
 
-      case OpCode::DEF_VAR_MUT:
-      case OpCode::DEF_VAR_CONST: {
-         const std::string& varName = *instr.operandLeft;
-         const std::string& value = *instr.operandRight;
-         bool isMutable = instr.opcode == OpCode::DEF_VAR_MUT;
+      case OpCode::DEF_VAR: {
+         const std::string& varName = instr.operand1;
+         const std::string& value = *instr.operand2;
 
-         if(value != ir::TOS) {
-            pushValue(value,
-               std::format("Declaration of {} '{}'", isMutable ? "mutable" : "const", varName));
-         }
+         if(value != ir::TOS)
+            pushValue(value, "Declaration of {}" + varName);
 
-         m_stack.setTop(varName, isMutable);
+         m_stack.nameTop(varName);
          break;
       }
 
       case OpCode::ALLOC_VAR:
-         m_stack.push(std::nullopt, true, *instr.operandLeft);
+         m_stack.push(std::nullopt, instr.operand1);
          break;
 
       case OpCode::STORE_VAR: {
-         const std::string& varName = *instr.operandLeft;
-         const std::string& value = *instr.operandRight;
+         const std::string& varName = instr.operand1;
+         const std::string& value = *instr.operand2;
 
          if(value == ir::TOS) {
             // popping to rax then moving is generally faster than popping directly to location
@@ -201,19 +196,19 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
       }
 
       case OpCode::INCR: {
-         if(auto symbol = m_stack.find(*instr.operandLeft))
+         if(auto symbol = m_stack.find(instr.operand1))
             write(std::format("inc QWORD [rbp - {}]", symbol->offset), std::format("{}++", symbol->name));
          else
-            error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", *instr.operandLeft), true);
+            error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", instr.operand1));
 
          break;
       }
 
       case OpCode::DECR: {
-         if(auto symbol = m_stack.find(*instr.operandLeft))
+         if(auto symbol = m_stack.find(instr.operand1))
             write(std::format("dec QWORD [rbp - {}]", symbol->offset), std::format("{}--", symbol->name));
          else
-            error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", *instr.operandLeft), true);
+            error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", instr.operand1));
 
          break;
       }
@@ -226,10 +221,10 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
       case OpCode::MOD: handleDivMod(instr, true); break;
 
       case OpCode::NEG: {
-         if(*instr.operandLeft == ir::TOS)
+         if(instr.operand1 == ir::TOS)
             m_stack.pop("rax");
          else
-            movFoldedValue("rax", *instr.operandLeft);
+            movFoldedValue("rax", instr.operand1);
 
          write("neg rax");
          m_stack.push("rax");
@@ -238,10 +233,10 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
 
       case OpCode::EXIT: {
          m_output += "\n";
-         if(*instr.operandLeft == ir::TOS)
+         if(instr.operand1 == ir::TOS)
             m_stack.pop("rdi");
          else
-            movFoldedValue("rdi", *instr.operandLeft);
+            movFoldedValue("rdi", instr.operand1);
 
          write("mov rax, 1 | 0x2000000", "exit syscall number for macOS");
          write("syscall");

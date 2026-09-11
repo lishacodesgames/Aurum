@@ -21,7 +21,7 @@ private:
 
 private:
    /// @param line just pass the __LINE__ macro
-   void error(err::Category category, int line, std::string_view message, bool isFatal) const;
+   void error(err::Category category, int line, std::string_view message, bool isFatal = false) const;
    void comment(std::string_view comment) { m_output += std::format("\t; {}\n", comment); }
    void write(std::string_view cmd, std::optional<std::string_view> comment = std::nullopt); 
 

@@ -3,8 +3,8 @@
 
 #include "Errors.h"
 
-void Stack::push(std::optional<std::string_view> value, bool isMutable, std::string_view name) {
-   m_stack.emplace_back(name, (m_stack.size() + 1) * 8, isMutable);
+void Stack::push(std::optional<std::string_view> value, std::string_view name) {
+   m_stack.emplace_back(name, (m_stack.size() + 1) * 8);
 
    if(value)
       m_emitterOutput += std::format("\tpush {}\n", *value);
@@ -18,19 +18,19 @@ void Stack::pop(std::string_view reg) {
 }
 
 std::optional<Symbol> Stack::find(std::string_view name) const {
-   auto it = get(name);
-   if(it)
+   if(auto it = get(name))
       return *it.value();
 
    return std::nullopt;
 }
 
 std::uint32_t Stack::offset(std::string_view name) const {
-   auto it = get(name);
-   if(it)
+   if(auto it = get(name))
       return it.value()->offset;
    
-   g_errors.report(err::Phase::EMITTING_ASSEMBLY, err::Category::INTERNAL, { "Stack.cpp" }, std::format("Tried to get offset of a variable that doesn't exist: '{}'", name), true);
+   g_errors.report(
+      err::Phase::EMITTING_ASSEMBLY, err::Category::INTERNAL, { "Stack.cpp", __LINE__ },
+      std::format("Tried to get offset of a variable that doesn't exist: '{}'", name), true);
    return 0;   
 }
 
@@ -40,8 +40,11 @@ void Stack::startScope() {
 }
 
 void Stack::endScope() {
-   if(m_scopeMarks.empty())
-      g_errors.report(err::Phase::EMITTING_ASSEMBLY, err::Category::INTERNAL, { "Stack.cpp" }, "Tried to end a non-existent scope!", true);
+   if(m_scopeMarks.empty()) {
+      g_errors.report(
+         err::Phase::EMITTING_ASSEMBLY, err::Category::INTERNAL, { "Stack.cpp", __LINE__ },
+         "Tried to end a non-existent scope!", true);
+   }
 
    m_emitterOutput += std::format("\t; Leaving scope {}...\n", m_scopeMarks.size());
    std::size_t mark = m_scopeMarks.back();

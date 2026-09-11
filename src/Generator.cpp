@@ -46,40 +46,33 @@ std::vector<ir::Instruction> Generator::generate() {
    return m_instructions; // NOT to be moved bcz it needs to be accessed later
 }
 
-std::string Generator::getIR() const {
-   std::string IR;
-
-   IR += "; Intermediate Representation for Aurum\n\n";
-   IR += "_main:\n"; /// @todo function definition opcodes
-
-   for(const ir::Instruction& instr : m_instructions) {
-      IR += "\t" + to_string(instr.opcode);
-
-      if(instr.operandLeft) {
-         IR += " " + *instr.operandLeft;
-         if(instr.operandRight)
-            IR += ", " + *instr.operandRight;
-      }
-
-      IR += "\n";
-   }
-
-   return IR;
-}
-
-void Generator::emit(OpCode op, std::optional<std::string_view> operand1, std::optional<std::string_view> operand2) {
+void Generator::emit(OpCode op, std::string_view operand1, std::optional<std::string_view> operand2) {
    uint8_t requiredOperands = operands(op);
 
    // verifying if they're correct
-   if(requiredOperands == 0 && !operand1 && !operand2)
-      m_instructions.emplace_back(op);
-   else if(requiredOperands == 1 && operand1 && !operand2)
-      m_instructions.emplace_back(op, *operand1);
-   else if(requiredOperands == 2 && operand1 && operand2)
-      m_instructions.emplace_back(op, *operand1, *operand2);
+   if(requiredOperands == 1 && !operand2)
+      m_instructions.emplace_back(op, operand1);
+   else if(requiredOperands == 2 && operand2)
+      m_instructions.emplace_back(op, operand1, *operand2);
    else
-      error(err::Category::INTERNAL, { "Generator.cpp", __LINE__ },
+      error(
+         err::Category::INTERNAL, { "Generator.cpp", __LINE__ },
          std::format("Expected {} operands for opcode '{}'!", requiredOperands, to_string(op)), true);
+
+   m_ir += std::format("\t{} {}", to_string(op), operand1);
+   if(operand2)
+      m_ir += std::format(", {}", *operand2);
+   m_ir += "\n";
+}
+
+void Generator::pushScope() {
+   emit(OpCode::SCOPE_START, std::to_string(m_scopes.size()));
+   m_scopes.emplace_back();
+}
+
+void Generator::popScope() {
+   m_scopes.pop_back();
+   emit(OpCode::SCOPE_END, std::to_string(m_scopes.size()));
 }
 
 bool Generator::isDeclared(const std::string& name) const {
@@ -164,7 +157,8 @@ std::optional<Type> Generator::inferType(const ast::Expression* expr) const {
          std::optional<Type> rightType = inferType(arg->right);
 
          if(!leftType || !rightType || *leftType != Type::INT || *rightType != Type::INT) {
-            error(err::Category::TYPE_MISMATCH, arg->op.location,
+            error(
+               err::Category::TYPE_MISMATCH, arg->op.location,
                std::format("Operator '{}' requires int operands!", getCharsOf(arg->op.type)));
             return std::nullopt;
          }
@@ -194,8 +188,6 @@ void Generator::generate(const ast::Declaration* declaration) {
       return;
    }
 
-   OpCode op = declaration->valueMutable ? OpCode::DEF_VAR_MUT : OpCode::DEF_VAR_CONST;
-
    if(declaration->expression) {
       std::optional<Type> exprType = inferType(declaration->expression);
       if(!exprType)
@@ -224,14 +216,16 @@ void Generator::generate(const ast::Declaration* declaration) {
       }
 
       if(auto folded = tryFold(declaration->expression)) {
-         emit(op, varName, *folded);
+         emit(OpCode::DEF_VAR, varName, *folded);
       } else {
          generate<ast::Expression>(declaration->expression);
-         emit(op, varName, ir::TOS);
+         emit(OpCode::DEF_VAR, varName, ir::TOS);
       }
+
    } else {
       if(!declaration->valueMutable) {
-         error(err::Category::MUTABILITY, declaration->identifier->token.location,
+         error(
+            err::Category::MUTABILITY, declaration->identifier->token.location,
             std::format("Cannot declare immutable variable '{}' without initializing it!", varName));
          return;
       }
@@ -261,7 +255,8 @@ void Generator::generate(const ast::Assignment* assignment) {
 
    if(symbol->type != *exprType) {
       if(!symbol->typeMutable && !isAssignable(symbol->type, *exprType)) {
-         error(err::Category::TYPE_MISMATCH, assignment->identifier->token.location,
+         error(
+            err::Category::TYPE_MISMATCH, assignment->identifier->token.location,
             "Tried to change type of locked variable " + varName);
          return;
       }
@@ -286,7 +281,8 @@ void Generator::generate(const ast::Exit* exit) {
    if(!exprType)
       return;
    if(!isAssignable(Type::INT, *exprType)) {
-      error(err::Category::INTERNAL, getLocation(exit->expression),
+      error(
+         err::Category::INTERNAL, getLocation(exit->expression),
          "Exit code must be of type INT, but is " + to_string(*exprType));
       return;
    }
@@ -314,7 +310,8 @@ void Generator::generate(const ast::Increment* increment) {
       return;
 
    } else if(symbol->type != Type::INT) {
-      error(err::Category::TYPE_MISMATCH, increment->identifier->token.location,
+      error(
+         err::Category::TYPE_MISMATCH, increment->identifier->token.location,
          std::format("Cannot increment non-int identifier '{}' of type {}!", varName, to_string(symbol->type)));
       return;
    }
@@ -336,7 +333,8 @@ void Generator::generate(const ast::Decrement* decrement) {
       return;
 
    } else if(symbol->type != Type::INT) {
-      error(err::Category::TYPE_MISMATCH, decrement->identifier->token.location,
+      error(
+         err::Category::TYPE_MISMATCH, decrement->identifier->token.location,
          std::format("Cannot decrement non-int identifier '{}' of type {}!", varName, to_string(symbol->type)));
       return;
    }
@@ -436,7 +434,8 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
          /// @todo calling exponentiation
 
       default:
-         error(err::Category::INTERNAL, { "Generator.cpp", __LINE__ },
+         error(
+            err::Category::INTERNAL, { "Generator.cpp", __LINE__ },
             std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op.type)));
          return;
    }

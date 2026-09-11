@@ -3,7 +3,7 @@
 #define OP_CODES \
    /* pushing / declaring / popping */ \
    X(PUSH_INT) X(PUSH_BOOL) X(PUSH_VAR) \
-   X(DEF_VAR_MUT) X(DEF_VAR_CONST) X(ALLOC_VAR) X(STORE_VAR) \
+   X(DEF_VAR) X(ALLOC_VAR) X(STORE_VAR) \
 \
    /* in-place, no push/pop involved */ \
    X(INCR) X(DECR) \
@@ -24,7 +24,7 @@ enum class OpCode {
    #undef X
 };
 
-/// @return 0, 1 or 2
+/// @return 1 or 2
 uint8_t operands(OpCode opcode); /// how many operands does this opcode require
 std::string to_string(OpCode opcode);
 namespace ir
@@ -36,16 +36,14 @@ namespace ir
 
    struct Instruction {
       OpCode opcode;
-      std::optional<std::string> operandLeft = std::nullopt; // nullopt = whatever's on the stack
-      std::optional<std::string> operandRight = std::nullopt; // nullopt = whatever's on the stack
+      std::string operand1; // each opcode has atleast 1 operand
+      std::optional<std::string> operand2 = std::nullopt;
 
-      explicit Instruction(OpCode opcode) : opcode(opcode) {}
-
-      explicit Instruction(OpCode opcode, std::string_view operandLeft)
-         : opcode(opcode), operandLeft(operandLeft) {}
+      explicit Instruction(OpCode opcode, std::string_view operand1)
+         : opcode(opcode), operand1(operand1) {}
 
       // convenience overload: takes views, owns copies internally.
-      explicit Instruction(OpCode opcode, std::string_view operandLeft, std::string_view operandRight)
-         : opcode(opcode), operandLeft(operandLeft), operandRight(operandRight) {}
+      explicit Instruction(OpCode opcode, std::string_view operand1, std::string_view operand2)
+         : opcode(opcode), operand1(operand1), operand2(operand2) {}
    };
 }

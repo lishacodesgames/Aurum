@@ -7,8 +7,6 @@ uint8_t operands(OpCode opcode) {
    switch(opcode) {
       case OpCode::SCOPE_START:
       case OpCode::SCOPE_END:
-         return 0;
-
 
       case OpCode::PUSH_INT:
       case OpCode::PUSH_VAR:
@@ -24,8 +22,7 @@ uint8_t operands(OpCode opcode) {
          return 1;
 
 
-      case OpCode::DEF_VAR_CONST:
-      case OpCode::DEF_VAR_MUT:
+      case OpCode::DEF_VAR:
       case OpCode::STORE_VAR:
 
       case OpCode::ADD:

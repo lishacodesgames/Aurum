@@ -11,11 +11,22 @@
  */
 class Generator {
 public:
-   explicit Generator(ast::Program program)
-      : m_program(std::move(program)) {}
+   explicit Generator(ast::Program program) : m_program(std::move(program)) {
+      /// @todo function definition opcodes
+      m_ir += "; Intermediate Representation for Aurum\n\n";
+      m_ir += "_main:\n";
+
+      pushScope(); // push scope 0
+   }
+
+   /// @return MOVES ir out of generator, should not try to use generator after this
+   /// also pops global scope
+   std::string getIR() {
+      popScope();
+      return std::move(m_ir);
+   }
 
    std::vector<ir::Instruction> generate();
-   std::string getIR() const;
 
 private:
    /// Purely for semantic validity, not layout
@@ -28,27 +39,18 @@ private:
 private:
    const ast::Program m_program;
    std::vector<ir::Instruction> m_instructions;
+   std::string m_ir;
 
-   /// starts with 1 empty global scope
-   std::vector<std::unordered_map<std::string, SymbolInfo>> m_scopes{ {} };
+   std::vector<std::unordered_map<std::string, SymbolInfo>> m_scopes{};
 
 private:
-   void emit(OpCode op, std::optional<std::string_view> operand1 = std::nullopt,
-      std::optional<std::string_view> operand2 = std::nullopt);
+   void emit(OpCode op, std::string_view operand1, std::optional<std::string_view> operand2 = std::nullopt);
 
-   /// add an empty map to m_scopes
-   void pushScope() {
-      m_scopes.emplace_back();
-      emit(OpCode::SCOPE_START);
-   }
+   void pushScope();
+   void popScope();
 
-   /// pop latest scope
-   void popScope() {
-      m_scopes.pop_back();
-      emit(OpCode::SCOPE_END);
-   }
-
-   bool isDeclared(const std::string& name) const; /// check each scope starting from latest for identifier
+   /// check each scope starting from latest for name
+   bool isDeclared(const std::string& name) const;
 
    /// @return ptr to symbol info or nullptr if it doesn't exist
    SymbolInfo* findSymbol(const std::string& name);

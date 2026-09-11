@@ -6,36 +6,27 @@
 struct Symbol { // for now, can only be a variable
    std::string name;
    std::uint32_t offset = 0; // offset from rbp, in BYTES
-   bool isMutable; // TRUE = bar, FALSE = mint.
 
-   explicit Symbol(std::string_view name, std::uint32_t offset, bool isMutable)
-      : name(name), offset(offset), isMutable(isMutable) {}
+   explicit Symbol(std::string_view name, std::uint32_t offset)
+      : name(name), offset(offset) {}
 };
 
 class Stack {
 public:
-   Stack(std::string& emitterOutput)
-      : m_emitterOutput(emitterOutput) {}
+   Stack(std::string& emitterOutput) : m_emitterOutput(emitterOutput) {}
 
    /**
+    * @param value the value / register being pushed. nullopt if variable has only been declared and not defined. can also be followed by a comment 
     * @param name name of variable being pushed
-    * @param isMutable if the value can be changed after this.
-    * @param value the value / register being pushed. Can be empty if variable has only been declared and not defined. can also be followed by a comment 
-    * @param comment WITH PRECEEDING SEMICOLON
     * @return the instruction text to emit for this push
     */
-   void push(std::optional<std::string_view> value, bool isMutable = false, std::string_view name = "");
+   void push(std::optional<std::string_view> value, std::string_view name = "");
 
    /// @param reg can be followed by a comment
    void pop(std::string_view reg);
 
    /// name the variable at the very top of the stack
    void nameTop(std::string_view name) { m_stack.back().name = name; }
-   void setTop(std::string_view name, bool isMutable) {
-      nameTop(name);
-      m_stack.back().isMutable = isMutable;
-   }
-
    bool contains(std::string_view name) const { return get(name) != std::nullopt; }
    std::optional<Symbol> find(std::string_view name) const;
 

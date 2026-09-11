@@ -118,7 +118,9 @@ ast::Statement Parser::parseStatement() {
             }
 
             default: {
-               error(err::Category::SYNTAX, peek(1).location, std::format("Unexpected token {} after identifier {}", getCharsOf(peek(1).type), *peek(1).value));
+               error(
+                  err::Category::SYNTAX, peek(1).location,
+                  std::format("Unexpected token {} after identifier {}", getCharsOf(peek(1).type), *peek().value));
                return std::monostate{};
             }
          }
@@ -132,7 +134,9 @@ ast::Statement Parser::parseStatement() {
       }
 
       default: {
-         error(err::Category::SYNTAX, peek().location, "Unexpected token, unable to parse statement beginning with: " + to_string(peek().type));
+         error(
+            err::Category::SYNTAX, peek().location,
+            "Unexpected token, unable to parse statement beginning with: " + to_string(peek().type));
          return std::monostate{};
       }
    }
@@ -290,7 +294,8 @@ ast::Expression Parser::parseTerm() {
       }
 
       default:
-         error(err::Category::SYNTAX, peek().location,
+         error(
+            err::Category::SYNTAX, peek().location,
             "Unexpected token, unable to parse term beginning with: " + to_string(peek().type));
          return std::monostate{};
    }

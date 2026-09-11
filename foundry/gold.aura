@@ -1,6 +1,10 @@
 bar<int> x = True;
+{
 mint: bool y = 0;
+{{{{{{}}}}}}
+}
+
 x++;
 x = x * 2 * (1 - 6);
 x = -x; $$ 20
-exit x;
+exit False;
