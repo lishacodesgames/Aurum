@@ -1,2 +1,4 @@
+$$ EXPECT: FAIL
+$$ CONTAINS: Use of uninitialized identifier
 bar value;
 exit value;

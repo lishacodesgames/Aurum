@@ -1,3 +1,4 @@
+$$ EXPECT: 14
 mint a = 10;
 bar b = 5;
 b = b + a;

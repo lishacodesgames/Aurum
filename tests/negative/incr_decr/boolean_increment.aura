@@ -1,0 +1,4 @@
+$$ EXPECT: FAIL
+$$ CONTAINS: Cannot increment non-int identifier
+bar value = True;
+value++;

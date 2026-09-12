@@ -1,2 +1,3 @@
+$$ EXPECT: 5
 bar a = 10;
 exit -a + 15;

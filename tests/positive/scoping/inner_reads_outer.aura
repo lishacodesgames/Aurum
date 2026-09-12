@@ -1,3 +1,4 @@
+$$ EXPECT: 3
 bar x = 1;
 {
    bar y = 2;

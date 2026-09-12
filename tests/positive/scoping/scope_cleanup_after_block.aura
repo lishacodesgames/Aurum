@@ -1,3 +1,4 @@
+$$ EXPECT: 16
 bar x = 1;
 {
    bar y = 10;

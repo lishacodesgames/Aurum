@@ -1,1 +1,2 @@
+$$ EXPECT: 44
 exit 300;

@@ -1,0 +1,3 @@
+$$ EXPECT: FAIL
+$$ CONTAINS: Use of undeclared identifier
+exit y;

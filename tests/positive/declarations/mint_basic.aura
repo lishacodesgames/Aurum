@@ -1,2 +1,3 @@
+$$ EXPECT: 5
 mint x = 5;
 exit x;

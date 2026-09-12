@@ -1,3 +1,4 @@
+$$ EXPECT: 0
 bar value = True;
 value = False;
 exit value;

@@ -1,0 +1,8 @@
+$$ EXPECT: FAIL
+$$ CONTAINS: Redeclaration of identifier
+$$ CONTAINS: Tried to modify immutable variable
+bar x = 1;
+bar x = 2;
+mint y = 1;
+y = 2;
+exit 0;

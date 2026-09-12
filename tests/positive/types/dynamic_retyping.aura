@@ -1,3 +1,4 @@
+$$ EXPECT: 7
 bar value = True;
 value = 7;
 exit value;

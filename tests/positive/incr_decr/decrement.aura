@@ -1,3 +1,4 @@
+$$ EXPECT: 4
 bar x = 5;
 x--;
 exit x;

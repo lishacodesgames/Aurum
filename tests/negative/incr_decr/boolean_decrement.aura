@@ -1,0 +1,4 @@
+$$ EXPECT: FAIL
+$$ CONTAINS: Cannot decrement non-int identifier
+bar value = False;
+value--;

@@ -1,0 +1,5 @@
+$$ EXPECT: FAIL
+$$ CONTAINS: Redeclaration of identifier
+bar x = 5;
+bar x = 10;
+exit x;

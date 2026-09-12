@@ -1,1 +1,2 @@
+$$ EXPECT: 251
 exit -5;

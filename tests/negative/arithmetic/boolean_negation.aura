@@ -1,0 +1,3 @@
+$$ EXPECT: FAIL
+$$ CONTAINS: requires an int operand
+exit -True;

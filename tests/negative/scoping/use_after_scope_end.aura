@@ -1,0 +1,6 @@
+$$ EXPECT: FAIL
+$$ CONTAINS: Use of undeclared identifier
+{
+   bar x = 5;
+}
+exit x;

@@ -1,0 +1,6 @@
+$$ EXPECT: FAIL
+$$ CONTAINS: Unexpected token 'IDENTIFIER' after identifier 'x'
+$$ CONTAINS: Unexpected token 'IDENTIFIER' after identifier 'a'
+x y;
+a b;
+exit 0;
