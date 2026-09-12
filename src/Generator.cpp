@@ -19,22 +19,14 @@ namespace
 
    /// @return whether dest <- value is a valid Type conversion
    bool isAssignable(Type dest, Type value) {
-      switch(value) {
-         case Type::NONE: return true; // NONE can be converted to any value
+      /// @todo type conversion system, for now only exact matches are allowed
+      if(dest == Type::NONE)
+         return true;
 
-         case Type::INT:
-         case Type::BOOL:
-            switch(dest) {
-               case Type::NONE:
-               case Type::INT:
-               case Type::BOOL:
-                  return true;
+      if(value == Type::NONE)
+         return false; // can't assign uninitialized value to a variable
 
-               default: return false;
-            }
-
-         default: return false;
-      }
+      return dest == value;
    }
 }
 
@@ -133,11 +125,11 @@ std::optional<Type> Generator::inferType(const ast::Expression* expr) const {
          const SymbolInfo* symbol = findSymbol(varName);
 
          if(!symbol) {
-            error(err::Category::NAME_RESOLUTION, arg->token.location, "Use of undeclared identifier " + varName);
+            error(err::Category::NAME_RESOLUTION, arg->token.location, std::format("Use of undeclared identifier '{}'!", varName));
             return std::nullopt;
 
          } else if(symbol->type == Type::NONE) {
-            error(err::Category::TYPE_MISMATCH, arg->token.location, "Use of uninitialized identifier " + varName);
+            error(err::Category::TYPE_MISMATCH, arg->token.location, std::format("Use of uninitialized identifier '{}'!", varName));
             return std::nullopt;
          }
 
@@ -146,7 +138,7 @@ std::optional<Type> Generator::inferType(const ast::Expression* expr) const {
       } else if constexpr(std::is_same_v<PtrT, ast::Negative*>) {
          std::optional<Type> operandType = inferType(arg->operand);
          if(!operandType || *operandType != Type::INT) {
-            error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Unary '-' requires an int operand!");
+            error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Unary operator '-' requires an int operand!");
             return std::nullopt;
          }
 
@@ -183,7 +175,8 @@ void Generator::generate(const ast::Declaration* declaration) {
    SymbolInfo symbol{ declaration->valueMutable, declaration->typeMutable };
 
    if(isDeclared(varName)) {
-      error(err::Category::NAME_RESOLUTION, declaration->identifier->token.location,
+      error(
+         err::Category::NAME_RESOLUTION, declaration->identifier->token.location,
          std::format("Redeclaration of identifier '{}'!", varName));
       return;
    }
@@ -241,11 +234,16 @@ void Generator::generate(const ast::Assignment* assignment) {
    const std::string& varName = assignment->identifier->token.value.value();
    SymbolInfo* symbol = findSymbol(varName);
 
+   /// @todo extract this part
    if(!symbol) {
-      error(err::Category::NAME_RESOLUTION, assignment->identifier->token.location, "Use of undeclared identifier " + varName);
+      error(
+         err::Category::NAME_RESOLUTION, assignment->identifier->token.location,
+         std::format("Use of undeclared identifier '{}'!", varName));
       return;
    } else if(!symbol->valueMutable) {
-      error(err::Category::MUTABILITY, assignment->identifier->token.location, "Tried to modify immutable variable " + varName);
+      error(
+         err::Category::MUTABILITY, assignment->identifier->token.location,
+         std::format("Tried to modify immutable variable '{}'!", varName));
       return;
    }
 
@@ -257,11 +255,12 @@ void Generator::generate(const ast::Assignment* assignment) {
       if(!symbol->typeMutable && !isAssignable(symbol->type, *exprType)) {
          error(
             err::Category::TYPE_MISMATCH, assignment->identifier->token.location,
-            "Tried to change type of locked variable " + varName);
+            std::format("Tried to change type of locked variable '{}'!", varName));
          return;
       }
 
-      symbol->type = *exprType;
+      if(symbol->typeMutable)
+         symbol->type = *exprType;
    }
 
    std::string value;
@@ -302,11 +301,15 @@ void Generator::generate(const ast::Increment* increment) {
    const SymbolInfo* symbol = findSymbol(varName);
 
    if(!symbol) {
-      error(err::Category::NAME_RESOLUTION, increment->identifier->token.location, "Use of undeclared identifier " + varName);
+      error(
+         err::Category::NAME_RESOLUTION, increment->identifier->token.location,
+         std::format("Use of undeclared identifier '{}'!", varName));
       return;
 
    } else if(!symbol->valueMutable) {
-      error(err::Category::MUTABILITY, increment->identifier->token.location, "Tried to modify immutable variable " + varName);
+      error(
+         err::Category::MUTABILITY, increment->identifier->token.location,
+         std::format("Tried to modify immutable variable '{}'!", varName));
       return;
 
    } else if(symbol->type != Type::INT) {
@@ -325,11 +328,13 @@ void Generator::generate(const ast::Decrement* decrement) {
    const SymbolInfo* symbol = findSymbol(varName);
 
    if(!symbol) {
-      error(err::Category::NAME_RESOLUTION, decrement->identifier->token.location, "Use of undeclared identifier " + varName);
+      error(err::Category::NAME_RESOLUTION, decrement->identifier->token.location,
+         std::format("Use of undeclared identifier '{}'!", varName));
       return;
 
    } else if(!symbol->valueMutable) {
-      error(err::Category::MUTABILITY, decrement->identifier->token.location, "Tried to modify immutable variable " + varName);
+      error(err::Category::MUTABILITY, decrement->identifier->token.location,
+         std::format("Tried to modify immutable variable '{}'!", varName));
       return;
 
    } else if(symbol->type != Type::INT) {
@@ -370,7 +375,9 @@ template <>
 void Generator::generate(const ast::Identifier* identifier) {
    const std::string& varName = identifier->token.value.value();
    if(!isDeclared(varName)) {
-      error(err::Category::NAME_RESOLUTION, identifier->token.location, "Use of undeclared identifier " + varName);
+      error(
+         err::Category::NAME_RESOLUTION, identifier->token.location,
+         std::format("Use of undeclared identifier '{}'!", varName));
       return;
    }
 

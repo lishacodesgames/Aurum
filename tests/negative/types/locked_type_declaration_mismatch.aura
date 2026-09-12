@@ -1,0 +1,3 @@
+$$ EXPECT: FAIL
+$$ CONTAINS: Expected expression of type INT
+bar<int> x = True;

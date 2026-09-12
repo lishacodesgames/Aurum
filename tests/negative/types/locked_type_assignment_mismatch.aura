@@ -1,0 +1,4 @@
+$$ EXPECT: FAIL
+$$ CONTAINS: Tried to change type of locked variable
+bar<bool> x = True;
+x = 7;

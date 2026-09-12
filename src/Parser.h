@@ -1,7 +1,6 @@
 #pragma once
 #include "Token.h"
 #include "ast.h"
-#include "mem.h"
 
 // Terms are either numbers or parenthesized expressions.
 // Expressions consist of terms connected by binary operators.

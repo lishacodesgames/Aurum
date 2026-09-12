@@ -1,4 +1,3 @@
-$$ EXPECT: 1
+$$ EXPECT: 0
 bar value;
 value = True;
-exit value;

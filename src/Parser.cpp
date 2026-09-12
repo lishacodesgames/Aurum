@@ -16,7 +16,6 @@ namespace
          case TokenType::BOOL:   return Type::BOOL;
 
          default:
-            g_errors.report(err::Phase::PARSING, err::Category::INTERNAL, token.location, "Unhandled datatype token: " + to_string(token.type));
             return std::nullopt;
       }
    }
@@ -120,7 +119,6 @@ ast::Statement Parser::parseStatement() {
             default: {
                error(
                   err::Category::SYNTAX, peek(1).location,
-                  std::format("Unexpected token {} after identifier {}", getCharsOf(peek(1).type), *peek().value));
                return std::monostate{};
             }
          }
@@ -177,7 +175,7 @@ template<> ast::Declaration* Parser::parse<ast::Declaration>() {
    }
 
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
-      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
 
    return m_arena.create<ast::Declaration>(identifier, expression, valueMutable, typeMutable, type);
 }
@@ -193,7 +191,6 @@ ast::Assignment* Parser::parse<ast::Assignment>() {
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
-      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
 
    return m_arena.create<ast::Assignment>(identifier, m_arena.create<ast::Expression>(std::move(expression)));
 }
@@ -206,7 +203,7 @@ ast::Exit* Parser::parse<ast::Exit>() {
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
-      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
 
    return m_arena.create<ast::Exit>(m_arena.create<ast::Expression>(std::move(expression)));
 }
@@ -219,6 +216,7 @@ ast::Increment* Parser::parse<ast::Increment>() {
    consume(); // consume ++
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
       Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
 
    return m_arena.create<ast::Increment>(identifier);
 }
@@ -231,6 +229,7 @@ ast::Decrement* Parser::parse<ast::Decrement>() {
    consume(); // consume --
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
       Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
 
    return m_arena.create<ast::Decrement>(identifier);
 }
@@ -289,7 +288,8 @@ ast::Expression Parser::parseTerm() {
          ast::Expression expression = parseExpression();
 
          /// @todo store and then pass to macro, i dont like this long ugly string
-         VALIDATE_PTR_RETURN_MONO(tryConsume(TokenType::CLOSE_PAREN, Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Unclosed parentheses!" }));
+         VALIDATE_PTR_RETURN_MONO(tryConsume(TokenType::CLOSE_PAREN,
+            Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Unclosed parentheses!" }));
          return expression;
       }
 
@@ -328,7 +328,7 @@ ast::Literal* Parser::parse<ast::Literal>() {
          return m_arena.create<ast::Literal>(Type::BOOL, consume());
 
       default:
-         error(err::Category::SYNTAX, peek().location, "Expected a literal!");
+         error(err::Category::SYNTAX, peek().location, "Expected a literal! Got: " + getCharsOf(peek().type));
          return nullptr;
    }
 }
@@ -336,7 +336,8 @@ ast::Literal* Parser::parse<ast::Literal>() {
 template<>
 ast::Identifier* Parser::parse<ast::Identifier>() {
    std::optional<Token> identToken = tryConsume(TokenType::IDENTIFIER,
-      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected an identifier!" });
+      Error{.category = err::Category::SYNTAX, .location = peek().location,
+            .message = "Expected an identifier! Got: " + getCharsOf(peek().type) });
 
    VALIDATE_PTR_RETURN_NULL(identToken);
    return m_arena.create<ast::Identifier>(*identToken);

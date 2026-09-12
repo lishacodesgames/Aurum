@@ -1,12 +1,3 @@
-bar<int> x = True;
-{
-mint: bool y = 0;
-{{{{{{}}}}}}
-}
-
-x++;
-x = x * 2 * (1 - 6);
-x = -x; $$ 20
-
-mint y = None;
-exit y;
+bar<bool> x = True;
+x = 7;
+exit x;
