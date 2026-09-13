@@ -47,8 +47,7 @@ enum class TokenType {
    #undef X
 };
 
-std::string to_string(TokenType type);
-std::string getCharsOf(TokenType type); /// eg. returns '(' for OPEN_PAREN or 'if' for IF
+std::string to_string(TokenType type); /// eg. returns '(' for OPEN_PAREN
 
 bool isBinaryOperator(TokenType type);
 bool isUnaryOperator(TokenType type);

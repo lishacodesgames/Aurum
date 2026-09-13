@@ -30,6 +30,19 @@ namespace
    }
 }
 
+Generator::Generator(ast::Program program) : m_program(program) {
+   m_ir += "; Intermediate Representation for Aurum\n\n";
+   m_ir += "_main:\n"; /// @todo function definitions will take over this
+   pushScope(); // push scope 0
+   m_ir += "\n";
+}
+
+std::string Generator::getIR() {
+   m_ir += "\n";
+   popScope();
+   return std::move(m_ir);
+}
+
 std::vector<ir::Instruction> Generator::generate() {
    for(const ast::Statement& stmt : m_program.statements)
       generate<ast::Statement>(stmt);
@@ -37,6 +50,8 @@ std::vector<ir::Instruction> Generator::generate() {
    emit(OpCode::EXIT, "0"); // in case user hasn't exited
    return m_instructions; // NOT to be moved bcz it needs to be accessed later
 }
+
+#pragma region Helpers
 
 void Generator::emit(OpCode op, std::string_view operand1, std::optional<std::string_view> operand2) {
    uint8_t requiredOperands = operands(op);
@@ -157,7 +172,7 @@ std::optional<Type> Generator::inferType(const ast::Expression& expr) const {
          if(!leftType || !rightType || *leftType != Type::INT || *rightType != Type::INT) {
             error(
                err::Category::TYPE_MISMATCH, arg->op.location,
-               std::format("Operator '{}' requires int operands!", getCharsOf(arg->op.type)));
+               std::format("Operator '{}' requires int operands!", to_string(arg->op.type)));
             return std::nullopt;
          }
 
@@ -172,6 +187,8 @@ std::optional<Type> Generator::inferType(const ast::Expression& expr) const {
 void Generator::error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal) const {
    g_errors.report(err::Phase::GENERATING, category, location, message, isFatal);
 }
+
+#pragma endregion
 
 #pragma region Statements
 
@@ -474,7 +491,7 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
       default:
          error(
             err::Category::INTERNAL, { "Generator.cpp", __LINE__ },
-            std::format("Unsupported binary operator: '{}'!", getCharsOf(binaryExpr->op.type)));
+            std::format("Unsupported binary operator: '{}'!", to_string(binaryExpr->op.type)));
          return;
    }
 

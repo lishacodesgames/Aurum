@@ -35,8 +35,8 @@ std::uint32_t Stack::offset(std::string_view name) const {
 }
 
 void Stack::startScope() {
-   m_scopeMarks.push_back(m_stack.size());
    m_emitterOutput += std::format("\n\t; Entering scope {}...\n", m_scopeMarks.size());
+   m_scopeMarks.push_back(m_stack.size());
 }
 
 void Stack::endScope() {
@@ -46,9 +46,9 @@ void Stack::endScope() {
          "Tried to end a non-existent scope!", true);
    }
 
-   m_emitterOutput += std::format("\t; Leaving scope {}...\n", m_scopeMarks.size());
    std::size_t mark = m_scopeMarks.back();
    m_scopeMarks.pop_back();
+   m_emitterOutput += std::format("\t; Leaving scope {}...\n", m_scopeMarks.size());
 
    std::size_t count = m_stack.size() - mark; // how many new variables were in the scope
    if(count == 0) 

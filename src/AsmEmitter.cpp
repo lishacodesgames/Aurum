@@ -25,6 +25,7 @@ std::string AsmEmitter::emitAssembly() {
       externs += "extern " + libFunc + "\n";
 
    /// @todo make _main: output part of the opcodes
+   /// @todo make handle function instruction do the save caller's base pointer and make new stack frame
    std::string header = std::format(
 R"delim(; macOS x86_64, NASM syntax
 
@@ -203,7 +204,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          const std::string& value = *instr.operand2;
 
          if(value != ir::TOS)
-            pushValue(value, "Declaration of {}" + varName);
+            pushValue(value, "Declaration of " + varName);
 
          m_stack.nameTop(varName);
          break;
@@ -284,8 +285,8 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
       case OpCode::JUMP_IF:      handleJump(instr, true, true); break;
       case OpCode::JUMP_IF_NOT:  handleJump(instr, true, false); break;
 
-      case OpCode::SCOPE_START: m_stack.startScope(); break;
-      case OpCode::SCOPE_END: m_stack.endScope(); break;
+      case OpCode::SCOPE_START:  m_stack.startScope(); break;
+      case OpCode::SCOPE_END:    m_stack.endScope(); break;
 
       default:
          error(err::Category::INTERNAL, __LINE__, std::format("Unhandled opcode: '{}'!", to_string(instr.opcode)), true);

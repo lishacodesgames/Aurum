@@ -3,6 +3,22 @@
 
 #include "Errors.h"
 
+namespace
+{
+   std::string getCharsOf(TokenType type) {
+      #define X(name) \
+         if(type == TokenType::name) { \
+            return #name; \
+         }
+
+         TOKEN_TYPES
+      #undef X
+
+      // should never run
+      return "bye world";
+   }
+}
+
 std::string Token::to_string() const {
    return std::format("{{ type: {}, value: {} }}", ::to_string(type), value ? value.value() : "nullopt");
 }
@@ -74,35 +90,21 @@ int getPrecedence(TokenType type) {
          return 2;
 
       default:
-         g_errors.report(err::Phase::PARSING, err::Category::INTERNAL, { "Token.cpp", __LINE__ },
+         g_errors.report(
+            err::Phase::PARSING, err::Category::INTERNAL, { "Token.cpp", __LINE__ },
             std::format("Unknown token '{}'. Can't find precedence!", to_string(type)), true);
          return -1;
    }
 }
 
 bool isLeftAssociative(TokenType type) {
-   switch(type) {
-      case TokenType::CARET:
-         return false;
+   if(type == TokenType::CARET)
+      return false;
 
-      default:
-         return true;
-   }
+   return true;
 }
 
 std::string to_string(TokenType type) {
-   #define X(name) \
-      if(type == TokenType::name) { \
-         return #name; \
-      }
-
-      TOKEN_TYPES
-   #undef X
-
-   return "bye world"; // should never run
-}
-
-std::string getCharsOf(TokenType type) {
    switch(type) {
       case TokenType::EQUALS:
          return "=";
@@ -177,6 +179,6 @@ std::string getCharsOf(TokenType type) {
          return "\\";
       
       default:
-         return to_string(type);
+         return getCharsOf(type);
    }
 }

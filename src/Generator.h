@@ -11,22 +11,11 @@
  */
 class Generator {
 public:
-   explicit Generator(ast::Program program) : m_program(std::move(program)) {
-      m_ir += "; Intermediate Representation for Aurum\n\n";
+   explicit Generator(ast::Program program);
 
-      /// @todo function definition opcodes
-      m_ir += "_main:\n";
-
-      pushScope(); // push scope 0
-   }
-
-   /// @return MOVES ir out of generator, should not try to use generator after this
+   /// @return MOVES ir out of generator. MUST NOT use generator after this
    /// also pops global scope
-   std::string getIR() {
-      popScope();
-      return std::move(m_ir);
-   }
-
+   std::string getIR();
    std::vector<ir::Instruction> generate();
 
 private:

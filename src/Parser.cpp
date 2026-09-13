@@ -155,7 +155,7 @@ ast::Statement Parser::parseStatement() {
             default: {
                error(
                   err::Category::SYNTAX, peek(1).location,
-                  std::format("Unexpected token '{}' after identifier '{}'!", getCharsOf(peek(1).type), *peek().value));
+                  std::format("Unexpected token '{}' after identifier '{}'!", to_string(peek(1).type), *peek().value));
                return std::monostate{};
             }
          }
@@ -402,7 +402,7 @@ ast::Literal* Parser::parse<ast::Literal>() {
          return m_arena.create<ast::Literal>(Type::BOOL, consume());
 
       default:
-         error(err::Category::SYNTAX, peek().location, "Expected a literal! Got: " + getCharsOf(peek().type));
+         error(err::Category::SYNTAX, peek().location, "Expected a literal! Got: " + to_string(peek().type));
          return nullptr;
    }
 }
@@ -411,7 +411,7 @@ template<>
 ast::Identifier* Parser::parse<ast::Identifier>() {
    std::optional<Token> identToken = tryConsume(TokenType::IDENTIFIER,
       Error{.category = err::Category::SYNTAX, .location = peek().location,
-            .message = "Expected an identifier! Got: " + getCharsOf(peek().type) });
+            .message = "Expected an identifier! Got: " + to_string(peek().type) });
 
    VALIDATE_PTR_RETURN_NULL(identToken);
    return m_arena.create<ast::Identifier>(*identToken);
