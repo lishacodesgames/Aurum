@@ -5,7 +5,7 @@
 
 namespace err
 {
-   enum class Phase { NONE, SETUP, TOKENIZING, PARSING, GENERATING, EMITTING_ASSEMBLY };
+   enum class Phase { NONE, SETUP, TOKENIZING, PARSING, GENERATING, EMITTING_ASSEMBLY, RUNNING };
 
    enum class Category {
       NONE, // fallback, unitialised value (of this enum, not an error category)

@@ -14,6 +14,7 @@ std::string to_string(err::Phase phase) {
       case Phase::PARSING:           return "PARSING";
       case Phase::GENERATING:        return "GENERATING";
       case Phase::EMITTING_ASSEMBLY: return "EMITTING ASSEMBLY";
+      case Phase::RUNNING:           return "RUNNING";
    }
 }
 

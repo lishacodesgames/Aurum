@@ -28,7 +28,6 @@ std::string AsmEmitter::emitAssembly() {
    /// @todo make handle function instruction do the save caller's base pointer and make new stack frame
    std::string header = std::format(
 R"delim(; macOS x86_64, NASM syntax
-
 {}
 global _main
 _main:
@@ -48,6 +47,8 @@ std::vector<std::string> AsmEmitter::getRequiredLibs() const {
 
    return files;
 }
+
+#pragma region Writers
 
 void AsmEmitter::error(err::Category category, int line, std::string_view message, bool isFatal) const {
    g_errors.report(err::Phase::EMITTING_ASSEMBLY, category,
@@ -117,6 +118,10 @@ void AsmEmitter::movToVar(std::string_view varName, std::string_view value, bool
       write(std::format("mov QWORD [rbp - {}], {}", symbol->offset, value), comment);
 }
 
+#pragma endregion
+
+#pragma region Handlers
+
 void AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
    const std::string& left = instr.operand1;
    const std::string& right = *instr.operand2;
@@ -165,11 +170,10 @@ void AsmEmitter::handleDivMod(const ir::Instruction& instr, bool wantRemainder) 
 }
 
 void AsmEmitter::handleJump(const ir::Instruction& instr, bool conditional, std::optional<bool> jumpCondition) {
-   if(conditional && !jumpCondition)
-      error(err::Category::INTERNAL, __LINE__, "No condition given for conditional jump!");
-
-   // conditional
    if(conditional) {
+      if(!jumpCondition)
+         error(err::Category::INTERNAL, __LINE__, "No condition given for conditional jump!");
+
       const std::string& cond = instr.operand1;
       const std::string& label = *instr.operand2;
 
@@ -184,11 +188,9 @@ void AsmEmitter::handleJump(const ir::Instruction& instr, bool conditional, std:
       else
          write("jz " + label); // jump on false
 
-      return;
+   } else {
+      write("jmp " + instr.operand1);
    }
-
-   /// @todo non-conditional
-   error(err::Category::INTERNAL, __LINE__, "Unconditional jump not yet implemented!");
 }
 
 void AsmEmitter::handle(const ir::Instruction& instr) {
@@ -293,3 +295,5 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
    }
 }
+
+#pragma endregion

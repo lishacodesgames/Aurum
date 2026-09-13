@@ -14,7 +14,6 @@ public:
    explicit Generator(ast::Program program);
 
    /// @return MOVES ir out of generator. MUST NOT use generator after this
-   /// also pops global scope
    std::string getIR();
    std::vector<ir::Instruction> generate();
 

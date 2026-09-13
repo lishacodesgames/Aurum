@@ -38,8 +38,6 @@ Generator::Generator(ast::Program program) : m_program(program) {
 }
 
 std::string Generator::getIR() {
-   m_ir += "\n";
-   popScope();
    return std::move(m_ir);
 }
 
@@ -47,6 +45,8 @@ std::vector<ir::Instruction> Generator::generate() {
    for(const ast::Statement& stmt : m_program.statements)
       generate<ast::Statement>(stmt);
 
+   m_ir += "\n";
+   popScope();
    emit(OpCode::EXIT, "0"); // in case user hasn't exited
    return m_instructions; // NOT to be moved bcz it needs to be accessed later
 }

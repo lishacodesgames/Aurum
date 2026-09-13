@@ -48,7 +48,7 @@ void Stack::endScope() {
 
    std::size_t mark = m_scopeMarks.back();
    m_scopeMarks.pop_back();
-   m_emitterOutput += std::format("\t; Leaving scope {}...\n", m_scopeMarks.size());
+   m_emitterOutput += std::format("\t; Leaving scope {}...\n\n", m_scopeMarks.size());
 
    std::size_t count = m_stack.size() - mark; // how many new variables were in the scope
    if(count == 0) 
