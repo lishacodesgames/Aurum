@@ -25,13 +25,17 @@
 - Block comment `$~ ... ~$`
 
 ### If Statements
+- parentheses are optional
+- curly braces are optional (if body is only 1 statement)
+- colon is necessary
+
 ```
 if condition: {
-   call this(); $$ void function
-} elif otherCondition: {
-   mint x = call that(); $$ not void function
+
+} elif(condition): {
+
 } else: {
-   call doThat(); $$ NOT void function, just ignored return value;
+
 }
 ```
 

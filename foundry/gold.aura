@@ -1,3 +1,6 @@
-bar<bool> x = True;
-x = 7;
+if True: {
+   exit -g;
+}
+
+mint x = 5;
 exit x;

@@ -105,13 +105,21 @@ namespace ast
 
    // statements that contain statements
    struct Block;
+   struct If;
 
-   using Statement = std::variant<std::monostate, Declaration*, Assignment*, Exit*, Increment*, Decrement*, Block*>;
+   using Statement = std::variant<std::monostate, Declaration*, Assignment*, Exit*, Increment*, Decrement*, If*, Block*>;
 
    struct Block {
       std::vector<Statement> statements;
 
       explicit Block(std::vector<Statement> statements) : statements(statements) {}
+   };
+
+   struct If {
+      Expression condition;
+      Statement thenBranch;
+
+      explicit If(Expression condition, Statement thenBranch) : condition(condition), thenBranch(thenBranch) {}
    };
 
 #pragma endregion

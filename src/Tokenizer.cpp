@@ -38,6 +38,8 @@ void Tokenizer::emplaceKeyword(std::vector<Token>& tokens, std::string& buffer) 
       tokens.emplace_back(TokenType::MINT, m_location);
    else if(buffer == "bar")
       tokens.emplace_back(TokenType::BAR, m_location);
+   else if(buffer == "if")
+      tokens.emplace_back(TokenType::IF, m_location);
    else if(buffer == "exit")
       tokens.emplace_back(TokenType::EXIT, m_location);
    else if(buffer == "True")

@@ -60,6 +60,7 @@ private:
    template<> ast::Increment* parse<ast::Increment>();
    template<> ast::Decrement* parse<ast::Decrement>();
    template<> ast::Block* parse<ast::Block>();
+   template<> ast::If* parse<ast::If>();
 
    // expressions
    /// @param minPrec the minimum precedence that has to be parsed from the expression

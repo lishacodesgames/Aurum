@@ -168,6 +168,13 @@ ast::Statement Parser::parseStatement() {
          return ast::Statement(std::in_place_type<ast::Block*>, block);
       }
 
+      case TokenType::IF: {
+         ast::If* ifStmt = parse<ast::If>();
+         VALIDATE_PTR_RETURN_MONO(ifStmt);
+
+         return ast::Statement(std::in_place_type<ast::If*>, ifStmt);
+      }
+
       default: {
          error(
             err::Category::SYNTAX, peek().location,
@@ -293,6 +300,27 @@ ast::Block* Parser::parse<ast::Block>() {
       return nullptr;
    else
       return m_arena.create<ast::Block>(std::move(stmts));
+}
+
+template<>
+ast::If* Parser::parse<ast::If>() {
+   consume(); // consume if keyword
+
+   // parentheses are optional, but if present, expression will handle them
+   ast::Expression condition = parseExpression();
+   VALIDATE_VARIANT_RETURN_NULL(condition);
+
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::COLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `:`!" }));
+
+   ast::Statement thenBranch = parseStatement();
+   if(std::holds_alternative<std::monostate>(thenBranch)) {
+      error(err::Category::SYNTAX, peek().location, "Expected a statement after if condition!");
+      recover();
+      return nullptr;
+   }
+
+   return m_arena.create<ast::If>(condition, thenBranch);
 }
 
 #pragma endregion
