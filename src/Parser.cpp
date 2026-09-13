@@ -16,6 +16,8 @@ namespace
          case TokenType::BOOL:   return Type::BOOL;
 
          default:
+            g_errors.report(
+               err::Phase::PARSING, err::Category::INTERNAL, token.location, "Unhandled datatype token: " + to_string(token.type));
             return std::nullopt;
       }
    }
@@ -74,7 +76,6 @@ std::optional<Token> Parser::tryConsume(TokenType type, std::optional<Error> err
 
 #pragma region Statements
 
-/// @tod
 ast::Statement Parser::parseStatement() {
    switch(peek().type) {
       case TokenType::BAR:
@@ -119,6 +120,7 @@ ast::Statement Parser::parseStatement() {
             default: {
                error(
                   err::Category::SYNTAX, peek(1).location,
+                  std::format("Unexpected token '{}' after identifier '{}'!", getCharsOf(peek(1).type), *peek().value));
                return std::monostate{};
             }
          }
@@ -166,12 +168,14 @@ template<> ast::Declaration* Parser::parse<ast::Declaration>() {
    ast::Identifier* identifier = parse<ast::Identifier>();
    VALIDATE_PTR_RETURN_NULL(identifier);
 
-   ast::Expression* expression = nullptr; // in case it's a Declaration without Definition
-   if(tryConsume(TokenType::EQUALS) && !tryConsume(TokenType::NONE)) { // bar x = None; is valid. In that case, don't try to parse expr
+   std::optional<ast::Expression> expression = std::nullopt; // in case it's a Declaration without Definition
+
+   // bar x = None; is valid. but in that case, don't try to parse expr
+   if(tryConsume(TokenType::EQUALS) && !tryConsume(TokenType::NONE)) {
       ast::Expression expr = parseExpression();
       VALIDATE_VARIANT_RETURN_NULL(expr);
 
-      expression = m_arena.create<ast::Expression>(std::move(expr));
+      expression = expr;
    }
 
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
@@ -191,8 +195,9 @@ ast::Assignment* Parser::parse<ast::Assignment>() {
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
 
-   return m_arena.create<ast::Assignment>(identifier, m_arena.create<ast::Expression>(std::move(expression)));
+   return m_arena.create<ast::Assignment>(identifier, expression);
 }
 
 template<>
@@ -205,7 +210,7 @@ ast::Exit* Parser::parse<ast::Exit>() {
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
       Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
 
-   return m_arena.create<ast::Exit>(m_arena.create<ast::Expression>(std::move(expression)));
+   return m_arena.create<ast::Exit>(expression);
 }
 
 template<>
@@ -215,7 +220,6 @@ ast::Increment* Parser::parse<ast::Increment>() {
 
    consume(); // consume ++
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
-      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
       Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
 
    return m_arena.create<ast::Increment>(identifier);
@@ -228,7 +232,6 @@ ast::Decrement* Parser::parse<ast::Decrement>() {
 
    consume(); // consume --
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
-      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`" }));
       Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
 
    return m_arena.create<ast::Decrement>(identifier);
@@ -243,7 +246,7 @@ ast::Block* Parser::parse<ast::Block>() {
       ast::Statement statement = parseStatement();
       VALIDATE_VARIANT_RETURN_NULL(statement);
 
-      stmts.push_back(std::move(statement));
+      stmts.push_back(statement);
    }
 
    return m_arena.create<ast::Block>(std::move(stmts));
@@ -309,7 +312,7 @@ ast::Expression Parser::parseExpression(int minPrec) {
          ast::BinaryExpr* binaryExpr = parse<ast::BinaryExpr>();
          VALIDATE_PTR_RETURN_MONO(binaryExpr);
    
-         binaryExpr->left = m_arena.create<ast::Expression>(std::move(expression));
+         binaryExpr->left = expression;
          expression = ast::Expression(std::in_place_type<ast::BinaryExpr*>, binaryExpr);
       }
    }
@@ -350,7 +353,7 @@ ast::Negative* Parser::parse<ast::Negative>() {
    ast::Expression expression = parseTerm();
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
-   return m_arena.create<ast::Negative>(m_arena.create<ast::Expression>(std::move(expression)));
+   return m_arena.create<ast::Negative>(expression);
 }
 
 template<>
@@ -362,7 +365,7 @@ ast::BinaryExpr* Parser::parse<ast::BinaryExpr>() {
    ast::Expression rhs = parseExpression(nextMinPrec);
    VALIDATE_VARIANT_RETURN_NULL(rhs);
 
-   return m_arena.create<ast::BinaryExpr>(nullptr, op, m_arena.create<ast::Expression>(std::move(rhs)));
+   return m_arena.create<ast::BinaryExpr>(std::monostate{}, op, rhs);
 }
 
 #pragma endregion

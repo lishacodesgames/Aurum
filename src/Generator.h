@@ -58,8 +58,8 @@ private:
 
    /// @retval folded string: ONLY for leaf expressions (literal/identifier)
    /// @retval nullopt: for compound expressions (negative/binary)
-   std::optional<std::string> tryFold(const ast::Expression* expr) const;
-   std::optional<Type> inferType(const ast::Expression* expr) const;
+   std::optional<std::string> tryFold(const ast::Expression& expr) const;
+   std::optional<Type> inferType(const ast::Expression& expr) const;
 
    void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false) const;
 
@@ -85,7 +85,7 @@ private:
 
    // -- variant's overload
    template<ast::VariantNode V>
-   void generate(const V* varNode) {
+   void generate(const V& varNode) {
       return std::visit([this](auto&& arg) -> void {
          using PtrT = std::decay_t<decltype(arg)>;
          if constexpr(!std::is_same_v<PtrT, std::monostate>) {
@@ -95,6 +95,6 @@ private:
          }
 
          error(err::Category::INTERNAL, { "Generator.h", __LINE__ }, "Tried to call generate on monostate!", true);
-      }, *varNode);
+      }, varNode);
    }
 };

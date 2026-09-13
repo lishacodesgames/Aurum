@@ -3,7 +3,7 @@
 
 namespace
 {
-   err::SourceLocation getLocation(const ast::Expression* expr) {
+   err::SourceLocation getLocation(const ast::Expression& expr) {
       return std::visit([](auto&& arg) -> err::SourceLocation {
          using PtrT = std::decay_t<decltype(arg)>;
          if constexpr(std::is_same_v<PtrT, ast::BinaryExpr*>)
@@ -14,7 +14,7 @@ namespace
             return getLocation(arg->operand);
          else // monostate
             return {};
-      }, *expr);
+      }, expr);
    }
 
    /// @return whether dest <- value is a valid Type conversion
@@ -32,7 +32,7 @@ namespace
 
 std::vector<ir::Instruction> Generator::generate() {
    for(const ast::Statement& stmt : m_program.statements)
-      generate<ast::Statement>(&stmt);
+      generate<ast::Statement>(stmt);
 
    emit(OpCode::EXIT, "0"); // in case user hasn't exited
    return m_instructions; // NOT to be moved bcz it needs to be accessed later
@@ -94,7 +94,7 @@ const Generator::SymbolInfo* Generator::findSymbol(const std::string& name) cons
    return nullptr;
 }
 
-std::optional<std::string> Generator::tryFold(const ast::Expression* expr) const {
+std::optional<std::string> Generator::tryFold(const ast::Expression& expr) const {
    return std::visit([](auto&& arg) -> std::optional<std::string> {
       using PtrT = std::decay_t<decltype(arg)>;
 
@@ -110,10 +110,10 @@ std::optional<std::string> Generator::tryFold(const ast::Expression* expr) const
       }
 
       return std::nullopt;
-   }, *expr);
+   }, expr);
 }
 
-std::optional<Type> Generator::inferType(const ast::Expression* expr) const {
+std::optional<Type> Generator::inferType(const ast::Expression& expr) const {
    return std::visit([this](auto&& arg) -> std::optional<Type> {
       using PtrT = std::decay_t<decltype(arg)>;
 
@@ -160,7 +160,7 @@ std::optional<Type> Generator::inferType(const ast::Expression* expr) const {
 
       error(err::Category::INTERNAL, { "Generator.cpp", __LINE__ }, "Cannot infer type!", true);
       return std::nullopt;
-   }, *expr);
+   }, expr);
 }
 
 void Generator::error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal) const {
@@ -182,7 +182,7 @@ void Generator::generate(const ast::Declaration* declaration) {
    }
 
    if(declaration->expression) {
-      std::optional<Type> exprType = inferType(declaration->expression);
+      std::optional<Type> exprType = inferType(*declaration->expression);
       if(!exprType)
          return; // error msg is handled by inferType()
 
@@ -192,7 +192,7 @@ void Generator::generate(const ast::Declaration* declaration) {
          symbol.type = *declaration->type;
 
          if(!isAssignable(*declaration->type, *exprType)) {
-            // if type is not assignable from expression's then smth's wrong
+            // if type is not assignable from expression's then there's an error
 
             if(declaration->typeMutable) { // it's a type hint
                error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
@@ -208,10 +208,10 @@ void Generator::generate(const ast::Declaration* declaration) {
          }
       }
 
-      if(auto folded = tryFold(declaration->expression)) {
+      if(auto folded = tryFold(*declaration->expression)) {
          emit(OpCode::DEF_VAR, varName, *folded);
       } else {
-         generate<ast::Expression>(declaration->expression);
+         generate<ast::Expression>(*declaration->expression);
          emit(OpCode::DEF_VAR, varName, ir::TOS);
       }
 
@@ -352,7 +352,7 @@ void Generator::generate(const ast::Block* block) {
    pushScope();
 
    for(const ast::Statement& stmt : block->statements)
-      generate<ast::Statement>(&stmt);
+      generate<ast::Statement>(stmt);
 
    popScope();
 }

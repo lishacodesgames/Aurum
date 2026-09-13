@@ -1,6 +1,7 @@
 #pragma once
 #include "Token.h"
 #include "ast.h"
+#include "ArenaAllocator.h"
 
 // Terms are either numbers or parenthesized expressions.
 // Expressions consist of terms connected by binary operators.
@@ -66,7 +67,7 @@ private:
    template<> ast::Identifier* parse<ast::Identifier>();
    template<> ast::Negative* parse<ast::Negative>();
 
-   /// @return BinaryExpr containing op and rhs, left will be assigned by caller
+   /// @return BinaryExpr containing op and rhs, left MUST be assigned by caller
    template<> ast::BinaryExpr* parse<ast::BinaryExpr>();
 
    // helpers

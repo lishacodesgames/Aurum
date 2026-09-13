@@ -20,6 +20,8 @@ inline std::string to_string(Type type) {
 }
 
 /// Abstract Syntax Tree
+/// @note Do not use pointers to Expression and Statement, since they are variants of pointer types anyways
+/// @note No need to std::move Expression and Statement, since they are variants to trivially copyable types (pointers, monostate)
 namespace ast
 {
 #pragma region Expressions
@@ -44,16 +46,16 @@ namespace ast
    using Expression = std::variant<std::monostate, Literal*, Identifier*, Negative*, BinaryExpr*>;
 
    struct Negative {
-      Expression* operand;
+      Expression operand;
 
-      explicit Negative(Expression* operand) : operand(operand) {}
+      explicit Negative(Expression operand) : operand(operand) {}
    };
 
    struct BinaryExpr {
-      Expression* left, *right;
+      Expression left, right;
       Token op;
 
-      explicit BinaryExpr(Expression* left, Token op, Expression* right)
+      explicit BinaryExpr(Expression left, Token op, Expression right)
          : left(left), right(right), op(op) {}
    };
 
@@ -64,27 +66,29 @@ namespace ast
    /// @todo change hintType and lockedType to just type and typeMutable
    struct Declaration {
       Identifier* identifier;
-      Expression* expression; /// nullptr = declaration without definition
+      std::optional<Expression> expression; /// nullopt = declaration without definition
       bool valueMutable; /// TRUE = bar, FALSE = mint.
       bool typeMutable;
       std::optional<Type> type = std::nullopt; // if specified by hint or locking. Can be NONE by "bar: None x;" but it's redundant
 
       /// @param type if nullopt, generator must infer identifier's type by expression (if defined. Else, null)
-      explicit Declaration(Identifier* identifier, Expression* expression, bool valueMutable, bool typeMutable, std::optional<Type> type = std::nullopt)
+      explicit Declaration(
+         Identifier* identifier, std::optional<Expression> expression, bool valueMutable,
+         bool typeMutable, std::optional<Type> type = std::nullopt)
          : identifier(identifier), expression(expression), valueMutable(valueMutable), typeMutable(typeMutable), type(type) {}
    };
 
    struct Assignment {
       Identifier* identifier;
-      Expression* expression;
+      Expression expression;
 
-      explicit Assignment(Identifier* identifier, Expression* expression) : identifier(identifier), expression(expression) {}
+      explicit Assignment(Identifier* identifier, Expression expression) : identifier(identifier), expression(expression) {}
    };
 
    struct Exit {
-      Expression* expression;
+      Expression expression;
 
-      explicit Exit(Expression* expression) : expression(expression) {}
+      explicit Exit(Expression expression) : expression(expression) {}
    };
 
    struct Increment {
