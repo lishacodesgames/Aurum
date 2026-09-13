@@ -29,15 +29,11 @@ ast::Program Parser::parse() {
       ast::Statement statement = parseStatement();
 
       if(std::holds_alternative<std::monostate>(statement)) {
-         while(peek() != TokenType::SEMICOLON && peek() != TokenType::END_OF_FILE)
-            consume();
-
-         if(peek() == TokenType::SEMICOLON)
-            consume(); // consume semicolon, not eof
+         recover();
          continue;
       }
 
-      program.push_back(std::move(statement));
+      program.push_back(statement); // only push back valid statement.
    }
 
    return program;
@@ -45,6 +41,45 @@ ast::Program Parser::parse() {
 
 void Parser::error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal) {
    g_errors.report(err::Phase::PARSING, category, location, message, isFatal);
+}
+
+void Parser::recover() {
+   int depth = 0;
+
+   while(true) {
+      switch(peek().type) {
+         case TokenType::END_OF_FILE: return;
+
+         case TokenType::OPEN_CURLY:
+            depth++;
+            consume();
+            continue;
+
+         case TokenType::CLOSE_CURLY:
+            if(depth == 0)
+               return; // brace isn't ours to eat, so we return without consume
+
+            // brace was opened by us
+            depth--;
+            consume();
+            continue;
+
+         case TokenType::SEMICOLON:
+            if(depth == 0) {
+               // end of statement we had to recover from
+               consume();
+               return;
+            }
+
+            // end of a statement nested inside { ... } opened by us
+            consume();
+            continue;
+
+         default:
+            consume();
+            continue;
+      }
+   }
 }
 
 Token Parser::peek(int offset) const noexcept {
@@ -242,14 +277,22 @@ ast::Block* Parser::parse<ast::Block>() {
    std::vector<ast::Statement> stmts;
    consume(); // consume {
 
+   bool error = false;
    while(!tryConsume(TokenType::CLOSE_CURLY)) {
       ast::Statement statement = parseStatement();
-      VALIDATE_VARIANT_RETURN_NULL(statement);
+      if(std::holds_alternative<std::monostate>(statement)) {
+         error = true;
+         recover();
+         continue;
+      }
 
       stmts.push_back(statement);
    }
 
-   return m_arena.create<ast::Block>(std::move(stmts));
+   if(error)
+      return nullptr;
+   else
+      return m_arena.create<ast::Block>(std::move(stmts));
 }
 
 #pragma endregion

@@ -24,6 +24,8 @@ private:
 
 private:
    void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false);
+   void recover();
+
    Token peek(int offset = 0) const noexcept; // exit(1) doesn't count as an exception
 
    /** 
