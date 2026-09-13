@@ -1,5 +1,5 @@
-if True: {
-   exit -g;
+if False: {
+   exit 0;
 }
 
 mint x = 5;

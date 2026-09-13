@@ -13,7 +13,8 @@
 \
    /* control flow */ \
    X(EXIT) \
-   X(LABEL) X(JUMP) X(JUMP_FALSE) \
+   X(LABEL) X(FUNC) \
+   X(JUMP) X(JUMP_IF) X(JUMP_IF_NOT) \
 \
    /* scope */ \
    X(SCOPE_START) X(SCOPE_END)
@@ -26,7 +27,10 @@ enum class OpCode {
 
 /// @return 1 or 2
 uint8_t operands(OpCode opcode); /// how many operands does this opcode require
+
 std::string to_string(OpCode opcode);
+bool isIndented(OpCode opcode); /// when outputting IR
+
 namespace ir
 {
    /// an operand that says: the value that is currently on the stack, before the running of this operation

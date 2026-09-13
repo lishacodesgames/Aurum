@@ -31,7 +31,7 @@ uint8_t operands(OpCode opcode) {
       case OpCode::DIV:
       case OpCode::MOD:
 
-      case OpCode::JUMP_FALSE:
+      case OpCode::JUMP_IF_NOT:
          return 2;
 
 
@@ -54,4 +54,15 @@ std::string to_string(OpCode opcode) {
    // should never run
    g_errors.report(err::Phase::GENERATING, err::Category::INTERNAL, { "IR.cpp", __LINE__ }, "idk", true);
    return "";
+}
+
+bool isIndented(OpCode opcode) {
+   switch(opcode) {
+      case OpCode::FUNC:
+      case OpCode::LABEL:
+         return false;
+
+      default:
+         return true;
+   }
 }

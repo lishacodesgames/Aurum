@@ -12,8 +12,9 @@
 class Generator {
 public:
    explicit Generator(ast::Program program) : m_program(std::move(program)) {
-      /// @todo function definition opcodes
       m_ir += "; Intermediate Representation for Aurum\n\n";
+
+      /// @todo function definition opcodes
       m_ir += "_main:\n";
 
       pushScope(); // push scope 0
@@ -42,10 +43,16 @@ private:
    std::string m_ir;
 
    std::vector<std::unordered_map<std::string, SymbolInfo>> m_scopes{};
+   std::size_t m_labelCount = 0;
 
 private:
    void emit(OpCode op, std::string_view operand1, std::optional<std::string_view> operand2 = std::nullopt);
 
+   // these three functions count scopes/labels in index order (starting from 0)
+
+   /// @param prefix label name
+   /// @return new label as ".prefix_labelCount" (to avoid duplicate label names)
+   std::string newLabel(std::string_view prefix);
    void pushScope();
    void popScope();
 
@@ -76,6 +83,7 @@ private:
    template<> void generate(const ast::Increment* increment);
    template<> void generate(const ast::Decrement* decrement);
    template<> void generate(const ast::Block* block);
+   template<> void generate(const ast::If* ifStmt);
 
    // -- expressions --
    template<> void generate(const ast::Literal* literal);

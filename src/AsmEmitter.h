@@ -23,6 +23,9 @@ private:
    /// @param line just pass the __LINE__ macro
    void error(err::Category category, int line, std::string_view message, bool isFatal = false) const;
    void comment(std::string_view comment) { m_output += std::format("\t; {}\n", comment); }
+
+   /// @param label is written unindented, can be a function name
+   void writeLabel(std::string_view label);
    void write(std::string_view cmd, std::optional<std::string_view> comment = std::nullopt); 
 
    /// @param value an integer/Boolean literal or an identifier
@@ -37,11 +40,17 @@ private:
    /// @param valueIsReg if true, value won't be looked for in the symbol table
    void movToVar(std::string_view varName, std::string_view value, bool valueIsReg, std::optional<std::string_view> comment = std::nullopt);
 
+private:
    /// resolves a two-operand instruction so that after this call: rax = left, rbx = right
    void resolveBinaryOperands(const ir::Instruction& insr);
 
    /// @param asmMnemonic the assembly instruction mnemonic for this binary opcode
    void handleBinary(const ir::Instruction& instr, std::string_view asmMnemonic);
    void handleDivMod(const ir::Instruction& instr, bool wantRemainder);
+
+   /// @param conditional whether the jump instruction is conditional
+   /// @param jumpCondition if jump is conditional, whether to jump on true or false
+   void handleJump(const ir::Instruction& instr, bool conditional = false, std::optional<bool> jumpCondition = std::nullopt);
+
    void handle(const ir::Instruction& instr);
 };

@@ -17,13 +17,14 @@ namespace
 }
 
 std::string AsmEmitter::emitAssembly() {
-  for(const ir::Instruction& instr : m_instructions)
+   for(const ir::Instruction& instr : m_instructions)
       handle(instr);
 
    std::string externs;
    for(const std::string& libFunc : m_requiredExterns)
       externs += "extern " + libFunc + "\n";
 
+   /// @todo make _main: output part of the opcodes
    std::string header = std::format(
 R"delim(; macOS x86_64, NASM syntax
 
@@ -50,6 +51,10 @@ std::vector<std::string> AsmEmitter::getRequiredLibs() const {
 void AsmEmitter::error(err::Category category, int line, std::string_view message, bool isFatal) const {
    g_errors.report(err::Phase::EMITTING_ASSEMBLY, category,
       { "AsmEmitter.cpp", static_cast<std::uint32_t>(line) }, message, isFatal);
+}
+
+void AsmEmitter::writeLabel(std::string_view label) {
+   m_output += std::format("{}:\n", label);
 }
 
 void AsmEmitter::write(std::string_view cmd, std::optional<std::string_view> comment) {
@@ -158,6 +163,33 @@ void AsmEmitter::handleDivMod(const ir::Instruction& instr, bool wantRemainder) 
       m_stack.push("rax ; store quotient");
 }
 
+void AsmEmitter::handleJump(const ir::Instruction& instr, bool conditional, std::optional<bool> jumpCondition) {
+   if(conditional && !jumpCondition)
+      error(err::Category::INTERNAL, __LINE__, "No condition given for conditional jump!");
+
+   // conditional
+   if(conditional) {
+      const std::string& cond = instr.operand1;
+      const std::string& label = *instr.operand2;
+
+      if(cond == ir::TOS)
+         m_stack.pop("rax");
+      else
+         movFoldedValue("rax", cond);
+
+      write("test rax, rax");
+      if(*jumpCondition)
+         write("jnz " + label); // jump on true
+      else
+         write("jz " + label); // jump on false
+
+      return;
+   }
+
+   /// @todo non-conditional
+   error(err::Category::INTERNAL, __LINE__, "Unconditional jump not yet implemented!");
+}
+
 void AsmEmitter::handle(const ir::Instruction& instr) {
    switch(instr.opcode) {
       case OpCode::PUSH_INT:
@@ -232,7 +264,6 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
       }
 
       case OpCode::EXIT: {
-         m_output += "\n";
          if(instr.operand1 == ir::TOS)
             m_stack.pop("rdi");
          else
@@ -242,6 +273,16 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          write("syscall");
          break;
       }
+
+      case OpCode::LABEL:
+         writeLabel(instr.operand1);
+         break;
+
+      /// @todo handle FUNC
+
+      case OpCode::JUMP:         handleJump(instr); break;
+      case OpCode::JUMP_IF:      handleJump(instr, true, true); break;
+      case OpCode::JUMP_IF_NOT:  handleJump(instr, true, false); break;
 
       case OpCode::SCOPE_START: m_stack.startScope(); break;
       case OpCode::SCOPE_END: m_stack.endScope(); break;

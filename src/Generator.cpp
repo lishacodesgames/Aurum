@@ -51,10 +51,16 @@ void Generator::emit(OpCode op, std::string_view operand1, std::optional<std::st
          err::Category::INTERNAL, { "Generator.cpp", __LINE__ },
          std::format("Expected {} operands for opcode '{}'!", requiredOperands, to_string(op)), true);
 
-   m_ir += std::format("\t{} {}", to_string(op), operand1);
+   // format: opcode operand1, operand2
+   m_ir += std::format("{}{} {}", isIndented(op) ? "\t" : "", to_string(op), operand1);
    if(operand2)
       m_ir += std::format(", {}", *operand2);
+
    m_ir += "\n";
+}
+
+std::string Generator::newLabel(std::string_view prefix) {
+   return std::format(".{}_{}", prefix, m_labelCount++); // post++ bcz indexing starts from 0
 }
 
 void Generator::pushScope() {
@@ -355,6 +361,31 @@ void Generator::generate(const ast::Block* block) {
       generate<ast::Statement>(stmt);
 
    popScope();
+}
+
+template <>
+void Generator::generate(const ast::If* ifStmt) {
+   std::optional<Type> condType = inferType(ifStmt->condition);
+   if(!condType)
+      return;
+   if(*condType != Type::BOOL) {
+      /// @todo add support for implicit conversion to bool
+      error(
+         err::Category::TYPE_MISMATCH, getLocation(ifStmt->condition),
+         "If condition must be of type BOOL, but is " + to_string(*condType));
+      return;
+   }
+
+   std::string endLabel = newLabel("if_end");
+   if(auto folded = tryFold(ifStmt->condition)) {
+      emit(OpCode::JUMP_IF_NOT, *folded, endLabel);
+   } else {
+      generate<ast::Expression>(ifStmt->condition);
+      emit(OpCode::JUMP_IF_NOT, ir::TOS, endLabel);
+   }
+
+   generate<ast::Statement>(ifStmt->thenBranch);
+   emit(OpCode::LABEL, endLabel);
 }
 
 #pragma endregion
