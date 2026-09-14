@@ -33,7 +33,7 @@
    X(INCREMENT) X(DECREMENT) /* (++ --) */ \
 \
    /* Compound assignment (+= -= *= /= %=) */ \
-   X(PLUS_EQUALS) X(MINUS_EQUALS) X(STAR_EQUALS) X(SLASH_EQUALS) X(PERCENT_EQUALS) \
+   X(PLUS_EQUALS) X(MINUS_EQUALS) X(STAR_EQUALS) X(SLASH_EQUALS) X(PERCENT_EQUALS) X(CARET_EQUALS) \
 \
    /* Not sure abt but do exist */ \
    X(BSLASH) \

@@ -32,12 +32,6 @@ bool isBinaryOperator(TokenType type) {
       case TokenType::PERCENT:
       case TokenType::CARET:
 
-      case TokenType::PLUS_EQUALS:
-      case TokenType::MINUS_EQUALS:
-      case TokenType::STAR_EQUALS:
-      case TokenType::SLASH_EQUALS:
-      case TokenType::PERCENT_EQUALS:
-
       case TokenType::LOGICAL_AND:
       case TokenType::LOGICAL_OR:
          return true;
@@ -50,8 +44,6 @@ bool isBinaryOperator(TokenType type) {
 bool isUnaryOperator(TokenType type) {
    switch(type) {
       case TokenType::LOGICAL_NOT:
-      case TokenType::INCREMENT:
-      case TokenType::DECREMENT:
       case TokenType::MINUS:
       case TokenType::PLUS:
          return true;
@@ -65,29 +57,43 @@ bool isUnaryOperator(TokenType type) {
  * eventually want to get to this
  * 
  * General Order of Operations
- * 8: Unary/Postfix (++, --, !): Increments, decrements, and logical NOT
- * 7: Exponent (^)
- * 6: Multiplicative (*, /, %): Multiplication, division, and remainder
- * 5: Additive (+, -): Addition and subtraction
- * 4: Relational (<, >, <=, >=): Comparisons
- * 3: Equality (==, !=): Checking if items match
- * 2: Logical AND (&&)
- * 1: Logical OR (||)
- * 0: Assignment (=): Saving final values last
+ * 6: Exponent (^)
+ * 5: Multiplicative (*, /, %): Multiplication, division, and remainder
+ * 4: Additive (+, -): Addition and subtraction
+ * 3: Relational (<, >, <=, >=): Comparisons
+ * 2: Equality (==, !=): Checking if items match
+ * 1: Logical AND (&&)
+ * 0: Logical OR (||)
  */
 int getPrecedence(TokenType type) {
    switch(type) {
+      case TokenType::LOGICAL_OR:
+         return 0;
+
+      case TokenType::LOGICAL_AND:
+         return 1;
+
+      case TokenType::EQUALITY:
+      case TokenType::INEQUALITY:
+         return 2;
+
+      case TokenType::LESS_THAN:
+      case TokenType::GREATER_THAN:
+      case TokenType::LESS_EQUALS:
+      case TokenType::GREATER_EQUALS:
+         return 3;
+
       case TokenType::PLUS:
       case TokenType::MINUS:
-         return 0;
+            return 4;
 
       case TokenType::STAR:
       case TokenType::FSLASH:
       case TokenType::PERCENT:
-         return 1;
+         return 5;
 
       case TokenType::CARET:
-         return 2;
+         return 6;
 
       default:
          g_errors.report(

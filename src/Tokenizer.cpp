@@ -3,6 +3,44 @@
 
 #include "Errors.h"
 
+namespace
+{
+   TokenType getKeyword(const std::string& buffer) {
+      if(buffer == "mint")
+         return TokenType::MINT;
+      else if(buffer == "bar")
+         return TokenType::BAR;
+      else if(buffer == "if")
+         return TokenType::IF;
+      else if(buffer == "elif")
+         return TokenType::ELIF;
+      else if(buffer == "else")
+         return TokenType::ELSE;
+      else if(buffer == "exit")
+         return TokenType::EXIT;
+
+      else if(buffer == "True")
+         return TokenType::TRUE;
+      else if(buffer == "False")
+         return TokenType::FALSE;
+
+      else if(buffer == "None")
+         return TokenType::NONE;
+      else if(buffer == "int")
+         return TokenType::INT;
+      else if(buffer == "bool")
+         return TokenType::BOOL;
+
+      else
+         return TokenType::IDENTIFIER;
+   }
+
+   TokenType getNumericType(const std::string& buffer) {
+      /// @todo float vs int type
+      return TokenType::INTEGER_LITERAL;
+   }
+}
+
 std::optional<char> Tokenizer::peek(int offset) const noexcept {
    int targetPos = static_cast<int>(m_pos) + offset;
 
@@ -33,136 +71,28 @@ char Tokenizer::consume(std::uint32_t count) noexcept {
    return current;
 }
 
-void Tokenizer::emplaceKeyword(std::vector<Token>& tokens, std::string& buffer) {
-   if(buffer == "mint")
-      tokens.emplace_back(TokenType::MINT, m_location);
-   else if(buffer == "bar")
-      tokens.emplace_back(TokenType::BAR, m_location);
-   else if(buffer == "if")
-      tokens.emplace_back(TokenType::IF, m_location);
-   else if(buffer == "exit")
-      tokens.emplace_back(TokenType::EXIT, m_location);
-   else if(buffer == "True")
-      tokens.emplace_back(TokenType::TRUE, m_location);
-   else if(buffer == "False")
-      tokens.emplace_back(TokenType::FALSE, m_location);
-   else if(buffer == "None")
-      tokens.emplace_back(TokenType::NONE, m_location);
-   else if(buffer == "int")
-      tokens.emplace_back(TokenType::INT, m_location);
-   else if(buffer == "bool")
-      tokens.emplace_back(TokenType::BOOL, m_location);
-   else
-      tokens.emplace_back(TokenType::IDENTIFIER, buffer, m_location);
-
-   buffer.clear();
-}
-
-void Tokenizer::emplaceNumber(std::vector<Token>& tokens, std::string& buffer) {
-   /// @todo float vs int type
-
-   tokens.emplace_back(TokenType::INTEGER_LITERAL, buffer, m_location);
-   buffer.clear();
-}
-
-void Tokenizer::emplaceChar(std::vector<Token>& tokens, char current) {
-   switch(current) {
-      case '-':
-         if(peek() == '-') {
-            consume();
-            tokens.emplace_back(TokenType::DECREMENT, m_location);
-         } else {
-            tokens.emplace_back(TokenType::MINUS, m_location);
-         }
-
-         break;
-
-      case '+':
-         if(peek() == '+') {
-            consume();
-            tokens.emplace_back(TokenType::INCREMENT, m_location);
-         } else {
-            tokens.emplace_back(TokenType::PLUS, m_location);
-         }
-
-         break;
-
-      case ':':
-         tokens.emplace_back(TokenType::COLON, m_location);
-         break;
-
-      case ';':
-         tokens.emplace_back(TokenType::SEMICOLON, m_location);
-         break;
-
-      case '=':
-         tokens.emplace_back(TokenType::EQUALS, m_location);
-         break;
-
-      case '*':
-         tokens.emplace_back(TokenType::STAR, m_location);
-         break;
-
-      case '/':
-         tokens.emplace_back(TokenType::FSLASH, m_location);
-         break;
-
-      case '%':
-         tokens.emplace_back(TokenType::PERCENT, m_location);
-         break;
-
-      case '^':
-         tokens.emplace_back(TokenType::CARET, m_location);
-         break;
-
-      case '(':
-         tokens.emplace_back(TokenType::OPEN_PAREN, m_location);
-         break;
-
-      case ')':
-         tokens.emplace_back(TokenType::CLOSE_PAREN, m_location);
-         break;
-
-      case '{':
-         tokens.emplace_back(TokenType::OPEN_CURLY, m_location);
-         break;
-
-      case '}':
-         tokens.emplace_back(TokenType::CLOSE_CURLY, m_location);
-         break;
-
-      case '<':
-         tokens.emplace_back(TokenType::LESS_THAN, m_location);
-         break;
-
-      case '>':
-         tokens.emplace_back(TokenType::GREATER_THAN, m_location);
-         break;
-
-      default:
-         using namespace std::string_literals; // need the ""s operator to concatenate a temp string with char
-         g_errors.report(err::Phase::TOKENIZING, err::Category::SYNTAX, m_location, "Unexpected character: "s + current);
-   }
-}
-
 std::vector<Token> Tokenizer::tokenize() {
    std::vector<Token> tokens{};
-   tokens.reserve(m_src.size() / 4); // rough heuristic of 4 chars per token
+   tokens.reserve(m_src.size() / 3); // rough heuristic of 3 chars per token
    std::string buffer;
 
    while(peek()) {
+      err::SourceLocation location = m_location; // save location of beginning
+
       if(std::isalpha(*peek()) || *peek() == '_') {
          do buffer.push_back(consume());
          while(peek() && (std::isalnum(*peek()) || *peek() == '_' ));
 
-         emplaceKeyword(tokens, buffer);
+         tokens.emplace_back(getKeyword(buffer), buffer, location);
+         buffer.clear();
 
       } else if(std::isdigit(*peek())) {
          /// @todo allow float type
          do buffer.push_back(consume());
          while(peek() && std::isdigit(*peek()));
 
-         emplaceNumber(tokens, buffer);
+         tokens.emplace_back(getNumericType(buffer), buffer, location);
+         buffer.clear();
 
       } else if(std::isspace(static_cast<unsigned char>(*peek()))) {
          do consume();
@@ -184,7 +114,7 @@ std::vector<Token> Tokenizer::tokenize() {
                while(peek() && *peek() != '~');
 
                if(!peek() || *peek() != '~' || !peek(1) || *peek(1) != '$')
-                  g_errors.report(err::Phase::TOKENIZING, err::Category::SYNTAX, m_location, "Multi-line comment unclosed!", true);
+                  g_errors.report(err::Phase::TOKENIZING, err::Category::SYNTAX, location, "Multi-line comment unclosed!", true);
 
                consume(2); // consume '~$'
                break;
@@ -194,7 +124,141 @@ std::vector<Token> Tokenizer::tokenize() {
          }
 
       } else {
-         emplaceChar(tokens, consume());
+         switch(consume()) {
+            case '=':
+               if(peek() && *peek() == '=') {
+                  consume();
+                  tokens.emplace_back(TokenType::EQUALITY, location);
+               } else {
+                  tokens.emplace_back(TokenType::EQUALS, location);
+               }
+               break;
+
+            case '<':
+               if(peek() && *peek() == '=') {
+                  tokens.emplace_back(TokenType::LESS_EQUALS);
+               } else {
+                  tokens.emplace_back(TokenType::LESS_THAN);
+               }
+               break;
+
+            case '>':
+               if(peek() && *peek() == '=') {
+                  consume();
+                  tokens.emplace_back(TokenType::GREATER_EQUALS);
+               } else {
+                  tokens.emplace_back(TokenType::GREATER_THAN);
+               }
+               break;
+
+            case '+':
+               if(peek() && *peek() == '=') {
+                  consume();
+                  tokens.emplace_back(TokenType::PLUS_EQUALS);
+               } else if(peek() == '+') {
+                  consume();
+                  tokens.emplace_back(TokenType::INCREMENT);
+               } else {
+                  tokens.emplace_back(TokenType::PLUS);
+               }
+               break;
+
+            case '-':
+               if(peek() && *peek() == '=') {
+                  consume();
+                  tokens.emplace_back(TokenType::MINUS_EQUALS);
+               } else if(peek() && *peek() == '-') {
+                  consume();
+                  tokens.emplace_back(TokenType::DECREMENT);
+               } else {
+                  tokens.emplace_back(TokenType::MINUS);
+               }
+               break;
+
+            case '*':
+               if(peek() && *peek() == '=') {
+                  consume();
+                  tokens.emplace_back(TokenType::STAR_EQUALS);
+               } else {
+                  tokens.emplace_back(TokenType::STAR);
+               }
+               break;
+
+            case '/':
+               if(peek() && *peek() == '=') {
+                  consume();
+                  tokens.emplace_back(TokenType::SLASH_EQUALS);
+               } else {
+                  tokens.emplace_back(TokenType::FSLASH);
+               }
+               break;
+
+            case '%':
+               if(peek() && *peek() == '=') {
+                  consume();
+                  tokens.emplace_back(TokenType::PERCENT_EQUALS);
+               } else {
+                  tokens.emplace_back(TokenType::PERCENT);
+               }
+               break;
+
+            case '^':
+               if(peek() && *peek() == '=') {
+                  consume();
+                  tokens.emplace_back(TokenType::CARET_EQUALS);
+               } else {
+                  tokens.emplace_back(TokenType::CARET);
+               }
+               break;
+
+            case '!':
+               if(peek() && *peek() == '=') {
+                  consume();
+                  tokens.emplace_back(TokenType::INEQUALITY);
+               } else {
+                  tokens.emplace_back(TokenType::LOGICAL_NOT);
+               }
+               break;
+
+            case '&':
+               if(peek() && *peek() == '&') {
+                  consume();
+                  tokens.emplace_back(TokenType::LOGICAL_AND);
+               } else {
+                  g_errors.report(
+                     err::Phase::TOKENIZING, err::Category::INTERNAL, { "Tokenizer.cpp", __LINE__ },
+                     std::format("Unexpected character '{}' after '&'!", *peek()));
+               }
+               break;
+
+            case '|':
+               if(peek() && *peek() == '|') {
+                  consume();
+                  tokens.emplace_back(TokenType::LOGICAL_OR);
+               } else {
+                  g_errors.report(
+                     err::Phase::TOKENIZING, err::Category::INTERNAL, { "Tokenizer.cpp", __LINE__ },
+                     std::format("Unexpected character '{}' after '|'!", *peek()));
+               }
+               break;
+
+            case ':': tokens.emplace_back(TokenType::COLON);         break;
+            case ';': tokens.emplace_back(TokenType::SEMICOLON);     break;
+            case '(': tokens.emplace_back(TokenType::OPEN_PAREN);    break;
+            case ')': tokens.emplace_back(TokenType::CLOSE_PAREN);   break;
+            case '[': tokens.emplace_back(TokenType::OPEN_BRACKET);  break;
+            case ']': tokens.emplace_back(TokenType::CLOSE_BRACKET); break;
+            case '{': tokens.emplace_back(TokenType::OPEN_CURLY);    break;
+            case '}': tokens.emplace_back(TokenType::CLOSE_CURLY);   break;
+
+            case '\\': tokens.emplace_back(TokenType::BSLASH);       break;
+
+            default:
+               g_errors.report(
+                  err::Phase::TOKENIZING, err::Category::INTERNAL, { "Tokenizer.cpp", __LINE__ },
+                  std::format("Unexpected character '{}'!", *peek(-1)));
+               break;
+         }
       }
    }
 

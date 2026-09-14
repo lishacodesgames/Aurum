@@ -352,9 +352,10 @@ ast::Expression Parser::parseTerm() {
          return ast::Expression(std::in_place_type<ast::Negative*>, negation);
       }
 
-      case TokenType::PLUS: {
-         consume();
-         return parseTerm();
+      case TokenType::LOGICAL_NOT: {
+         /// @todo
+         error(err::Category::INTERNAL, { "Parser.cpp", __LINE__ }, "Unary operator '!' not yet implemented!");
+         return std::monostate{};
       }
 
       case TokenType::OPEN_PAREN: {
