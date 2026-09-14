@@ -8,12 +8,13 @@ namespace err
    enum class Phase { NONE, SETUP, LEXING, PARSING, GENERATING, EMITTING_ASSEMBLY, RUNNING };
 
    enum class Category {
-      NONE, // fallback, unitialised value (of this enum, not an error category)
-      SYNTAX, // unexpected character/token, unclosed comment
-      NAME_RESOLUTION, // undeclared identifier, redeclaration
-      MUTABILITY, // modifying immutable variable
-      TYPE_MISMATCH, // incompatible value or operation types
-      INTERNAL // compiler-side violations; opcode vs operand mismatch, etc.
+      NONE,             // fallback, unitialised value (of this enum, not an error category)
+      SYNTAX,           // unexpected character/token, unclosed comment
+      NAME_RESOLUTION,  // undeclared identifier, redeclaration
+      MUTABILITY,       // modifying immutable variable
+      TYPE_MISMATCH,    // incompatible value or operation types
+      SCOPING,          // eg. declaration as an if statement's then branch
+      INTERNAL,         // compiler-side violations; opcode vs operand mismatch, etc.
    };
 
    struct SourceLocation {

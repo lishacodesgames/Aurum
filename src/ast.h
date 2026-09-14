@@ -2,23 +2,6 @@
 #include "Token.h"
 #include "Errors.h"
 
-enum class Type {
-   NONE, INT, BOOL
-};
-
-inline std::string to_string(Type type) {
-   switch(type) {
-      case Type::NONE:  return "NONE";
-      case Type::INT:   return "INT";
-      case Type::BOOL:  return "BOOL";
-
-      default:
-         g_errors.report(err::Phase::GENERATING, err::Category::INTERNAL, { "ast.h", __LINE__ },
-            "Unhandled Type in to_string(Type)!", true);
-         return "";
-   }
-}
-
 /// Abstract Syntax Tree
 /// @note Do not use pointers to Expression and Statement, since they are variants of pointer types anyways
 /// @note No need to std::move Expression and Statement, since they are variants to trivially copyable types (pointers, monostate)
@@ -55,9 +38,10 @@ namespace ast
    struct BinaryExpr {
       Expression left, right;
       Token op;
+      Type type; /// can never be None
 
-      explicit BinaryExpr(Expression left, Token op, Expression right)
-         : left(left), right(right), op(op) {}
+      explicit BinaryExpr(Expression left, Token op, Expression right, Type type)
+         : left(left), right(right), op(op), type(type) {}
    };
 
 #pragma endregion

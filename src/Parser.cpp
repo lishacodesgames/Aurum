@@ -317,9 +317,14 @@ ast::If* Parser::parse<ast::If>() {
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::COLON,
       Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `:`!" }));
 
+   err::SourceLocation location = peek().location;
    ast::Statement thenBranch = parseStatement();
    if(std::holds_alternative<std::monostate>(thenBranch)) {
-      error(err::Category::SYNTAX, peek().location, "Expected a statement after if condition!");
+      error(err::Category::SYNTAX, location, "Expected a statement after if condition!");
+      recover();
+      return nullptr;
+   } else if(std::holds_alternative<ast::Declaration*>(thenBranch)) {
+      error(err::Category::SCOPING, location, "Cannot declare a variable in an un-scoped control statement!");
       recover();
       return nullptr;
    }
@@ -434,13 +439,19 @@ ast::UnaryExpr* Parser::parse<ast::UnaryExpr>() {
 template<>
 ast::BinaryExpr* Parser::parse<ast::BinaryExpr>() {
    Token op = consume();
+   Type type = getReturnType(op.type);
+   if(type == Type::NONE) {
+      error(err::Category::SYNTAX, op.location, "Invalid binary operator: " + to_string(op.type));
+      return nullptr;
+   }
+
    int precedence = getPrecedence(op.type);
    int nextMinPrec = isLeftAssociative(op.type) ? precedence + 1 : precedence;
 
    ast::Expression rhs = parseExpression(nextMinPrec);
    VALIDATE_VARIANT_RETURN_NULL(rhs);
 
-   return m_arena.create<ast::BinaryExpr>(std::monostate{}, op, rhs);
+   return m_arena.create<ast::BinaryExpr>(std::monostate{}, op, rhs, type);
 }
 
 #pragma endregion
