@@ -10,7 +10,7 @@ std::string to_string(err::Phase phase) {
    switch(phase) {
       case Phase::NONE:              return "NONE";
       case Phase::SETUP:             return "SETUP";
-      case Phase::TOKENIZING:        return "TOKENIZING";
+      case Phase::LEXING:            return "LEXING";
       case Phase::PARSING:           return "PARSING";
       case Phase::GENERATING:        return "GENERATING";
       case Phase::EMITTING_ASSEMBLY: return "EMITTING ASSEMBLY";

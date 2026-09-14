@@ -1,9 +1,9 @@
 #pragma once
 #include "Token.h"
 
-class Tokenizer {
+class Lexer {
 public:
-   explicit Tokenizer(std::string_view src) : m_src(src) {}
+   explicit Lexer(std::string_view src) : m_src(src) {}
 
    std::vector<Token> tokenize();
 

@@ -1,5 +1,5 @@
 #include <pch/Precompiled.h>
-#include "Tokenizer.h"
+#include "Lexer.h"
 
 #include "Errors.h"
 
@@ -41,7 +41,7 @@ namespace
    }
 }
 
-std::optional<char> Tokenizer::peek(int offset) const noexcept {
+std::optional<char> Lexer::peek(int offset) const noexcept {
    int targetPos = static_cast<int>(m_pos) + offset;
 
    if(targetPos < 0 || targetPos >= static_cast<int>(m_src.size())) // \0 char shouldn't be counted
@@ -50,9 +50,9 @@ std::optional<char> Tokenizer::peek(int offset) const noexcept {
    return m_src[targetPos]; // use [] when we've checked bounds ourselves to avoid the bounds-checking overhead in .at()
 }
 
-char Tokenizer::consume(std::uint32_t count) noexcept {
+char Lexer::consume(std::uint32_t count) noexcept {
    if(!peek(count - 1))
-      g_errors.report(err::Phase::TOKENIZING, err::Category::INTERNAL, m_location, "Tried to consume end of file character!", true);
+      g_errors.report(err::Phase::LEXING, err::Category::INTERNAL, m_location, "Tried to consume end of file character!", true);
 
    char current = m_src[m_pos];
 
@@ -71,7 +71,7 @@ char Tokenizer::consume(std::uint32_t count) noexcept {
    return current;
 }
 
-std::vector<Token> Tokenizer::tokenize() {
+std::vector<Token> Lexer::tokenize() {
    std::vector<Token> tokens{};
    tokens.reserve(m_src.size() / 3); // rough heuristic of 3 chars per token
    std::string buffer;
@@ -114,7 +114,7 @@ std::vector<Token> Tokenizer::tokenize() {
                while(peek() && *peek() != '~');
 
                if(!peek() || *peek() != '~' || !peek(1) || *peek(1) != '$')
-                  g_errors.report(err::Phase::TOKENIZING, err::Category::SYNTAX, location, "Multi-line comment unclosed!", true);
+                  g_errors.report(err::Phase::LEXING, err::Category::SYNTAX, location, "Multi-line comment unclosed!", true);
 
                consume(2); // consume '~$'
                break;
@@ -226,7 +226,7 @@ std::vector<Token> Tokenizer::tokenize() {
                   tokens.emplace_back(TokenType::LOGICAL_AND);
                } else {
                   g_errors.report(
-                     err::Phase::TOKENIZING, err::Category::INTERNAL, { "Tokenizer.cpp", __LINE__ },
+                     err::Phase::LEXING, err::Category::INTERNAL, { "Lexer.cpp", __LINE__ },
                      std::format("Unexpected character '{}' after '&'!", *peek()));
                }
                break;
@@ -237,7 +237,7 @@ std::vector<Token> Tokenizer::tokenize() {
                   tokens.emplace_back(TokenType::LOGICAL_OR);
                } else {
                   g_errors.report(
-                     err::Phase::TOKENIZING, err::Category::INTERNAL, { "Tokenizer.cpp", __LINE__ },
+                     err::Phase::LEXING, err::Category::INTERNAL, { "Lexer.cpp", __LINE__ },
                      std::format("Unexpected character '{}' after '|'!", *peek()));
                }
                break;
@@ -255,7 +255,7 @@ std::vector<Token> Tokenizer::tokenize() {
 
             default:
                g_errors.report(
-                  err::Phase::TOKENIZING, err::Category::INTERNAL, { "Tokenizer.cpp", __LINE__ },
+                  err::Phase::LEXING, err::Category::INTERNAL, { "Lexer.cpp", __LINE__ },
                   std::format("Unexpected character '{}'!", *peek(-1)));
                break;
          }

@@ -1,6 +1,6 @@
 #include <pch/Precompiled.h>
 
-#include "Tokenizer.h"
+#include "Lexer.h"
 #include "Parser.h"
 #include "Generator.h"
 #include "AsmEmitter.h"
@@ -30,9 +30,9 @@ int main(int argc, char* argv[]) {
    std::println("Compiling aurum file '{}'...", aurumFilePath);
 
    // parse & generate assembly
-   Tokenizer tokenizer(fileHandler.getSourceCode());
-   std::vector<Token> tokens = tokenizer.tokenize();
-   throwIfError(err::Phase::TOKENIZING);
+   Lexer lexer(fileHandler.getSourceCode());
+   std::vector<Token> tokens = lexer.tokenize();
+   throwIfError(err::Phase::LEXING);
 
    Parser parser(std::move(tokens));
    ast::Program program = parser.parse();
