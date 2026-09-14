@@ -40,15 +40,16 @@ namespace ast
    };
 
    // expressions that contain an expression
-   struct Negative;
+   struct UnaryExpr;
    struct BinaryExpr;
 
-   using Expression = std::variant<std::monostate, Literal*, Identifier*, Negative*, BinaryExpr*>;
+   using Expression = std::variant<std::monostate, Literal*, Identifier*, UnaryExpr*, BinaryExpr*>;
 
-   struct Negative {
+   struct UnaryExpr {
+      Token op; /// '!' requires BOOL, '-' requires INT
       Expression operand;
 
-      explicit Negative(Expression operand) : operand(operand) {}
+      explicit UnaryExpr(Token op, Expression operand) : op(op), operand(operand) {}
    };
 
    struct BinaryExpr {

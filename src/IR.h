@@ -9,7 +9,7 @@
    X(INCR) X(DECR) \
 \
    /* operators */ \
-   X(ADD) X(SUB) X(MUL) X(DIV) X(MOD) X(NEG) \
+   X(ADD) X(SUB) X(MUL) X(DIV) X(MOD) X(NEG) X(NOT) \
 \
    /* control flow */ \
    X(EXIT) \

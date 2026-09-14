@@ -68,7 +68,7 @@ private:
 
    template<> ast::Literal* parse<ast::Literal>();
    template<> ast::Identifier* parse<ast::Identifier>();
-   template<> ast::Negative* parse<ast::Negative>();
+   template<> ast::UnaryExpr* parse<ast::UnaryExpr>();
 
    /// @return BinaryExpr containing op and rhs, left MUST be assigned by caller
    template<> ast::BinaryExpr* parse<ast::BinaryExpr>();

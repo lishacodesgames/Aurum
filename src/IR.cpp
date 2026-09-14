@@ -14,6 +14,7 @@ uint8_t operands(OpCode opcode) {
       case OpCode::DECR:
 
       case OpCode::NEG:
+      case OpCode::NOT:
 
       case OpCode::EXIT:
       case OpCode::LABEL:

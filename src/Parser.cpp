@@ -39,6 +39,8 @@ ast::Program Parser::parse() {
    return program;
 }
 
+#pragma region Helpers
+
 void Parser::error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal) {
    g_errors.report(err::Phase::PARSING, category, location, message, isFatal);
 }
@@ -106,6 +108,8 @@ std::optional<Token> Parser::tryConsume(TokenType type, std::optional<Error> err
 
    return consume();
 }
+
+#pragma endregion
 
 // PARSE OVERLOADS
 
@@ -345,17 +349,12 @@ ast::Expression Parser::parseTerm() {
          return ast::Expression(std::in_place_type<ast::Identifier*>, identifier);
       }
 
+      case TokenType::LOGICAL_NOT:
       case TokenType::MINUS: {
-         ast::Negative* negation = parse<ast::Negative>();
+         ast::UnaryExpr* negation = parse<ast::UnaryExpr>();
          VALIDATE_PTR_RETURN_MONO(negation);
 
-         return ast::Expression(std::in_place_type<ast::Negative*>, negation);
-      }
-
-      case TokenType::LOGICAL_NOT: {
-         /// @todo
-         error(err::Category::INTERNAL, { "Parser.cpp", __LINE__ }, "Unary operator '!' not yet implemented!");
-         return std::monostate{};
+         return ast::Expression(std::in_place_type<ast::UnaryExpr*>, negation);
       }
 
       case TokenType::OPEN_PAREN: {
@@ -419,13 +418,17 @@ ast::Identifier* Parser::parse<ast::Identifier>() {
 }
 
 template<>
-ast::Negative* Parser::parse<ast::Negative>() {
-   consume(); // consume minus
+ast::UnaryExpr* Parser::parse<ast::UnaryExpr>() {
+   Token op = consume();
+   if(!isUnaryOperator(op.type)) {
+      error(err::Category::SYNTAX, op.location, "Invalid unary operator: " + to_string(op.type));
+      return nullptr;
+   }
 
    ast::Expression expression = parseTerm();
    VALIDATE_VARIANT_RETURN_NULL(expression);
 
-   return m_arena.create<ast::Negative>(expression);
+   return m_arena.create<ast::UnaryExpr>(op, expression);
 }
 
 template<>

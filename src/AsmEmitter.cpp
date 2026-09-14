@@ -266,6 +266,17 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
+      case OpCode::NOT: {
+         if(instr.operand1 == ir::TOS)
+            m_stack.pop("rax");
+         else
+            movFoldedValue("rax", instr.operand1);
+
+         write("xor rax, 1"); // condition will always be 0 or 1 since it's bool
+         m_stack.push("rax");
+         break;
+      }
+
       case OpCode::EXIT: {
          if(instr.operand1 == ir::TOS)
             m_stack.pop("rdi");

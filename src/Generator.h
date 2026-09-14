@@ -76,7 +76,7 @@ private:
    // -- expressions --
    template<> void generate(const ast::Literal* literal);
    template<> void generate(const ast::Identifier* identifier);
-   template<> void generate(const ast::Negative* negative);
+   template<> void generate(const ast::UnaryExpr* unaryExpr);
    template<> void generate(const ast::BinaryExpr* binaryExpr);
 
    // -- variant's overload

@@ -1,6 +1,6 @@
-if False: {
+if !False: {
    mint x = 1;
-   exit 0;
+   exit x;
 }
 
 mint x = 5;

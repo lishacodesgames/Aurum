@@ -10,7 +10,7 @@ namespace
             return arg->op.location;
          else if constexpr(std::is_same_v<PtrT, ast::Literal*> || std::is_same_v<PtrT, ast::Identifier*>)
             return arg->token.location;
-         else if constexpr(std::is_same_v<PtrT, ast::Negative*>)
+         else if constexpr(std::is_same_v<PtrT, ast::UnaryExpr*>)
             return getLocation(arg->operand);
          else // monostate
             return {};
@@ -156,14 +156,34 @@ std::optional<Type> Generator::inferType(const ast::Expression& expr) const {
 
          return symbol->type;
 
-      } else if constexpr(std::is_same_v<PtrT, ast::Negative*>) {
+      } else if constexpr(std::is_same_v<PtrT, ast::UnaryExpr*>) {
          std::optional<Type> operandType = inferType(arg->operand);
-         if(!operandType || *operandType != Type::INT) {
-            error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Unary operator '-' requires an int operand!");
+         if(!operandType) {
+            error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), std::format("Invalid expression for unary operator '{}'!", to_string(arg->op.type)));
             return std::nullopt;
          }
 
-         return Type::INT;
+         switch(arg->op.type) {
+            case TokenType::LOGICAL_NOT:
+               if(*operandType != Type::BOOL) {
+                  error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Unary operator '!' requires a boolean operand!");
+                  return std::nullopt;
+               }
+
+               return Type::BOOL;
+
+            case TokenType::MINUS:
+               if(*operandType != Type::INT) {
+                  error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Unary operator '-' requires an int operand!");
+                  return std::nullopt;
+               }
+
+               return Type::INT;
+
+            default:
+               error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Invalid unary operator: " + to_string(arg->op.type));
+               return std::nullopt;
+         }
 
       } else if constexpr(std::is_same_v<PtrT, ast::BinaryExpr*>) {
          std::optional<Type> leftType = inferType(arg->left);
@@ -433,12 +453,19 @@ void Generator::generate(const ast::Identifier* identifier) {
 }
 
 template <>
-void Generator::generate(const ast::Negative* negative) {
-   if(auto folded = tryFold(negative->operand)) {
-      emit(OpCode::NEG, *folded);
+void Generator::generate(const ast::UnaryExpr* unaryExpr) {
+   OpCode opcode;
+   switch(unaryExpr->op.type) {
+      case TokenType::LOGICAL_NOT:  opcode = OpCode::NOT; break;
+      case TokenType::MINUS:        opcode = OpCode::NEG; break;
+      default: error(err::Category::SYNTAX, unaryExpr->op.location, "Invalid unary operator: " + to_string(unaryExpr->op.type));
+   }
+
+   if(auto folded = tryFold(unaryExpr->operand)) {
+      emit(opcode, *folded);
    } else {
-      generate<ast::Expression>(negative->operand);
-      emit(OpCode::NEG, ir::TOS);
+      generate<ast::Expression>(unaryExpr->operand);
+      emit(opcode, ir::TOS);
    }
 }
 

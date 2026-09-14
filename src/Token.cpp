@@ -45,7 +45,6 @@ bool isUnaryOperator(TokenType type) {
    switch(type) {
       case TokenType::LOGICAL_NOT:
       case TokenType::MINUS:
-      case TokenType::PLUS:
          return true;
 
       default:
