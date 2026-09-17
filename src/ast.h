@@ -102,8 +102,10 @@ namespace ast
    struct If {
       Expression condition;
       Statement thenBranch;
+      std::optional<Statement> elseBranch;
 
-      explicit If(Expression condition, Statement thenBranch) : condition(condition), thenBranch(thenBranch) {}
+      explicit If(Expression condition, Statement thenBranch, std::optional<Statement> elseBranch)
+         : condition(condition), thenBranch(thenBranch), elseBranch(elseBranch) {}
    };
 
 #pragma endregion

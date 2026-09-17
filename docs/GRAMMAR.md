@@ -28,6 +28,7 @@
 - parentheses are optional
 - curly braces are optional (if body is only 1 statement)
 - colon is necessary
+- ARCHITECTURALLY: elif are just sugared else ifs (because I like elif better)
 
 ```
 if condition: {
@@ -76,7 +77,8 @@ $$
          \text{[block statement]} \to \{\ [statement]^+\ \} \\ \\
          \text{[selection statement]}
             \begin{cases}
-               if \\ switch
+               if-else,\ elif(cond) = else\{\ if(cond)\ \} \\
+               switch
             \end{cases} \\ \\
          \text{[iteration statement]}
             \begin{cases}

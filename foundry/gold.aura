@@ -1,5 +1,10 @@
 mint y = 10;
-if y == 0 && True || False: $$ false
+bar<bool> x = True;
+if False:
    exit 2;
-
-exit 5;
+elif y != 10:
+   exit y;
+elif x:
+   exit 100;
+else:
+   exit 5;

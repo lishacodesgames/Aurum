@@ -434,16 +434,34 @@ void Generator::generate(const ast::If* ifStmt) {
       return;
    }
 
-   std::string endLabel = newLabel("if_end");
-   if(auto folded = tryFold(ifStmt->condition)) {
-      emit(OpCode::JUMP_IF_NOT, *folded, endLabel);
-   } else {
-      generate<ast::Expression>(ifStmt->condition);
-      emit(OpCode::JUMP_IF_NOT, ir::TOS, endLabel);
-   }
+   if(ifStmt->elseBranch) {
+      std::string elseLabel = newLabel("else");
+      std::string endLabel = newLabel("endif");
+      if(auto folded = tryFold(ifStmt->condition)) {
+         emit(OpCode::JUMP_IF_NOT, *folded, elseLabel);
+      } else {
+         generate<ast::Expression>(ifStmt->condition);
+         emit(OpCode::JUMP_IF_NOT, ir::TOS, elseLabel);
+      }
 
-   generate<ast::Statement>(ifStmt->thenBranch);
-   emit(OpCode::LABEL, endLabel);
+      generate<ast::Statement>(ifStmt->thenBranch);
+      emit(OpCode::JUMP, endLabel);
+      emit(OpCode::LABEL, elseLabel);
+      generate<ast::Statement>(*ifStmt->elseBranch);
+      emit(OpCode::LABEL, endLabel);
+
+   } else {
+      std::string endLabel = newLabel("endif");
+      if(auto folded = tryFold(ifStmt->condition)) {
+         emit(OpCode::JUMP_IF_NOT, *folded, endLabel);
+      } else {
+         generate<ast::Expression>(ifStmt->condition);
+         emit(OpCode::JUMP_IF_NOT, ir::TOS, endLabel);
+      }
+   
+      generate<ast::Statement>(ifStmt->thenBranch);
+      emit(OpCode::LABEL, endLabel);
+   }
 }
 
 #pragma endregion

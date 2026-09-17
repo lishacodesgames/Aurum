@@ -306,6 +306,18 @@ ast::Block* Parser::parse<ast::Block>() {
       return m_arena.create<ast::Block>(std::move(stmts));
 }
 
+// idk if this is the best way to do this
+/// @note requires a predefined location variable of type err::SourceLocation pointing to the beginning of branch's statement
+#define VALIDATE_IF_BODY_STMT(branch)\
+   if(std::holds_alternative<std::monostate>((branch))) { \
+      recover(); \
+      return nullptr; \
+   } else if(std::holds_alternative<ast::Declaration*>((branch))) {\
+      error(err::Category::SCOPING, location, "Cannot declare a variable in an un-scoped constrol statement!"); \
+      recover(); \
+      return nullptr; \
+   }
+
 template<>
 ast::If* Parser::parse<ast::If>() {
    consume(); // consume if keyword
@@ -319,17 +331,25 @@ ast::If* Parser::parse<ast::If>() {
 
    err::SourceLocation location = peek().location;
    ast::Statement thenBranch = parseStatement();
-   if(std::holds_alternative<std::monostate>(thenBranch)) {
-      error(err::Category::SYNTAX, location, "Expected a statement after if condition!");
-      recover();
-      return nullptr;
-   } else if(std::holds_alternative<ast::Declaration*>(thenBranch)) {
-      error(err::Category::SCOPING, location, "Cannot declare a variable in an un-scoped control statement!");
-      recover();
-      return nullptr;
+
+   VALIDATE_IF_BODY_STMT(thenBranch);
+
+   std::optional<ast::Statement> elseBranch = std::nullopt;
+   // elif is desugared into else and nested ifs. so elif and else cannot exist simultaneously in one if statement
+   if(peek() == TokenType::ELIF) // don't consume bcz recursion will handle that based on the keyword
+      elseBranch = parse<ast::If>();
+   // else here because either elif or else will set elseBranch. both cannot
+   else if(tryConsume(TokenType::ELSE)) { // consume bcz we're handling this here
+      VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::COLON,
+         Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `:`!" }));
+
+      location = peek().location;
+      elseBranch = parseStatement();
+
+      VALIDATE_IF_BODY_STMT(*elseBranch);
    }
 
-   return m_arena.create<ast::If>(condition, thenBranch);
+   return m_arena.create<ast::If>(condition, thenBranch, elseBranch);
 }
 
 #pragma endregion
