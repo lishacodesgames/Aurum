@@ -18,7 +18,7 @@ public:
    std::vector<ir::Instruction> generate();
 
 private:
-   /// Purely for semantic validity, not layout
+   /// Stores both mutabilities and the datatype. Purely for semantic validity, not layout
    struct SymbolInfo {
       bool valueMutable = false;
       bool typeMutable = false;

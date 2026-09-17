@@ -54,8 +54,7 @@ void Parser::recover() {
 
          case TokenType::OPEN_CURLY:
             depth++;
-            consume();
-            continue;
+            break;
 
          case TokenType::CLOSE_CURLY:
             if(depth == 0)
@@ -63,8 +62,7 @@ void Parser::recover() {
 
             // brace was opened by us
             depth--;
-            consume();
-            continue;
+            break;
 
          case TokenType::SEMICOLON:
             if(depth == 0) {
@@ -74,13 +72,13 @@ void Parser::recover() {
             }
 
             // end of a statement nested inside { ... } opened by us
-            consume();
-            continue;
+            break;
 
          default:
-            consume();
-            continue;
+            break;
       }
+
+      consume();
    }
 }
 
@@ -99,7 +97,7 @@ Token Parser::consume(std::uint32_t count) noexcept {
 }
 
 std::optional<Token> Parser::tryConsume(TokenType type, std::optional<Error> error, bool hasValue) {
-   if(peek().type != type || (hasValue && !peek().value)) {
+   if(peek() != type || (hasValue && !peek().value)) {
       if(error)
          this->error(error->category, error->location, error->message, error->isFatal);
 
@@ -218,10 +216,8 @@ template<> ast::Declaration* Parser::parse<ast::Declaration>() {
 
    // bar x = None; is valid. but in that case, don't try to parse expr
    if(tryConsume(TokenType::EQUALS) && !tryConsume(TokenType::NONE)) {
-      ast::Expression expr = parseExpression();
-      VALIDATE_VARIANT_RETURN_NULL(expr);
-
-      expression = expr;
+      expression = parseExpression();
+      VALIDATE_VARIANT_RETURN_NULL(*expression);
    }
 
    VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
@@ -320,7 +316,7 @@ ast::Block* Parser::parse<ast::Block>() {
 
 template<>
 ast::If* Parser::parse<ast::If>() {
-   consume(); // consume if keyword
+   consume(); // consume if/elif
 
    // parentheses are optional, but if present, expression will handle them
    ast::Expression condition = parseExpression();
@@ -335,11 +331,13 @@ ast::If* Parser::parse<ast::If>() {
    VALIDATE_IF_BODY_STMT(thenBranch);
 
    std::optional<ast::Statement> elseBranch = std::nullopt;
+
    // elif is desugared into else and nested ifs. so elif and else cannot exist simultaneously in one if statement
-   if(peek() == TokenType::ELIF) // don't consume bcz recursion will handle that based on the keyword
+   if(peek() == TokenType::ELIF)          // don't consume here bcz recursion handles it
       elseBranch = parse<ast::If>();
-   // else here because either elif or else will set elseBranch. both cannot
-   else if(tryConsume(TokenType::ELSE)) { // consume bcz we're handling this here
+
+   // else here because either elif or else will set elseBranch. both cannot.
+   else if(tryConsume(TokenType::ELSE)) { // consume here bcz we're handling this here
       VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::COLON,
          Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `:`!" }));
 
@@ -385,9 +383,9 @@ ast::Expression Parser::parseTerm() {
       case TokenType::OPEN_PAREN: {
          consume();
          ast::Expression expression = parseExpression();
-
          VALIDATE_PTR_RETURN_MONO(tryConsume(TokenType::CLOSE_PAREN,
-            Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Unclosed parentheses!" }));
+            Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `)`!" }));
+
          return expression;
       }
 

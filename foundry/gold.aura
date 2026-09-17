@@ -1,10 +1,1 @@
-mint y = 10;
-bar<bool> x = True;
-if False:
-   exit 2;
-elif y != 10:
-   exit y;
-elif x:
-   exit 100;
-else:
-   exit 5;
+exit 1 + 100 / 5 * 6 - 120;
