@@ -29,6 +29,7 @@ std::uint32_t Stack::offset(std::string_view name) const {
       return it.value()->offset;
    
    assert(false && "This variable isn't on the stack");
+   return 0;
 }
 
 void Stack::startScope() {

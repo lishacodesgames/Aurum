@@ -17,10 +17,13 @@ namespace err
    };
 
    struct SourceLocation {
-      std::string file = "gold.aura"; /// only base name, no path
+      std::string file;
       std::uint32_t row = 1, column = 1;
 
       std::string to_string() const;
+
+      /// @param fileName only base name, no path
+      SourceLocation(std::string_view fileName, std::uint32_t row = 1, std::uint32_t col = 1) : file(fileName), row(row), column(col) {}
    };
 }
 

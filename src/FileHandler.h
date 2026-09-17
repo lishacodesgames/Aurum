@@ -3,9 +3,9 @@
 
 class FileHandler {
 public:
+   std::string name;
    FileHandler(std::string_view aurumFilePath);
 
-   /// @return aurum source code
    std::string getSourceCode() const;
 
    void outputIR(const std::string_view IR) const;
@@ -17,9 +17,11 @@ public:
    void runExecutable() const;
 
 private:
-   std::string aurumFilePath;
-   std::string irFilePath;
-   std::string assemblyFilePath;
-   std::string executableFilePath;
-   std::string assembleCommand;
+   std::string m_aurumFilePath;
+   std::string m_irFilePath;
+   std::string m_assemblyFilePath;
+   std::string m_executableFilePath;
+   std::string m_assembleCommand;
 };
+
+extern FileHandler g_fileHandler;

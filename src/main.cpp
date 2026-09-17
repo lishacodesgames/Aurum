@@ -12,6 +12,8 @@ void throwIfError(err::Phase phase) {
       g_errors.throwAll(phase);
 }
 
+FileHandler g_fileHandler("ueishdfsdfgyueashdsbafudsifhda"); // will be overridden in main, which will run before anyone outside accesses fileHandler
+
 int main(int argc, char* argv[]) {
    if(argc < 2 || argc > 3) {
       std::println("Incorrect usage!\nCorrect usage: {} /path/to/file.aura [--no-run]", argv[0]);
@@ -26,11 +28,12 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
    }
 
-   FileHandler fileHandler(aurumFilePath);
+   FileHandler mine(aurumFilePath);
+   g_fileHandler = mine;
    std::println("Compiling aurum file '{}'...", aurumFilePath);
 
    // parse & generate assembly
-   Lexer lexer(fileHandler.getSourceCode());
+   Lexer lexer(g_fileHandler.getSourceCode());
    std::vector<Token> tokens = lexer.tokenize();
    throwIfError(err::Phase::LEXING);
 
@@ -40,17 +43,17 @@ int main(int argc, char* argv[]) {
 
    Generator generator(std::move(program));
    std::vector<ir::Instruction> instructions = generator.generate();
-   fileHandler.outputIR(generator.getIR());
+   g_fileHandler.outputIR(generator.getIR());
    throwIfError(err::Phase::GENERATING);
 
    AsmEmitter emitter(std::move(instructions));
    std::string assembly = emitter.emitAssembly();
-   fileHandler.outputAssembly(assembly);
+   g_fileHandler.outputAssembly(assembly);
    throwIfError(err::Phase::EMITTING_ASSEMBLY);
 
-   fileHandler.assemble(emitter.getRequiredLibs());
+   g_fileHandler.assemble(emitter.getRequiredLibs());
    if(!noRun)
-      fileHandler.runExecutable();
+      g_fileHandler.runExecutable();
    throwIfError(err::Phase::RUNNING);
 
    return EXIT_SUCCESS;

@@ -56,7 +56,7 @@ char Lexer::consume(std::uint32_t count) noexcept {
    char current = m_src[m_pos];
    while(count != 0) {
       if(m_src.at(m_pos) == '\n') {
-         m_location.column = 0;
+         m_location.column = 1;
          m_location.row++;
       } else {
          m_location.column++;

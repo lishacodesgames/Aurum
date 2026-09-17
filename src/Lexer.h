@@ -1,9 +1,11 @@
 #pragma once
 #include "Token.h"
 
+#include "FileHandler.h"
+
 class Lexer {
 public:
-   explicit Lexer(std::string_view src) : m_src(src) {}
+   explicit Lexer(std::string_view src) : m_src(src), m_location(g_fileHandler.name) {}
 
    std::vector<Token> tokenize();
 

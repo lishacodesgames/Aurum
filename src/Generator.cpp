@@ -1,6 +1,8 @@
 #include <pch/Precompiled.h>
 #include "Generator.h"
 
+#include "FileHandler.h"
+
 namespace
 {
    err::SourceLocation getLocation(const ast::Expression& expr) {
@@ -13,8 +15,8 @@ namespace
             return arg->token.location;
          else if constexpr(std::is_same_v<PtrT, ast::UnaryExpr*>)
             return getLocation(arg->operand);
-         else // monostate
-            return {};
+
+         return { g_fileHandler.name };
       }, expr);
    }
 
@@ -202,6 +204,7 @@ std::optional<DataType> Generator::inferType(const ast::Expression& expr) const 
       }
 
       assert(false && "Cannot infer type!");
+      return std::nullopt;
    }, expr);
 }
 

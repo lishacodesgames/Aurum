@@ -14,7 +14,9 @@ namespace
       switch(token.type) {
          case TokenType::INT:    return DataType::INT;
          case TokenType::BOOL:   return DataType::BOOL;
-         default: assert(false && "Unhandled datatype token");
+         default:
+            assert(false && "Unhandled datatype token");
+            return std::nullopt;
       }
    }
 }

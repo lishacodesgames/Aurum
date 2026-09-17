@@ -90,7 +90,9 @@ int getPrecedence(TokenType type) {
 
       case TokenType::CARET:           return 6;
 
-      default: assert(false && "Can't find precedence");
+      default:
+         assert(false && "Can't find precedence");
+         return 0;
    }
 }
 
