@@ -137,94 +137,94 @@ std::vector<Token> Lexer::tokenize() {
             case '<':
                if(peek() && *peek() == '=') {
                   consume();
-                  tokens.emplace_back(TokenType::LESS_EQUALS);
+                  tokens.emplace_back(TokenType::LESS_EQUALS, location);
                } else {
-                  tokens.emplace_back(TokenType::LESS_THAN);
+                  tokens.emplace_back(TokenType::LESS_THAN, location);
                }
                break;
 
             case '>':
                if(peek() && *peek() == '=') {
                   consume();
-                  tokens.emplace_back(TokenType::GREATER_EQUALS);
+                  tokens.emplace_back(TokenType::GREATER_EQUALS, location);
                } else {
-                  tokens.emplace_back(TokenType::GREATER_THAN);
+                  tokens.emplace_back(TokenType::GREATER_THAN, location);
                }
                break;
 
             case '+':
                if(peek() && *peek() == '=') {
                   consume();
-                  tokens.emplace_back(TokenType::PLUS_EQUALS);
+                  tokens.emplace_back(TokenType::PLUS_EQUALS, location);
                } else if(peek() && *peek() == '+') {
                   consume();
-                  tokens.emplace_back(TokenType::INCREMENT);
+                  tokens.emplace_back(TokenType::INCREMENT, location);
                } else {
-                  tokens.emplace_back(TokenType::PLUS);
+                  tokens.emplace_back(TokenType::PLUS, location);
                }
                break;
 
             case '-':
                if(peek() && *peek() == '=') {
                   consume();
-                  tokens.emplace_back(TokenType::MINUS_EQUALS);
+                  tokens.emplace_back(TokenType::MINUS_EQUALS, location);
                } else if(peek() && *peek() == '-') {
                   consume();
-                  tokens.emplace_back(TokenType::DECREMENT);
+                  tokens.emplace_back(TokenType::DECREMENT, location);
                } else {
-                  tokens.emplace_back(TokenType::MINUS);
+                  tokens.emplace_back(TokenType::MINUS, location);
                }
                break;
 
             case '*':
                if(peek() && *peek() == '=') {
                   consume();
-                  tokens.emplace_back(TokenType::STAR_EQUALS);
+                  tokens.emplace_back(TokenType::STAR_EQUALS, location);
                } else {
-                  tokens.emplace_back(TokenType::STAR);
+                  tokens.emplace_back(TokenType::STAR, location);
                }
                break;
 
             case '/':
                if(peek() && *peek() == '=') {
                   consume();
-                  tokens.emplace_back(TokenType::SLASH_EQUALS);
+                  tokens.emplace_back(TokenType::SLASH_EQUALS, location);
                } else {
-                  tokens.emplace_back(TokenType::FSLASH);
+                  tokens.emplace_back(TokenType::FSLASH, location);
                }
                break;
 
             case '%':
                if(peek() && *peek() == '=') {
                   consume();
-                  tokens.emplace_back(TokenType::PERCENT_EQUALS);
+                  tokens.emplace_back(TokenType::PERCENT_EQUALS, location);
                } else {
-                  tokens.emplace_back(TokenType::PERCENT);
+                  tokens.emplace_back(TokenType::PERCENT, location);
                }
                break;
 
             case '^':
                if(peek() && *peek() == '=') {
                   consume();
-                  tokens.emplace_back(TokenType::CARET_EQUALS);
+                  tokens.emplace_back(TokenType::CARET_EQUALS, location);
                } else {
-                  tokens.emplace_back(TokenType::CARET);
+                  tokens.emplace_back(TokenType::CARET, location);
                }
                break;
 
             case '!':
                if(peek() && *peek() == '=') {
                   consume();
-                  tokens.emplace_back(TokenType::INEQUALITY);
+                  tokens.emplace_back(TokenType::INEQUALITY, location);
                } else {
-                  tokens.emplace_back(TokenType::LOGICAL_NOT);
+                  tokens.emplace_back(TokenType::LOGICAL_NOT, location);
                }
                break;
 
             case '&':
                if(peek() && *peek() == '&') {
                   consume();
-                  tokens.emplace_back(TokenType::LOGICAL_AND);
+                  tokens.emplace_back(TokenType::LOGICAL_AND, location);
                } else {
                   g_errors.report(
                      err::Phase::LEXING, err::Category::INTERNAL, { "Lexer.cpp", __LINE__ },
@@ -235,7 +235,7 @@ std::vector<Token> Lexer::tokenize() {
             case '|':
                if(peek() && *peek() == '|') {
                   consume();
-                  tokens.emplace_back(TokenType::LOGICAL_OR);
+                  tokens.emplace_back(TokenType::LOGICAL_OR, location);
                } else {
                   g_errors.report(
                      err::Phase::LEXING, err::Category::INTERNAL, { "Lexer.cpp", __LINE__ },
@@ -243,16 +243,16 @@ std::vector<Token> Lexer::tokenize() {
                }
                break;
 
-            case ':': tokens.emplace_back(TokenType::COLON);         break;
-            case ';': tokens.emplace_back(TokenType::SEMICOLON);     break;
-            case '(': tokens.emplace_back(TokenType::OPEN_PAREN);    break;
-            case ')': tokens.emplace_back(TokenType::CLOSE_PAREN);   break;
-            case '[': tokens.emplace_back(TokenType::OPEN_BRACKET);  break;
-            case ']': tokens.emplace_back(TokenType::CLOSE_BRACKET); break;
-            case '{': tokens.emplace_back(TokenType::OPEN_CURLY);    break;
-            case '}': tokens.emplace_back(TokenType::CLOSE_CURLY);   break;
+            case ':': tokens.emplace_back(TokenType::COLON, location);         break;
+            case ';': tokens.emplace_back(TokenType::SEMICOLON, location);     break;
+            case '(': tokens.emplace_back(TokenType::OPEN_PAREN, location);    break;
+            case ')': tokens.emplace_back(TokenType::CLOSE_PAREN, location);   break;
+            case '[': tokens.emplace_back(TokenType::OPEN_BRACKET, location);  break;
+            case ']': tokens.emplace_back(TokenType::CLOSE_BRACKET, location); break;
+            case '{': tokens.emplace_back(TokenType::OPEN_CURLY, location);    break;
+            case '}': tokens.emplace_back(TokenType::CLOSE_CURLY, location);   break;
 
-            case '\\': tokens.emplace_back(TokenType::BSLASH);       break;
+            case '\\': tokens.emplace_back(TokenType::BSLASH, location);       break;
 
             default:
                g_errors.report(

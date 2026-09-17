@@ -88,7 +88,7 @@ Token Parser::peek(int offset) const noexcept {
    if(m_pos + offset < m_tokens.size() - 1)
       return m_tokens.at(m_pos + offset);
    else
-      return TokenType::END_OF_FILE;
+      return Token(TokenType::END_OF_FILE, m_tokens.back().location);
 }
 
 Token Parser::consume(std::uint32_t count) noexcept {

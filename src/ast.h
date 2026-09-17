@@ -17,7 +17,7 @@ namespace ast
    };
 
    struct Identifier {
-      Token token = TokenType::IDENTIFIER;
+      Token token;
 
       explicit Identifier(Token token) : token(token) {}
    };
