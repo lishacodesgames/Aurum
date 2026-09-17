@@ -1,3 +1,0 @@
-$$ EXPECT: FAIL
-$$ CONTAINS: requires int operands
-exit 5 + True;

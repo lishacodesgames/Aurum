@@ -35,6 +35,9 @@ uint8_t operands(OpCode opcode) {
       case OpCode::DIV:
       case OpCode::MOD:
 
+      case OpCode::AND:
+      case OpCode::OR:
+
       case OpCode::EQ:
       case OpCode::NEQ:
       case OpCode::LT:

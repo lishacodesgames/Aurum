@@ -150,7 +150,7 @@ void AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
    }
 }
 
-void AsmEmitter::handleArithmetic(const ir::Instruction& instr) {
+void AsmEmitter::handleBinary(const ir::Instruction& instr) {
    resolveBinaryOperands(instr);
 
    switch(instr.opcode) {
@@ -168,6 +168,9 @@ void AsmEmitter::handleArithmetic(const ir::Instruction& instr) {
          write("idiv rbx");
          m_stack.push("rdx ; result of MOD");
          return;
+
+      case OpCode::AND: write("and rax, rbx"); break;
+      case OpCode::OR:  write("or rax, rbx");  break;
 
       default:
          error(err::Category::INTERNAL, __LINE__, "Invalid arithmetic opcode: " + to_string(instr.opcode));
@@ -277,7 +280,8 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
       case OpCode::ADD: case OpCode::SUB:
       case OpCode::MUL: case OpCode::DIV:
       case OpCode::MOD:
-         handleArithmetic(instr);
+      case OpCode::AND: case OpCode::OR:
+         handleBinary(instr);
          break;
 
       case OpCode::NEG: {
@@ -298,7 +302,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
             movFoldedValue("rax", instr.operand1);
 
          // xor gives 1 if different, 0 if same
-         write("xor rax, 1"); // condition will always be 0 or 1 since it's bool
+         write("xor rax, 1", "!rax"); // condition will always be 0 or 1 since it's bool
          m_stack.push("rax");
          break;
       }

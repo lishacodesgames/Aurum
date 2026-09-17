@@ -201,17 +201,26 @@ std::optional<DataType> Generator::inferType(const ast::Expression& expr) const 
 bool Generator::isBinaryExprValid(const ast::BinaryExpr* binaryExpr) const {
    std::optional<DataType> leftType = inferType(binaryExpr->left);
    std::optional<DataType> rightType = inferType(binaryExpr->right);
+   TokenType op = binaryExpr->opToken.type;
 
    if(!leftType || !rightType) {
       error(
          err::Category::TYPE_MISMATCH, binaryExpr->opToken.location,
-         std::format("Operator '{}' requires {} operands!", to_string(binaryExpr->opToken.type), to_string(binaryExpr->type)));
+         std::format("Operator '{}' requires {} operands!", to_string(op), to_string(binaryExpr->type)));
       return false;
-   } else if(*leftType != *rightType) {
-      error(
-         err::Category::TYPE_MISMATCH, binaryExpr->opToken.location,
-         std::format("Operator '{}' must have same types on both sides but has {} and {}!", to_string(binaryExpr->opToken.type), to_string(*leftType), to_string(*rightType)));
+   }
+
+   DataType opType = getReturnType(op);
+   if(opType == DataType::BOOL && *leftType != *rightType) {
+      error(err::Category::TYPE_MISMATCH, binaryExpr->opToken.location, std::format(
+         "Operator '{}' must have same types on both sides but has {} and {}!",
+         to_string(op), to_string(*leftType), to_string(*rightType)));
       return false;
+   } else if(opType == DataType::INT && (*leftType != DataType::INT || *rightType != DataType::INT)) {
+      error(err::Category::TYPE_MISMATCH, binaryExpr->opToken.location, std::format(
+         "Operator '{}' requires INT operands, but has {} and {}",
+         to_string(op), to_string(*leftType), to_string(*rightType))
+      );
    }
 
    return true;
@@ -290,7 +299,6 @@ void Generator::generate(const ast::Assignment* assignment) {
    const std::string& varName = assignment->identifier->token.value.value();
    SymbolInfo* symbol = findSymbol(varName);
 
-   /// @todo extract this part
    if(!symbol) {
       error(
          err::Category::NAME_RESOLUTION, assignment->identifier->token.location,
@@ -513,6 +521,9 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
       case TokenType::MINUS:           opcode = OpCode::SUB; break;
       case TokenType::FSLASH:          opcode = OpCode::DIV; break;
       case TokenType::PERCENT:         opcode = OpCode::MOD; break;
+
+      case TokenType::LOGICAL_AND:     opcode = OpCode::AND; break;
+      case TokenType::LOGICAL_OR:      opcode = OpCode::OR;  break;
 
       case TokenType::EQUALITY:        opcode = OpCode::EQ;  break;
       case TokenType::INEQUALITY:      opcode = OpCode::NEQ; break;

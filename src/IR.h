@@ -9,7 +9,8 @@
    X(INCR) X(DECR) \
 \
    /* operators */ \
-   X(ADD) X(SUB) X(MUL) X(DIV) X(MOD) X(NEG) X(NOT) \
+   X(ADD) X(SUB) X(MUL) X(DIV) X(MOD) X(NEG) \
+   X(NOT) X(AND) X(OR) \
    X(EQ) X(NEQ) X(LT) X(GT) X(LTE) X(GTE) /* EQUALS, NOT EQUALS, LESS THAN, GREATER THAN, LESS THAN EQUALS, GREATER THAN EQUALS */ \
 \
    /* control flow */ \

@@ -44,15 +44,10 @@ private:
    /// resolves a two-operand instruction so that after this call: rax = left, rbx = right
    void resolveBinaryOperands(const ir::Instruction& insr);
 
-   /// @param asmMnemonic the assembly instruction mnemonic for this binary opcode
-   void handleArithmetic(const ir::Instruction& instr);
-   void handleDivMod(const ir::Instruction& instr);
-
-   /// @param conditional whether the jump instruction is conditional
-   /// @param jumpCondition if jump is conditional, whether to jump on true or false
-   void handleCondJump(const ir::Instruction& instr);
-
+   void handleBinary(const ir::Instruction& instr);
+   void handleLogical(const ir::Instruction& instr);
    void handleComparison(const ir::Instruction& instr);
+   void handleCondJump(const ir::Instruction& instr);
 
    void handle(const ir::Instruction& instr);
 };

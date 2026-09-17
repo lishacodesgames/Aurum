@@ -1,0 +1,55 @@
+$$ EXPECT: 16
+$$
+$$ Comprehensive smoke test -- exercises every feature currently implemented,
+$$ combined into one accumulator ('count') so a single exit code proves the
+$$ whole pipeline (Tokenizer -> Parser -> Generator -> AsmEmitter) still works
+$$ together, not just each feature in isolation.
+$$
+$$ Each 'if' below should evaluate to True and add exactly 1 to count (except
+$$ the last one, which adds z's value). If this test fails, the compiler
+$$ output + which count value it actually reached should narrow down which
+$$ feature regressed.
+
+bar count = 0;
+
+$$ --- declarations: bar (mutable) and mint (immutable) ---
+mint base = 10;
+if base == 10: count = count + 1;
+
+$$ --- arithmetic: precedence, parens, unary minus, all four ops ---
+if (2 + 3 * 4 - 1) == 13: count = count + 1; $$ * before +/-
+if -(5 - 2) == -3: count = count + 1;        $$ unary minus on a parenthesized expr
+if (10 / 3) == 3: count = count + 1;         $$ integer division truncates
+if (10 % 3) == 1: count = count + 1;         $$ modulo
+
+$$ --- increment / decrement ---
+bar x = 5;
+x++;
+x--;
+x++;
+if x == 6: count = count + 1;
+
+$$ --- relational operators: all six, true side ---
+if 5 == 5: count = count + 1;
+if 5 != 3: count = count + 1;
+if 3 < 5: count = count + 1;
+if 5 > 3: count = count + 1;
+if 5 <= 5: count = count + 1;
+if 5 >= 5: count = count + 1;
+
+$$ --- logical operators, and unary ! combined with a relational op ---
+if True && True: count = count + 1;
+if False || True: count = count + 1;
+if !(False) && (5 < 10): count = count + 1;
+
+$$ --- block scoping: nested if, nested block, reading an outer variable
+$$     from two scopes deep, all in the same statement ---
+{
+   bar y = 100;
+   if y > 50: {
+      bar z = 1;
+      if z == 1: count = count + z; $$ count is from the OUTERMOST scope
+   }
+}
+
+exit count;

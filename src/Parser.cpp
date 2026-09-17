@@ -366,7 +366,6 @@ ast::Expression Parser::parseTerm() {
          consume();
          ast::Expression expression = parseExpression();
 
-         /// @todo store and then pass to macro, i dont like this long ugly string
          VALIDATE_PTR_RETURN_MONO(tryConsume(TokenType::CLOSE_PAREN,
             Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Unclosed parentheses!" }));
          return expression;

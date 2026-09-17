@@ -48,7 +48,6 @@ namespace ast
 
 #pragma region Statements
 
-   /// @todo change hintType and lockedType to just type and typeMutable
    struct Declaration {
       Identifier* identifier;
       std::optional<Expression> expression; /// nullopt = declaration without definition

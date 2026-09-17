@@ -136,6 +136,7 @@ std::vector<Token> Lexer::tokenize() {
 
             case '<':
                if(peek() && *peek() == '=') {
+                  consume();
                   tokens.emplace_back(TokenType::LESS_EQUALS);
                } else {
                   tokens.emplace_back(TokenType::LESS_THAN);
@@ -155,7 +156,7 @@ std::vector<Token> Lexer::tokenize() {
                if(peek() && *peek() == '=') {
                   consume();
                   tokens.emplace_back(TokenType::PLUS_EQUALS);
-               } else if(peek() == '+') {
+               } else if(peek() && *peek() == '+') {
                   consume();
                   tokens.emplace_back(TokenType::INCREMENT);
                } else {
