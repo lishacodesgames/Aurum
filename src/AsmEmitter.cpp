@@ -150,37 +150,34 @@ void AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
    }
 }
 
-/// @todo get rid of the asmMnemonic and just switch on instr.opcode
-void AsmEmitter::handleBinary(const ir::Instruction& instr, std::string_view asmMnemonic) {
+void AsmEmitter::handleArithmetic(const ir::Instruction& instr) {
    resolveBinaryOperands(instr);
 
-   write(std::format("{} rax, rbx", asmMnemonic));
-   m_stack.push("rax");
-}
+   switch(instr.opcode) {
+      case OpCode::ADD: write("add rax, rbx");  break;
+      case OpCode::SUB: write("sub rax, rbx");  break;
+      case OpCode::MUL: write("imul rax, rbx"); break; // signed multiplication
 
-void AsmEmitter::handleDivMod(const ir::Instruction& instr, bool wantRemainder) {
-   resolveBinaryOperands(instr);
+      case OpCode::DIV:
+         write("cqo", "prep rdx:rax for division");
+         write("idiv rbx");
+         break;
 
-   write("cqo", "prep rdx:rax for division");
-   write("idiv rbx");
+      case OpCode::MOD:
+         write("cqo", "prep rdx:rax for division");
+         write("idiv rbx");
+         m_stack.push("rdx ; result of MOD");
+         return;
 
-   if(wantRemainder)
-      m_stack.push("rdx ; store remainder");
-   else
-      m_stack.push("rax ; store quotient");
-}
-
-void AsmEmitter::handleJump(const ir::Instruction& instr, bool conditional, std::optional<bool> jumpCondition) {
-   if(!conditional) {
-      write("jmp " + instr.operand1);
-      return;
+      default:
+         error(err::Category::INTERNAL, __LINE__, "Invalid arithmetic opcode: " + to_string(instr.opcode));
+         return;
    }
 
-   if(!jumpCondition) {
-      error(err::Category::INTERNAL, __LINE__, "No condition given for conditional jump!");
-      return;
-   }
+   m_stack.push("rax ; result of " + to_string(instr.opcode));
+}
 
+void AsmEmitter::handleCondJump(const ir::Instruction& instr) {
    const std::string& cond = instr.operand1;
    const std::string& label = *instr.operand2;
 
@@ -189,11 +186,11 @@ void AsmEmitter::handleJump(const ir::Instruction& instr, bool conditional, std:
    else
       movFoldedValue("rax", cond);
 
-   write("test rax, rax"); // cond is guaranteed to be a boolean (0/1) literal
-   if(*jumpCondition)
+   write("test rax, rax");   // cond is guaranteed to be a boolean (0/1) literal
+   if(instr.opcode == OpCode::JUMP_IF) // condition must be true
       write("jnz " + label); // jump on true
-   else
-      write("jz " + label); // jump on false
+   else                                // condition must false
+      write("jz " + label);  // jump on false
 }
 
 void AsmEmitter::handleComparison(const ir::Instruction& instr) {
@@ -212,7 +209,7 @@ void AsmEmitter::handleComparison(const ir::Instruction& instr) {
       case OpCode::LTE: write("setle cl", "rax <= rbx?"); break;
       case OpCode::GTE: write("setge cl", "rax >= rbx?"); break;
       default:
-         error(err::Category::INTERNAL, __LINE__, "Invalid comparison operator: " + to_string(instr.opcode));
+         error(err::Category::INTERNAL, __LINE__, "Invalid comparison opcode: " + to_string(instr.opcode));
          return;
    }
 
@@ -221,6 +218,7 @@ void AsmEmitter::handleComparison(const ir::Instruction& instr) {
 }
 
 void AsmEmitter::handle(const ir::Instruction& instr) {
+   // entire function body is just a switch statement
    switch(instr.opcode) {
       case OpCode::PUSH_INT:
       case OpCode::PUSH_BOOL:
@@ -251,9 +249,10 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
             // popping to rax then moving is generally faster than popping directly to location
             m_stack.pop("rax");
             movToVar(varName, "rax", true, std::format("{} = {}", varName, value));
-         } else {
-            movToVar(varName, value, false, std::format("{} = {}", varName, value));
+            break;
          }
+
+         movToVar(varName, value, false, std::format("{} = {}", varName, value));
          break;
       }
 
@@ -275,12 +274,11 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
-      case OpCode::ADD: handleBinary(instr, "add");  break;
-      case OpCode::SUB: handleBinary(instr, "sub");  break;
-      case OpCode::MUL: handleBinary(instr, "imul"); break;
-
-      case OpCode::DIV: handleDivMod(instr, false);  break;
-      case OpCode::MOD: handleDivMod(instr, true);   break;
+      case OpCode::ADD: case OpCode::SUB:
+      case OpCode::MUL: case OpCode::DIV:
+      case OpCode::MOD:
+         handleArithmetic(instr);
+         break;
 
       case OpCode::NEG: {
          if(instr.operand1 == ir::TOS)
@@ -328,15 +326,20 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
 
       /// @todo handle FUNC
 
-      case OpCode::JUMP:         handleJump(instr);              break;
-      case OpCode::JUMP_IF:      handleJump(instr, true, true);  break;
-      case OpCode::JUMP_IF_NOT:  handleJump(instr, true, false); break;
+      case OpCode::JUMP:
+         write("jmp " + instr.operand1);
+         break;
 
-      case OpCode::SCOPE_START:  m_stack.startScope(); break;
-      case OpCode::SCOPE_END:    m_stack.endScope(); break;
+      case OpCode::JUMP_IF:
+      case OpCode::JUMP_IF_NOT:
+         handleCondJump(instr);
+         break;
+
+      case OpCode::SCOPE_START: m_stack.startScope(); break;
+      case OpCode::SCOPE_END:   m_stack.endScope();   break;
 
       default:
-         error(err::Category::INTERNAL, __LINE__, std::format("Unhandled opcode: '{}'!", to_string(instr.opcode)), true);
+         error(err::Category::INTERNAL, __LINE__, "Unhandled opcode: " + to_string(instr.opcode));
          break;
    }
 }
