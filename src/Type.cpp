@@ -29,6 +29,12 @@ bool isBinaryOperator(TokenType type) {
       case TokenType::PERCENT:
       case TokenType::CARET:
 
+      case TokenType::EQUALITY:
+      case TokenType::INEQUALITY:
+      case TokenType::LESS_EQUALS:
+      case TokenType::LESS_THAN:
+      case TokenType::GREATER_EQUALS:
+      case TokenType::GREATER_THAN:
       case TokenType::LOGICAL_AND:
       case TokenType::LOGICAL_OR:
          return true;
@@ -145,20 +151,20 @@ std::string to_string(TokenType type) {
    }
 }
 
-std::string to_string(Type type) {
+std::string to_string(DataType type) {
    switch(type) {
-      case Type::NONE:  return "NONE";
-      case Type::INT:   return "INT";
-      case Type::BOOL:  return "BOOL";
+      case DataType::NONE:  return "NONE";
+      case DataType::INT:   return "INT";
+      case DataType::BOOL:  return "BOOL";
 
       default:
          g_errors.report(err::Phase::GENERATING, err::Category::INTERNAL, { "ast.h", __LINE__ },
-            "Unhandled Type in to_string(Type)!", true);
+            "Unhandled DataType in to_string(DataType)!", true);
          return "";
    }
 }
 
-Type getReturnType(TokenType op) {
+DataType getReturnType(TokenType op) {
    switch(op) {
       case TokenType::PLUS:
       case TokenType::MINUS:
@@ -166,7 +172,7 @@ Type getReturnType(TokenType op) {
       case TokenType::FSLASH:
       case TokenType::PERCENT:
       case TokenType::CARET:
-         return Type::INT; /// @todo change when introducing other numeric types
+         return DataType::INT; /// @todo change when introducing other numeric types
 
       case TokenType::EQUALITY:
       case TokenType::INEQUALITY:
@@ -174,9 +180,11 @@ Type getReturnType(TokenType op) {
       case TokenType::LESS_THAN:
       case TokenType::GREATER_EQUALS:
       case TokenType::GREATER_THAN:
-         return Type::BOOL;
+      case TokenType::LOGICAL_AND:
+      case TokenType::LOGICAL_OR:
+         return DataType::BOOL;
 
       default:
-         return Type::NONE;
+         return DataType::NONE;
    }
 }

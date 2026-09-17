@@ -1,6 +1,9 @@
-if !False: {
+mint y = 10;
+if !y: {
    mint x = 1;
-   exit x;
+
+   if x == 1:
+      exit False;
 }
 
 mint x = 5;

@@ -35,7 +35,7 @@ std::uint32_t Stack::offset(std::string_view name) const {
 }
 
 void Stack::startScope() {
-   m_emitterOutput += std::format("\n\t; Entering scope {}...\n", m_scopeMarks.size());
+   m_emitterOutput += std::format("\n\t; SCOPE {} START\n", m_scopeMarks.size());
    m_scopeMarks.push_back(m_stack.size());
 }
 
@@ -48,13 +48,13 @@ void Stack::endScope() {
 
    std::size_t mark = m_scopeMarks.back();
    m_scopeMarks.pop_back();
-   m_emitterOutput += std::format("\t; Leaving scope {}...\n\n", m_scopeMarks.size());
 
    std::size_t count = m_stack.size() - mark; // how many new variables were in the scope
    if(count == 0) 
       return; // no new memory, nothing to cleanup
 
-   m_emitterOutput += std::format("\tadd rsp, {} ; reclaiming scope memory of {} variable(s)\n", count * 8, count);
+   m_emitterOutput += std::format("\n\tadd rsp, {} ; reclaiming scope memory of {} variable(s)\n", count * 8, count);
+   m_emitterOutput += std::format("\t; SCOPE {} END\n\n", m_scopeMarks.size());
    m_stack.erase(m_stack.begin() + mark, m_stack.end());
 }
 

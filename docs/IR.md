@@ -11,7 +11,8 @@
 | `INCR` | *name* | - | *name*++
 | `DECR` | *name* | - | *name*--
 | `ADD`/`SUB`/`MUL`/`DIV`/`MOD` | left *value* | right *value* | Perform binary operation and push result on top of stack
-| `NEG` | *value* | - | push (-*value*) on top of the stack |
+| `NEG`/`NOT` | *value* | - | push (-*value* or !*value*) on top of the stack |
+| `EQ`/`NEQ`/`LT`/`GT`/`LTE`/`GTE` | *value*_1 | *value*_2 | push whether value_1 [op] value_2 on top of stack (eg `EQ 1, 1` will push `TRUE`) |
 | `EXIT` | *value* | - | exit syscall with *value* as exitcode
 | `LABEL` | label name | - | marks a position, no runtime effect |
 | `JUMP` | label name | - | unconditional goto

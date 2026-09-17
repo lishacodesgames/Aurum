@@ -150,6 +150,7 @@ void AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
    }
 }
 
+/// @todo get rid of the asmMnemonic and just switch on instr.opcode
 void AsmEmitter::handleBinary(const ir::Instruction& instr, std::string_view asmMnemonic) {
    resolveBinaryOperands(instr);
 
@@ -170,27 +171,53 @@ void AsmEmitter::handleDivMod(const ir::Instruction& instr, bool wantRemainder) 
 }
 
 void AsmEmitter::handleJump(const ir::Instruction& instr, bool conditional, std::optional<bool> jumpCondition) {
-   if(conditional) {
-      if(!jumpCondition)
-         error(err::Category::INTERNAL, __LINE__, "No condition given for conditional jump!");
-
-      const std::string& cond = instr.operand1;
-      const std::string& label = *instr.operand2;
-
-      if(cond == ir::TOS)
-         m_stack.pop("rax");
-      else
-         movFoldedValue("rax", cond);
-
-      write("test rax, rax");
-      if(*jumpCondition)
-         write("jnz " + label); // jump on true
-      else
-         write("jz " + label); // jump on false
-
-   } else {
+   if(!conditional) {
       write("jmp " + instr.operand1);
+      return;
    }
+
+   if(!jumpCondition) {
+      error(err::Category::INTERNAL, __LINE__, "No condition given for conditional jump!");
+      return;
+   }
+
+   const std::string& cond = instr.operand1;
+   const std::string& label = *instr.operand2;
+
+   if(cond == ir::TOS)
+      m_stack.pop("rax");
+   else
+      movFoldedValue("rax", cond);
+
+   write("test rax, rax"); // cond is guaranteed to be a boolean (0/1) literal
+   if(*jumpCondition)
+      write("jnz " + label); // jump on true
+   else
+      write("jz " + label); // jump on false
+}
+
+void AsmEmitter::handleComparison(const ir::Instruction& instr) {
+   resolveBinaryOperands(instr); // lhs = rax, rhs = rbx
+
+   write("cmp rax, rbx"); // cmmp sets all the comparison flags, and we can read any of them
+
+   // set the LOWEST 8 BITS (1byte) of RCX based on the needed comparison flag
+   switch(instr.opcode) {
+      case OpCode::EQ:  write("sete cl", "rax == rbx?");  break;
+      case OpCode::NEQ: write("setne cl", "rax != rbx?"); break;
+
+      /// @note these 4 operators check value compared with sign
+      case OpCode::LT:  write("setl cl", "rax < rbx?");   break;
+      case OpCode::GT:  write("setg cl", "rax > rbx");    break;
+      case OpCode::LTE: write("setle cl", "rax <= rbx?"); break;
+      case OpCode::GTE: write("setge cl", "rax >= rbx?"); break;
+      default:
+         error(err::Category::INTERNAL, __LINE__, "Invalid comparison operator: " + to_string(instr.opcode));
+         return;
+   }
+
+   write("movzx rax, cl", "mov set flag to rax and zero out the higher 7 bytes of rax");
+   m_stack.push("rax");
 }
 
 void AsmEmitter::handle(const ir::Instruction& instr) {
@@ -248,12 +275,12 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          break;
       }
 
-      case OpCode::ADD: handleBinary(instr, "add"); break;
-      case OpCode::SUB: handleBinary(instr, "sub"); break;
+      case OpCode::ADD: handleBinary(instr, "add");  break;
+      case OpCode::SUB: handleBinary(instr, "sub");  break;
       case OpCode::MUL: handleBinary(instr, "imul"); break;
 
-      case OpCode::DIV: handleDivMod(instr, false); break;
-      case OpCode::MOD: handleDivMod(instr, true); break;
+      case OpCode::DIV: handleDivMod(instr, false);  break;
+      case OpCode::MOD: handleDivMod(instr, true);   break;
 
       case OpCode::NEG: {
          if(instr.operand1 == ir::TOS)
@@ -272,10 +299,17 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
          else
             movFoldedValue("rax", instr.operand1);
 
+         // xor gives 1 if different, 0 if same
          write("xor rax, 1"); // condition will always be 0 or 1 since it's bool
          m_stack.push("rax");
          break;
       }
+
+      case OpCode::EQ:  case OpCode::NEQ:
+      case OpCode::LT:  case OpCode::GT:
+      case OpCode::LTE: case OpCode::GTE:
+         handleComparison(instr);
+         break;
 
       case OpCode::EXIT: {
          if(instr.operand1 == ir::TOS)
@@ -294,8 +328,8 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
 
       /// @todo handle FUNC
 
-      case OpCode::JUMP:         handleJump(instr); break;
-      case OpCode::JUMP_IF:      handleJump(instr, true, true); break;
+      case OpCode::JUMP:         handleJump(instr);              break;
+      case OpCode::JUMP_IF:      handleJump(instr, true, true);  break;
       case OpCode::JUMP_IF_NOT:  handleJump(instr, true, false); break;
 
       case OpCode::SCOPE_START:  m_stack.startScope(); break;

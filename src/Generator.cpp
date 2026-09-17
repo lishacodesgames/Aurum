@@ -6,8 +6,9 @@ namespace
    err::SourceLocation getLocation(const ast::Expression& expr) {
       return std::visit([](auto&& arg) -> err::SourceLocation {
          using PtrT = std::decay_t<decltype(arg)>;
+
          if constexpr(std::is_same_v<PtrT, ast::BinaryExpr*>)
-            return arg->op.location;
+            return arg->opToken.location;
          else if constexpr(std::is_same_v<PtrT, ast::Literal*> || std::is_same_v<PtrT, ast::Identifier*>)
             return arg->token.location;
          else if constexpr(std::is_same_v<PtrT, ast::UnaryExpr*>)
@@ -17,13 +18,13 @@ namespace
       }, expr);
    }
 
-   /// @return whether dest <- value is a valid Type conversion
-   bool isAssignable(Type dest, Type value) {
+   /// @return whether dest <- value is a valid DataType conversion
+   bool isAssignable(DataType dest, DataType value) {
       /// @todo type conversion system, for now only exact matches are allowed
-      if(dest == Type::NONE)
-         return true;
+      if(dest == DataType::NONE)
+         return true; // None can always be overridden
 
-      if(value == Type::NONE)
+      if(value == DataType::NONE)
          return false; // can't assign uninitialized value to a variable
 
       return dest == value;
@@ -122,7 +123,7 @@ std::optional<std::string> Generator::tryFold(const ast::Expression& expr) const
       if constexpr(std::is_same_v<PtrT, ast::Identifier*>)
          return arg->token.value.value();
       else if constexpr(std::is_same_v<PtrT, ast::Literal*>) {
-         if(arg->type == Type::INT)
+         if(arg->type == DataType::INT)
             return arg->token.value.value();
          if(arg->token.type == TokenType::TRUE)
             return "TRUE";
@@ -134,8 +135,8 @@ std::optional<std::string> Generator::tryFold(const ast::Expression& expr) const
    }, expr);
 }
 
-std::optional<Type> Generator::inferType(const ast::Expression& expr) const {
-   return std::visit([this](auto&& arg) -> std::optional<Type> {
+std::optional<DataType> Generator::inferType(const ast::Expression& expr) const {
+   return std::visit([this](auto&& arg) -> std::optional<DataType> {
       using PtrT = std::decay_t<decltype(arg)>;
 
       if constexpr(std::is_same_v<PtrT, ast::Literal*>) {
@@ -149,7 +150,7 @@ std::optional<Type> Generator::inferType(const ast::Expression& expr) const {
             error(err::Category::NAME_RESOLUTION, arg->token.location, std::format("Use of undeclared identifier '{}'!", varName));
             return std::nullopt;
 
-         } else if(symbol->type == Type::NONE) {
+         } else if(symbol->type == DataType::NONE) {
             error(err::Category::TYPE_MISMATCH, arg->token.location, std::format("Use of uninitialized identifier '{}'!", varName));
             return std::nullopt;
          }
@@ -157,51 +158,63 @@ std::optional<Type> Generator::inferType(const ast::Expression& expr) const {
          return symbol->type;
 
       } else if constexpr(std::is_same_v<PtrT, ast::UnaryExpr*>) {
-         std::optional<Type> operandType = inferType(arg->operand);
+         std::optional<DataType> operandType = inferType(arg->operand);
          if(!operandType) {
-            error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), std::format("Invalid expression for unary operator '{}'!", to_string(arg->op.type)));
+            error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), std::format("Invalid expression for unary operator '{}'!", to_string(arg->opToken.type)));
             return std::nullopt;
          }
 
-         switch(arg->op.type) {
+         switch(arg->opToken.type) {
             case TokenType::LOGICAL_NOT:
-               if(*operandType != Type::BOOL) {
-                  error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Unary operator '!' requires a boolean operand!");
+               if(*operandType != DataType::BOOL) {
+                  error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Unary operator '!' requires type BOOL, but got " + to_string(*operandType));
                   return std::nullopt;
                }
 
-               return Type::BOOL;
+               return DataType::BOOL;
 
             case TokenType::MINUS:
-               if(*operandType != Type::INT) {
-                  error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Unary operator '-' requires an int operand!");
+               if(*operandType != DataType::INT) {
+                  error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Unary operator '-' requires type INT, but got " + to_string(*operandType));
                   return std::nullopt;
                }
 
-               return Type::INT;
+               return DataType::INT;
 
             default:
-               error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Invalid unary operator: " + to_string(arg->op.type));
+               error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), "Invalid unary operator: " + to_string(arg->opToken.type));
                return std::nullopt;
          }
 
       } else if constexpr(std::is_same_v<PtrT, ast::BinaryExpr*>) {
-         std::optional<Type> leftType = inferType(arg->left);
-         std::optional<Type> rightType = inferType(arg->right);
+         if(isBinaryExprValid(arg))
+            return arg->type;
 
-         if(!leftType || !rightType || *leftType != Type::INT || *rightType != Type::INT) {
-            error(
-               err::Category::TYPE_MISMATCH, arg->op.location,
-               std::format("Operator '{}' requires int operands!", to_string(arg->op.type)));
-            return std::nullopt;
-         }
-
-         return Type::INT;
+         return std::nullopt;
       }
 
       error(err::Category::INTERNAL, { "Generator.cpp", __LINE__ }, "Cannot infer type!", true);
       return std::nullopt;
    }, expr);
+}
+
+bool Generator::isBinaryExprValid(const ast::BinaryExpr* binaryExpr) const {
+   std::optional<DataType> leftType = inferType(binaryExpr->left);
+   std::optional<DataType> rightType = inferType(binaryExpr->right);
+
+   if(!leftType || !rightType) {
+      error(
+         err::Category::TYPE_MISMATCH, binaryExpr->opToken.location,
+         std::format("Operator '{}' requires {} operands!", to_string(binaryExpr->opToken.type), to_string(binaryExpr->type)));
+      return false;
+   } else if(*leftType != *rightType) {
+      error(
+         err::Category::TYPE_MISMATCH, binaryExpr->opToken.location,
+         std::format("Operator '{}' must have same types on both sides but has {} and {}!", to_string(binaryExpr->opToken.type), to_string(*leftType), to_string(*rightType)));
+      return false;
+   }
+
+   return true;
 }
 
 void Generator::error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal) const {
@@ -225,7 +238,7 @@ void Generator::generate(const ast::Declaration* declaration) {
    }
 
    if(declaration->expression) {
-      std::optional<Type> exprType = inferType(*declaration->expression);
+      std::optional<DataType> exprType = inferType(*declaration->expression);
       if(!exprType)
          return; // error msg is handled by inferType()
 
@@ -290,7 +303,7 @@ void Generator::generate(const ast::Assignment* assignment) {
       return;
    }
 
-   std::optional<Type> exprType = inferType(assignment->expression);
+   std::optional<DataType> exprType = inferType(assignment->expression);
    if(!exprType)
       return;
 
@@ -319,10 +332,10 @@ void Generator::generate(const ast::Assignment* assignment) {
 
 template <>
 void Generator::generate(const ast::Exit* exit) {
-   std::optional<Type> exprType = inferType(exit->expression);
+   std::optional<DataType> exprType = inferType(exit->expression);
    if(!exprType)
       return;
-   if(!isAssignable(Type::INT, *exprType)) {
+   if(!isAssignable(DataType::INT, *exprType)) {
       error(
          err::Category::INTERNAL, getLocation(exit->expression),
          "Exit code must be of type INT, but is " + to_string(*exprType));
@@ -355,7 +368,7 @@ void Generator::generate(const ast::Increment* increment) {
          std::format("Tried to modify immutable variable '{}'!", varName));
       return;
 
-   } else if(symbol->type != Type::INT) {
+   } else if(symbol->type != DataType::INT) {
       error(
          err::Category::TYPE_MISMATCH, increment->identifier->token.location,
          std::format("Cannot increment non-int identifier '{}' of type {}!", varName, to_string(symbol->type)));
@@ -380,7 +393,7 @@ void Generator::generate(const ast::Decrement* decrement) {
          std::format("Tried to modify immutable variable '{}'!", varName));
       return;
 
-   } else if(symbol->type != Type::INT) {
+   } else if(symbol->type != DataType::INT) {
       error(
          err::Category::TYPE_MISMATCH, decrement->identifier->token.location,
          std::format("Cannot decrement non-int identifier '{}' of type {}!", varName, to_string(symbol->type)));
@@ -402,10 +415,10 @@ void Generator::generate(const ast::Block* block) {
 
 template <>
 void Generator::generate(const ast::If* ifStmt) {
-   std::optional<Type> condType = inferType(ifStmt->condition);
+   std::optional<DataType> condType = inferType(ifStmt->condition);
    if(!condType)
       return;
-   if(*condType != Type::BOOL) {
+   if(*condType != DataType::BOOL) {
       /// @todo add support for implicit conversion to bool
       error(
          err::Category::TYPE_MISMATCH, getLocation(ifStmt->condition),
@@ -431,7 +444,7 @@ void Generator::generate(const ast::If* ifStmt) {
 
 template <>
 void Generator::generate(const ast::Literal* literal) {
-   if(literal->type == Type::INT)
+   if(literal->type == DataType::INT)
       emit(OpCode::PUSH_INT, literal->token.value.value());
    else if(literal->token.type == TokenType::TRUE)
       emit(OpCode::PUSH_BOOL, "TRUE");
@@ -455,10 +468,10 @@ void Generator::generate(const ast::Identifier* identifier) {
 template <>
 void Generator::generate(const ast::UnaryExpr* unaryExpr) {
    OpCode opcode;
-   switch(unaryExpr->op.type) {
+   switch(unaryExpr->opToken.type) {
       case TokenType::LOGICAL_NOT:  opcode = OpCode::NOT; break;
       case TokenType::MINUS:        opcode = OpCode::NEG; break;
-      default: error(err::Category::SYNTAX, unaryExpr->op.location, "Invalid unary operator: " + to_string(unaryExpr->op.type));
+      default: error(err::Category::SYNTAX, unaryExpr->opToken.location, "Invalid unary operator: " + to_string(unaryExpr->opToken.type));
    }
 
    if(auto folded = tryFold(unaryExpr->operand)) {
@@ -471,6 +484,9 @@ void Generator::generate(const ast::UnaryExpr* unaryExpr) {
 
 template <>
 void Generator::generate(const ast::BinaryExpr* binaryExpr) {
+   if(!isBinaryExprValid(binaryExpr))
+      return;
+
    std::string left, right;
 
    if(auto folded = tryFold(binaryExpr->left)) {
@@ -491,26 +507,19 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
       left = ir::SOS; // left was pushed first so it's SECOND ON STACK
 
    OpCode opcode;
-   switch(binaryExpr->op.type) {
-      case TokenType::PLUS:
-         opcode = OpCode::ADD;
-         break;
+   switch(binaryExpr->opToken.type) {
+      case TokenType::PLUS:            opcode = OpCode::ADD; break;
+      case TokenType::STAR:            opcode = OpCode::MUL; break;
+      case TokenType::MINUS:           opcode = OpCode::SUB; break;
+      case TokenType::FSLASH:          opcode = OpCode::DIV; break;
+      case TokenType::PERCENT:         opcode = OpCode::MOD; break;
 
-      case TokenType::STAR:
-         opcode = OpCode::MUL;
-         break;
-
-      case TokenType::MINUS:
-         opcode = OpCode::SUB;
-         break;
-
-      case TokenType::FSLASH:
-         opcode = OpCode::DIV;
-         break;
-
-      case TokenType::PERCENT:
-         opcode = OpCode::MOD;
-         break;
+      case TokenType::EQUALITY:        opcode = OpCode::EQ;  break;
+      case TokenType::INEQUALITY:      opcode = OpCode::NEQ; break;
+      case TokenType::LESS_THAN:       opcode = OpCode::LT;  break;
+      case TokenType::GREATER_THAN:    opcode = OpCode::GT;  break;
+      case TokenType::LESS_EQUALS:     opcode = OpCode::LTE; break;
+      case TokenType::GREATER_EQUALS:  opcode = OpCode::GTE; break;
 
       case TokenType::CARET:
          /// @todo calling exponentiation
@@ -518,7 +527,7 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
       default:
          error(
             err::Category::INTERNAL, { "Generator.cpp", __LINE__ },
-            std::format("Unsupported binary operator: '{}'!", to_string(binaryExpr->op.type)));
+            std::format("Unsupported binary operator: '{}'!", to_string(binaryExpr->opToken.type)));
          return;
    }
 

@@ -46,7 +46,7 @@ enum class TokenType {
    #undef X
 };
 
-enum class Type {
+enum class DataType {
    NONE, INT, BOOL
 };
 
@@ -58,5 +58,6 @@ bool isUnaryOperator(TokenType type);
 int getPrecedence(TokenType type);
 bool isLeftAssociative(TokenType type);
 
-std::string to_string(Type type);
-Type getReturnType(TokenType op); /// @todo change after introducing functions
+/// For binary operators only
+DataType getReturnType(TokenType op); /// @todo change after introducing functions
+std::string to_string(DataType type);

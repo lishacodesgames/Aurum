@@ -70,7 +70,7 @@ private:
    template<> ast::Identifier* parse<ast::Identifier>();
    template<> ast::UnaryExpr* parse<ast::UnaryExpr>();
 
-   /// @return BinaryExpr containing op and rhs, left MUST be assigned by caller
+   /// @return BinaryExpr containing opToken and rhs, left MUST be assigned by caller
    template<> ast::BinaryExpr* parse<ast::BinaryExpr>();
 
    // helpers

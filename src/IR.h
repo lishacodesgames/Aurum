@@ -10,6 +10,7 @@
 \
    /* operators */ \
    X(ADD) X(SUB) X(MUL) X(DIV) X(MOD) X(NEG) X(NOT) \
+   X(EQ) X(NEQ) X(LT) X(GT) X(LTE) X(GTE) /* EQUALS, NOT EQUALS, LESS THAN, GREATER THAN, LESS THAN EQUALS, GREATER THAN EQUALS */ \
 \
    /* control flow */ \
    X(EXIT) \
@@ -26,6 +27,7 @@ enum class OpCode {
 };
 
 /// @return 1 or 2
+/// @note everytime you add a new opcode, update this function
 uint8_t operands(OpCode opcode); /// how many operands does this opcode require
 
 std::string to_string(OpCode opcode);

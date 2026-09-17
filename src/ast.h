@@ -10,10 +10,10 @@ namespace ast
 #pragma region Expressions
 
    struct Literal {
-      Type type;
+      DataType type;
       Token token;
 
-      explicit Literal(Type type, Token token) : type(type), token(token) {}
+      explicit Literal(DataType type, Token token) : type(type), token(token) {}
    };
 
    struct Identifier {
@@ -29,19 +29,19 @@ namespace ast
    using Expression = std::variant<std::monostate, Literal*, Identifier*, UnaryExpr*, BinaryExpr*>;
 
    struct UnaryExpr {
-      Token op; /// '!' requires BOOL, '-' requires INT
+      Token opToken; /// '!' requires BOOL, '-' requires INT
       Expression operand;
 
-      explicit UnaryExpr(Token op, Expression operand) : op(op), operand(operand) {}
+      explicit UnaryExpr(Token op, Expression operand) : opToken(op), operand(operand) {}
    };
 
    struct BinaryExpr {
       Expression left, right;
-      Token op;
-      Type type; /// can never be None
+      Token opToken;
+      DataType type; /// can never be None
 
-      explicit BinaryExpr(Expression left, Token op, Expression right, Type type)
-         : left(left), right(right), op(op), type(type) {}
+      explicit BinaryExpr(Expression left, Token op, Expression right, DataType type)
+         : left(left), right(right), opToken(op), type(type) {}
    };
 
 #pragma endregion
@@ -54,12 +54,12 @@ namespace ast
       std::optional<Expression> expression; /// nullopt = declaration without definition
       bool valueMutable; /// TRUE = bar, FALSE = mint.
       bool typeMutable;
-      std::optional<Type> type = std::nullopt; // if specified by hint or locking. Can be NONE by "bar: None x;" but it's redundant
+      std::optional<DataType> type = std::nullopt; // if specified by hint or locking. Can be NONE by "bar: None x;" but it's redundant
 
       /// @param type if nullopt, generator must infer identifier's type by expression (if defined. Else, null)
       explicit Declaration(
          Identifier* identifier, std::optional<Expression> expression, bool valueMutable,
-         bool typeMutable, std::optional<Type> type = std::nullopt)
+         bool typeMutable, std::optional<DataType> type = std::nullopt)
          : identifier(identifier), expression(expression), valueMutable(valueMutable), typeMutable(typeMutable), type(type) {}
    };
 

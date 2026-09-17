@@ -10,10 +10,10 @@
 namespace
 {
    /// @return never returns NONE, only actual data types
-   std::optional<Type> getType(Token token) {
+   std::optional<DataType> getType(Token token) {
       switch(token.type) {
-         case TokenType::INT:    return Type::INT;
-         case TokenType::BOOL:   return Type::BOOL;
+         case TokenType::INT:    return DataType::INT;
+         case TokenType::BOOL:   return DataType::BOOL;
 
          default:
             g_errors.report(
@@ -191,7 +191,7 @@ ast::Statement Parser::parseStatement() {
 template<> ast::Declaration* Parser::parse<ast::Declaration>() {
    bool valueMutable = consume().type == TokenType::BAR;
    bool typeMutable = valueMutable;
-   std::optional<Type> type = std::nullopt;
+   std::optional<DataType> type = std::nullopt;
 
    if(tryConsume(TokenType::LESS_THAN)) {
       if(!valueMutable) {
@@ -400,11 +400,11 @@ template<>
 ast::Literal* Parser::parse<ast::Literal>() {
    switch(peek().type) {
       case TokenType::INTEGER_LITERAL:
-         return m_arena.create<ast::Literal>(Type::INT, consume());
+         return m_arena.create<ast::Literal>(DataType::INT, consume());
 
       case TokenType::TRUE:
       case TokenType::FALSE:
-         return m_arena.create<ast::Literal>(Type::BOOL, consume());
+         return m_arena.create<ast::Literal>(DataType::BOOL, consume());
 
       default:
          error(err::Category::SYNTAX, peek().location, "Expected a literal! Got: " + to_string(peek().type));
@@ -439,8 +439,8 @@ ast::UnaryExpr* Parser::parse<ast::UnaryExpr>() {
 template<>
 ast::BinaryExpr* Parser::parse<ast::BinaryExpr>() {
    Token op = consume();
-   Type type = getReturnType(op.type);
-   if(type == Type::NONE) {
+   DataType type = getReturnType(op.type);
+   if(type == DataType::NONE) {
       error(err::Category::SYNTAX, op.location, "Invalid binary operator: " + to_string(op.type));
       return nullptr;
    }

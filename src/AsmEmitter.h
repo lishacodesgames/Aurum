@@ -41,6 +41,8 @@ private:
    void movToVar(std::string_view varName, std::string_view value, bool valueIsReg, std::optional<std::string_view> comment = std::nullopt);
 
 private:
+   /// @todo get rid of unnecessary parameters from handle helpers if u can find them inside Instruction
+
    /// resolves a two-operand instruction so that after this call: rax = left, rbx = right
    void resolveBinaryOperands(const ir::Instruction& insr);
 
@@ -51,6 +53,8 @@ private:
    /// @param conditional whether the jump instruction is conditional
    /// @param jumpCondition if jump is conditional, whether to jump on true or false
    void handleJump(const ir::Instruction& instr, bool conditional = false, std::optional<bool> jumpCondition = std::nullopt);
+
+   void handleComparison(const ir::Instruction& instr);
 
    void handle(const ir::Instruction& instr);
 };

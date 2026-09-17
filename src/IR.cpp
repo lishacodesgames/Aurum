@@ -35,6 +35,13 @@ uint8_t operands(OpCode opcode) {
       case OpCode::DIV:
       case OpCode::MOD:
 
+      case OpCode::EQ:
+      case OpCode::NEQ:
+      case OpCode::LT:
+      case OpCode::GT:
+      case OpCode::LTE:
+      case OpCode::GTE:
+
       case OpCode::JUMP_IF:
       case OpCode::JUMP_IF_NOT:
          return 2;
