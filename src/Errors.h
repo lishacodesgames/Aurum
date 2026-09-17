@@ -14,7 +14,6 @@ namespace err
       MUTABILITY,       // modifying immutable variable
       TYPE_MISMATCH,    // incompatible value or operation types
       SCOPING,          // eg. declaration as an if statement's then branch
-      INTERNAL,         // compiler-side violations; opcode vs operand mismatch, etc.
    };
 
    struct SourceLocation {

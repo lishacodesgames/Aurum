@@ -4,8 +4,7 @@
 #include "Errors.h"
 
 FileHandler::FileHandler(std::string_view aurumFilePath) : aurumFilePath(aurumFilePath) {
-   if(!std::filesystem::exists("scripts"))
-      error("Please run from the root of the project, where the 'scripts' folder is located.");
+   assert(std::filesystem::exists("scripts") && "Please run from the root of the project, where the 'scripts' folder is located.");
 
    std::filesystem::path outDir("out");
    std::filesystem::create_directories(outDir); // does nothing if it already exists
@@ -19,13 +18,11 @@ FileHandler::FileHandler(std::string_view aurumFilePath) : aurumFilePath(aurumFi
 
 std::string FileHandler::getSourceCode() const {
    std::ifstream srcFile(aurumFilePath);
-   if(!srcFile)
-      error("Could not open file: " + aurumFilePath);
+   assert(srcFile);
 
    std::ostringstream contents;
    contents << srcFile.rdbuf();
-   if(contents.view().empty()) // check empty with 0 allocations
-      error("Empty Aurum file: " + aurumFilePath);
+   assert(!contents.view().empty() && "Empty Aurum file"); // check empty with 0 allocations
 
    return contents.str();
 }
@@ -52,10 +49,9 @@ void FileHandler::assemble(const std::vector<std::string>& args) const {
       command += " " + file;
 
    int assembleResult = std::system(command.c_str());
-   if(!assembleResult)
-      std::println("Successfully assembled to executable '{}'!", executableFilePath);
-   else
-      error(std::format("Assembling failed with exit code {}!", assembleResult));
+   assert(!assembleResult);
+
+   std::println("Successfully assembled to executable '{}'!", executableFilePath);
 }
 
 void FileHandler::runExecutable() const {
@@ -68,8 +64,4 @@ void FileHandler::runExecutable() const {
    // On macOS, std::system does not return the program's raw exit code directly. Instead, it returns a 16-bit wait status integer encoded by the operating system
    // to get the real exit code, we must divide by 256
    std::println("Successfully ran executable! Exited with exit code: \033[4m{}\033[0m", result / 256); // prints exit code underlined
-}
-
-void FileHandler::error(std::string_view message) const {
-   g_errors.report(err::Phase::SETUP, err::Category::INTERNAL, { "FileHandler.cpp" }, message, true);
 }

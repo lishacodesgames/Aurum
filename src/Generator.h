@@ -34,6 +34,7 @@ private:
    std::size_t m_labelCount = 0;
 
 private:
+   void comment(std::string_view comment, bool newLine = true);
    void emit(OpCode op, std::string_view operand1, std::optional<std::string_view> operand2 = std::nullopt);
 
    // these three functions count scopes/labels in index order (starting from 0)
@@ -51,13 +52,21 @@ private:
    SymbolInfo* findSymbol(const std::string& name);
    const SymbolInfo* findSymbol(const std::string& name) const;
 
+   void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false) const;
+
+private:
+   // --- helpers ---
+
    /// @retval folded string: ONLY for leaf expressions (literal/identifier)
    /// @retval nullopt: for compound expressions (negative/binary)
    std::optional<std::string> tryFold(const ast::Expression& expr) const;
    std::optional<DataType> inferType(const ast::Expression& expr) const;
-   bool isBinaryExprValid(const ast::BinaryExpr* binaryExpr) const;
 
-   void error(err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false) const;
+   /// @return NOT string view because that'll leave a dangling pointer if folded
+   std::string resolveOperand(const ast::Expression& expr);
+   std::optional<DataType> resolveDeclaredType(DataType exprType, const ast::Declaration* declaration);
+
+   bool isBinaryExprValid(const ast::BinaryExpr* binaryExpr) const;
 
 private:
    /// @retval error striing if falied
@@ -91,7 +100,7 @@ private:
             return;
          }
 
-         error(err::Category::INTERNAL, { "Generator.h", __LINE__ }, "Tried to call generate on monostate!", true);
+         assert(false && "Tried to call generate on monostate!");
       }, varNode);
    }
 };

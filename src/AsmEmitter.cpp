@@ -4,6 +4,7 @@
 namespace
 {
    bool isLiteral(std::string_view value) {
+      assert(!value.empty()); // assert and not error because isLiteral shouldn't ever be called with an empty value, so this is just a sanity check
       return std::isdigit(static_cast<unsigned char>(value[0])) || value == "TRUE" || value == "FALSE";
    }
 
@@ -50,11 +51,6 @@ std::vector<std::string> AsmEmitter::getRequiredLibs() const {
 
 #pragma region Writers
 
-void AsmEmitter::error(err::Category category, int line, std::string_view message, bool isFatal) const {
-   g_errors.report(err::Phase::EMITTING_ASSEMBLY, category,
-      { "AsmEmitter.cpp", static_cast<std::uint32_t>(line) }, message, isFatal);
-}
-
 void AsmEmitter::writeLabel(std::string_view label) {
    m_output += std::format("{}:\n", label);
 }
@@ -74,16 +70,13 @@ void AsmEmitter::pushValue(std::string_view value, std::optional<std::string_vie
          m_stack.push(getPushable(value));
 
    } else {
-      if(auto symbol = m_stack.find(value)) {
-         if(comment)
-            m_stack.push(std::format("QWORD [rbp - {}] ; '{}', {}", symbol->offset, value, *comment));
-         else
-            m_stack.push(std::format("QWORD [rbp - {}] ; '{}'", symbol->offset, value));
+      auto symbol = m_stack.find(value);
+      assert(symbol);
 
-      } else {
-         error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", value));
-         return;
-      }
+      if(comment)
+         m_stack.push(std::format("QWORD [rbp - {}] ; '{}', {}", symbol->offset, value, *comment));
+      else
+         m_stack.push(std::format("QWORD [rbp - {}] ; '{}'", symbol->offset, value));
    }
 }
 
@@ -92,25 +85,19 @@ void AsmEmitter::movFoldedValue(std::string_view dest, std::string_view value, s
       write(std::format("mov {}, {}", dest, getPushable(value)), comment);
 
    } else {
-      if(auto symbol = m_stack.find(value)) {
-         if(comment)
-            write(std::format("mov {}, QWORD [rbp - {}]", dest, symbol->offset), std::format("'{}', {}", value, *comment));
-         else
-            write(std::format("mov {}, QWORD [rbp - {}]", dest, symbol->offset), std::format("'{}'", value));
+      auto symbol = m_stack.find(value);
+      assert(symbol);
 
-      } else {
-         error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", value), true);
-         return;
-      }
+      if(comment)
+         write(std::format("mov {}, QWORD [rbp - {}]", dest, symbol->offset), std::format("'{}', {}", value, *comment));
+      else
+         write(std::format("mov {}, QWORD [rbp - {}]", dest, symbol->offset), std::format("'{}'", value));
    }
 }
 
 void AsmEmitter::movToVar(std::string_view varName, std::string_view value, bool valueIsReg, std::optional<std::string_view> comment) {
    auto symbol = m_stack.find(varName);
-   if(!symbol) {
-      error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", value), true);
-      return;
-   }
+   assert(symbol);
 
    if(!valueIsReg)
       movFoldedValue(std::format("QWORD [rbp - {}]", symbol->offset), value, comment);
@@ -127,10 +114,7 @@ void AsmEmitter::resolveBinaryOperands(const ir::Instruction& instr) {
    const std::string& right = *instr.operand2;
    std::string opcode = to_string(instr.opcode);
 
-   if(left == ir::TOS && right == ir::TOS) {
-      error(err::Category::INTERNAL, __LINE__, "Both operands of binary expression are TOS!", true);
-      return;
-   }
+   assert(left != ir::TOS || right != ir::TOS); // both shouldn't be TOS
 
    if(right == ir::TOS) {
       m_stack.pop("rbx ; rhs for opcode " + opcode);
@@ -172,9 +156,7 @@ void AsmEmitter::handleBinary(const ir::Instruction& instr) {
       case OpCode::AND: write("and rax, rbx"); break;
       case OpCode::OR:  write("or rax, rbx");  break;
 
-      default:
-         error(err::Category::INTERNAL, __LINE__, "Invalid arithmetic opcode: " + to_string(instr.opcode));
-         return;
+      default: assert(false && "Invalid binary instruction");
    }
 
    m_stack.push("rax ; result of " + to_string(instr.opcode));
@@ -208,12 +190,10 @@ void AsmEmitter::handleComparison(const ir::Instruction& instr) {
 
       /// @note these 4 operators check value compared with sign
       case OpCode::LT:  write("setl cl", "rax < rbx?");   break;
-      case OpCode::GT:  write("setg cl", "rax > rbx");    break;
+      case OpCode::GT:  write("setg cl", "rax > rbx?");    break;
       case OpCode::LTE: write("setle cl", "rax <= rbx?"); break;
       case OpCode::GTE: write("setge cl", "rax >= rbx?"); break;
-      default:
-         error(err::Category::INTERNAL, __LINE__, "Invalid comparison opcode: " + to_string(instr.opcode));
-         return;
+      default: assert(false && "Invalid comparison instruction");
    }
 
    write("movzx rax, cl", "mov set flag to rax and zero out the higher 7 bytes of rax");
@@ -260,20 +240,18 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
       }
 
       case OpCode::INCR: {
-         if(auto symbol = m_stack.find(instr.operand1))
-            write(std::format("inc QWORD [rbp - {}]", symbol->offset), std::format("{}++", symbol->name));
-         else
-            error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", instr.operand1));
+         auto symbol = m_stack.find(instr.operand1);
+         assert(symbol);
 
+         write(std::format("inc QWORD [rbp - {}]", symbol->offset), std::format("{}++", symbol->name));
          break;
       }
 
       case OpCode::DECR: {
-         if(auto symbol = m_stack.find(instr.operand1))
-            write(std::format("dec QWORD [rbp - {}]", symbol->offset), std::format("{}--", symbol->name));
-         else
-            error(err::Category::NAME_RESOLUTION, __LINE__, std::format("Use of undeclared identifier '{}'!", instr.operand1));
+         auto symbol = m_stack.find(instr.operand1);
+         assert(symbol);
 
+         write(std::format("dec QWORD [rbp - {}]", symbol->offset), std::format("{}--", symbol->name));
          break;
       }
 
@@ -342,9 +320,7 @@ void AsmEmitter::handle(const ir::Instruction& instr) {
       case OpCode::SCOPE_START: m_stack.startScope(); break;
       case OpCode::SCOPE_END:   m_stack.endScope();   break;
 
-      default:
-         error(err::Category::INTERNAL, __LINE__, "Unhandled opcode: " + to_string(instr.opcode));
-         break;
+      default: assert(false && "Unhandled opcode");
    }
 }
 

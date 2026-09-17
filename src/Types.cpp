@@ -90,11 +90,7 @@ int getPrecedence(TokenType type) {
 
       case TokenType::CARET:           return 6;
 
-      default:
-         g_errors.report(
-            err::Phase::PARSING, err::Category::INTERNAL, { "Token.cpp", __LINE__ },
-            std::format("Unknown token '{}'. Can't find precedence!", to_string(type)), true);
-         return -1;
+      default: assert(false && "Can't find precedence");
    }
 }
 
@@ -156,11 +152,7 @@ std::string to_string(DataType type) {
       case DataType::NONE:  return "NONE";
       case DataType::INT:   return "INT";
       case DataType::BOOL:  return "BOOL";
-
-      default:
-         g_errors.report(err::Phase::GENERATING, err::Category::INTERNAL, { "ast.h", __LINE__ },
-            "Unhandled DataType in to_string(DataType)!", true);
-         return "";
+      default: assert(false && "Unhandled datatype");
    }
 }
 

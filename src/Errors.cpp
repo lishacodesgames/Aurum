@@ -15,6 +15,7 @@ std::string to_string(err::Phase phase) {
       case Phase::GENERATING:        return "GENERATING";
       case Phase::EMITTING_ASSEMBLY: return "EMITTING ASSEMBLY";
       case Phase::RUNNING:           return "RUNNING";
+      default: assert(false && "Unhandled error Phase");
    }
 }
 
@@ -27,7 +28,7 @@ std::string to_string(err::Category category) {
       case Category::MUTABILITY:       return "MUTABILITY";
       case Category::TYPE_MISMATCH:    return "TYPE MISMATCH";
       case Category::SCOPING:          return "SCOPING";
-      case Category::INTERNAL:         return "INTERNAL";
+      default: assert(false && "Unhandled error Category");
    }
 }
 

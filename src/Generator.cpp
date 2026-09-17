@@ -54,6 +54,13 @@ std::vector<ir::Instruction> Generator::generate() {
 
 #pragma region Helpers
 
+void Generator::comment(std::string_view comment, bool newLine) {
+   if(!newLine)
+      m_ir.back() = ' ';// remove the trailing \n
+
+   m_ir += std::format("; {}\n", comment);
+}
+
 void Generator::emit(OpCode op, std::string_view operand1, std::optional<std::string_view> operand2) {
    uint8_t requiredOperands = operands(op);
 
@@ -63,9 +70,7 @@ void Generator::emit(OpCode op, std::string_view operand1, std::optional<std::st
    else if(requiredOperands == 2 && operand2)
       m_instructions.emplace_back(op, operand1, *operand2);
    else
-      error(
-         err::Category::INTERNAL, { "Generator.cpp", __LINE__ },
-         std::format("Expected {} operands for opcode '{}'!", requiredOperands, to_string(op)), true);
+      assert(false && "Operand mismatch for opcode");
 
    // format: opcode operand1, operand2
    m_ir += std::format("{}{} {}", isIndented(op) ? "\t" : "", to_string(op), operand1);
@@ -86,7 +91,7 @@ void Generator::pushScope() {
 
 void Generator::popScope() {
    m_scopes.pop_back();
-   emit(OpCode::SCOPE_END, std::to_string(m_scopes.size()));
+   emit(OpCode::SCOPE_END, std::to_string(m_scopes.size()) + "\n");
 }
 
 bool Generator::isDeclared(const std::string& name) const {
@@ -196,9 +201,43 @@ std::optional<DataType> Generator::inferType(const ast::Expression& expr) const 
          return std::nullopt;
       }
 
-      error(err::Category::INTERNAL, { "Generator.cpp", __LINE__ }, "Cannot infer type!", true);
-      return std::nullopt;
+      assert(false && "Cannot infer type!");
    }, expr);
+}
+
+std::string Generator::resolveOperand(const ast::Expression& expr) {
+   if(auto folded = tryFold(expr))
+      return *folded;
+
+   generate<ast::Expression>(expr);
+   return ir::TOS;
+}
+
+std::optional<DataType> Generator::resolveDeclaredType(DataType exprType, const ast::Declaration* declaration) {
+   // if declaration has a specific type, and it doesn't match expression's inferred type
+   // we need to check if it's assignable. If yes, then the declared type will be the declaration's type
+   if(declaration->type.has_value() && *declaration->type != exprType) {
+
+      // if it's not assignable, then there's an error
+      if(!isAssignable(*declaration->type, exprType)) {
+         if(declaration->typeMutable) { // error: wrong hint
+            error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
+               "Type hint {} is incorrect, cannot convert {} to it! (for declaration of identifier '{}')",
+               to_string(*declaration->type), to_string(exprType), declaration->identifier->token.value.value()));
+            return std::nullopt;
+
+         } else { // error: exprType doesn't match decl's lockedType
+            error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
+               "Expected expression of type {} but got {}! (for declaration of identifier '{}')",
+               to_string(*declaration->type), to_string(exprType), declaration->identifier->token.value.value()));
+            return std::nullopt;
+         }
+      }
+
+      return *declaration->type;
+   }
+
+   return exprType; // inferred type is default in case declaration's type isn't specified
 }
 
 bool Generator::isBinaryExprValid(const ast::BinaryExpr* binaryExpr) const {
@@ -223,6 +262,7 @@ bool Generator::isBinaryExprValid(const ast::BinaryExpr* binaryExpr) const {
       error(err::Category::TYPE_MISMATCH, binaryExpr->opToken.location, std::format(
          "Operator '{}' requires INT operands, but has {} and {}",
          to_string(op), to_string(*leftType), to_string(*rightType)));
+      return false;
    }
 
    return true;
@@ -239,7 +279,7 @@ void Generator::error(err::Category category, err::SourceLocation location, std:
 template <>
 void Generator::generate(const ast::Declaration* declaration) {
    const std::string& varName = declaration->identifier->token.value.value();
-   SymbolInfo symbol{ declaration->valueMutable, declaration->typeMutable };
+   SymbolInfo symbol{ declaration->valueMutable, declaration->typeMutable, DataType::NONE };
 
    if(isDeclared(varName)) {
       error(
@@ -253,35 +293,12 @@ void Generator::generate(const ast::Declaration* declaration) {
       if(!exprType)
          return; // error msg is handled by inferType()
 
-      symbol.type = *exprType; // infer first, in case declaration's type wasn't specified
-      if(declaration->type.has_value() && *declaration->type != *exprType) {
-         // if declaration should have a specific type and it doesn't match expression's: it should be reassigned
-         symbol.type = *declaration->type;
+      std::optional<DataType> resolved = resolveDeclaredType(*exprType, declaration);
+      if(!resolved)
+         return; // error msg handled
 
-         if(!isAssignable(*declaration->type, *exprType)) {
-            // if type is not assignable from expression's then there's an error
-
-            if(declaration->typeMutable) { // it's a type hint
-               error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
-                  "Type hint {} is incorrect, cannot convert {} to it! (for declaration of identifier '{}')",
-                  to_string(*declaration->type), to_string(*exprType), varName));
-               return;
-            } else { // it's a locked type
-               error(err::Category::TYPE_MISMATCH, declaration->identifier->token.location, std::format(
-                  "Expected expression of type {} but got {}! (for declaration of identifier '{}')",
-                  to_string(*declaration->type), to_string(*exprType), varName));
-               return;
-            }
-         }
-      }
-
-      std::string_view rhsValue = ir::TOS;
-      if(auto folded = tryFold(*declaration->expression))
-         rhsValue = *folded;
-      else
-         generate<ast::Expression>(*declaration->expression);
-
-      emit(OpCode::DEF_VAR, varName, rhsValue);
+      symbol.type = *resolved;
+      emit(OpCode::DEF_VAR, varName, resolveOperand(*declaration->expression));
 
    } else {
       if(!declaration->valueMutable) {
@@ -330,13 +347,7 @@ void Generator::generate(const ast::Assignment* assignment) {
          symbol->type = *exprType;
    }
 
-   std::string_view rhsValue = ir::TOS;
-   if(auto folded = tryFold(assignment->expression))
-      rhsValue = *folded;
-   else
-      generate<ast::Expression>(assignment->expression);
-
-   emit(OpCode::STORE_VAR, varName, rhsValue);
+   emit(OpCode::STORE_VAR, varName, resolveOperand(assignment->expression));
 }
 
 template <>
@@ -346,18 +357,12 @@ void Generator::generate(const ast::Exit* exit) {
       return;
    if(!isAssignable(DataType::INT, *exprType)) {
       error(
-         err::Category::INTERNAL, getLocation(exit->expression),
+         err::Category::SYNTAX, getLocation(exit->expression),
          "Exit code must be of type INT, but is " + to_string(*exprType));
       return;
    }
 
-   std::string_view code = ir::TOS;
-   if(auto folded = tryFold(exit->expression))
-      code = *folded;
-   else
-      generate<ast::Expression>(exit->expression);
-
-   emit(OpCode::EXIT, code);
+   emit(OpCode::EXIT, resolveOperand(exit->expression));
 }
 
 template <>
@@ -438,13 +443,7 @@ void Generator::generate(const ast::If* ifStmt) {
    std::string endLabel = newLabel("endif");
    std::string falseLabel = ifStmt->elseBranch ? newLabel("else") : endLabel;
 
-   std::string_view jumpCond = ir::TOS;
-   if(auto folded = tryFold(ifStmt->condition))
-      jumpCond = *folded;
-   else
-      generate<ast::Expression>(ifStmt->condition);
-
-   emit(OpCode::JUMP_IF_NOT, jumpCond, falseLabel);
+   emit(OpCode::JUMP_IF_NOT, resolveOperand(ifStmt->condition), falseLabel);
    generate<ast::Statement>(ifStmt->thenBranch);
 
    if(ifStmt->elseBranch) {
@@ -469,7 +468,7 @@ void Generator::generate(const ast::Literal* literal) {
    else if(literal->token.type == TokenType::FALSE)
       emit(OpCode::PUSH_BOOL, "FALSE");
    else
-      error(err::Category::INTERNAL, { "Generator.cpp", __LINE__ }, "Invalid literal!");
+      assert(false && "Invalid literal");
 }
 
 template <>
@@ -496,13 +495,7 @@ void Generator::generate(const ast::UnaryExpr* unaryExpr) {
          return;
    }
 
-   std::string_view operand = ir::TOS;
-   if(auto folded = tryFold(unaryExpr->operand))
-      operand = *folded;
-   else
-      generate<ast::Expression>(unaryExpr->operand);
-
-   emit(opcode, operand);
+   emit(opcode, resolveOperand(unaryExpr->operand));
 }
 
 template <>
@@ -510,18 +503,8 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
    if(!isBinaryExprValid(binaryExpr))
       return;
 
-   std::string_view left = ir::TOS;
-   if(auto folded = tryFold(binaryExpr->left))
-      left = *folded;
-   else
-      generate<ast::Expression>(binaryExpr->left);
-
-   std::string_view right = ir::TOS;
-   if(auto folded = tryFold(binaryExpr->right))
-      right = *folded;
-   else
-      generate<ast::Expression>(binaryExpr->right);
-
+   std::string left = resolveOperand(binaryExpr->left);
+   std::string right = resolveOperand(binaryExpr->right);
    if(right == ir::TOS && left == ir::TOS)
       left = ir::SOS; // left was pushed first so it's SECOND ON STACK
 
@@ -543,14 +526,10 @@ void Generator::generate(const ast::BinaryExpr* binaryExpr) {
       case TokenType::LESS_EQUALS:     opcode = OpCode::LTE; break;
       case TokenType::GREATER_EQUALS:  opcode = OpCode::GTE; break;
 
-      case TokenType::CARET:
-         /// @todo calling exponentiation
+      /// @todo calling exponentiation
+      case TokenType::CARET: assert(false && "todo: function calls for exponentiation");
 
-      default:
-         error(
-            err::Category::INTERNAL, { "Generator.cpp", __LINE__ },
-            std::format("Unsupported binary operator: '{}'!", to_string(binaryExpr->opToken.type)));
-         return;
+      default: assert(false && "Invalid binary expression");
    }
 
    emit(opcode, left, right);

@@ -51,11 +51,9 @@ std::optional<char> Lexer::peek(int offset) const noexcept {
 }
 
 char Lexer::consume(std::uint32_t count) noexcept {
-   if(!peek(count - 1))
-      g_errors.report(err::Phase::LEXING, err::Category::INTERNAL, m_location, "Tried to consume end of file character!", true);
+   assert(peek(count - 1));
 
    char current = m_src[m_pos];
-
    while(count != 0) {
       if(m_src.at(m_pos) == '\n') {
          m_location.column = 0;
@@ -227,7 +225,7 @@ std::vector<Token> Lexer::tokenize() {
                   tokens.emplace_back(TokenType::LOGICAL_AND, location);
                } else {
                   g_errors.report(
-                     err::Phase::LEXING, err::Category::INTERNAL, { "Lexer.cpp", __LINE__ },
+                     err::Phase::LEXING, err::Category::SYNTAX, { "Lexer.cpp", __LINE__ },
                      std::format("Unexpected character '{}' after '&'!", *peek()));
                }
                break;
@@ -238,7 +236,7 @@ std::vector<Token> Lexer::tokenize() {
                   tokens.emplace_back(TokenType::LOGICAL_OR, location);
                } else {
                   g_errors.report(
-                     err::Phase::LEXING, err::Category::INTERNAL, { "Lexer.cpp", __LINE__ },
+                     err::Phase::LEXING, err::Category::SYNTAX, { "Lexer.cpp", __LINE__ },
                      std::format("Unexpected character '{}' after '|'!", *peek()));
                }
                break;
@@ -256,7 +254,7 @@ std::vector<Token> Lexer::tokenize() {
 
             default:
                g_errors.report(
-                  err::Phase::LEXING, err::Category::INTERNAL, { "Lexer.cpp", __LINE__ },
+                  err::Phase::LEXING, err::Category::SYNTAX, location,
                   std::format("Unexpected character '{}'!", *peek(-1)));
                break;
          }

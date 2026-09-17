@@ -14,11 +14,7 @@ namespace
       switch(token.type) {
          case TokenType::INT:    return DataType::INT;
          case TokenType::BOOL:   return DataType::BOOL;
-
-         default:
-            g_errors.report(
-               err::Phase::PARSING, err::Category::INTERNAL, token.location, "Unhandled datatype token: " + to_string(token.type));
-            return std::nullopt;
+         default: assert(false && "Unhandled datatype token");
       }
    }
 }
@@ -83,7 +79,8 @@ void Parser::recover() {
 }
 
 Token Parser::peek(int offset) const noexcept {
-   if(m_pos + offset < m_tokens.size() - 1)
+   // make sure offset value (if negative) is less than pos so that peek(-1) still works
+   if(-offset <= static_cast<int>(m_pos) && m_pos + offset < m_tokens.size() - 1)
       return m_tokens.at(m_pos + offset);
    else
       return Token(TokenType::END_OF_FILE, m_tokens.back().location);

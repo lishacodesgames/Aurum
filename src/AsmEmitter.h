@@ -20,8 +20,6 @@ private:
    std::set<std::string> m_requiredExterns{};
 
 private:
-   /// @param line just pass the __LINE__ macro
-   void error(err::Category category, int line, std::string_view message, bool isFatal = false) const;
    void comment(std::string_view comment) { m_output += std::format("\t; {}\n", comment); }
 
    /// @param label is written unindented, can be a function name
@@ -45,7 +43,6 @@ private:
    void resolveBinaryOperands(const ir::Instruction& insr);
 
    void handleBinary(const ir::Instruction& instr);
-   void handleLogical(const ir::Instruction& instr);
    void handleComparison(const ir::Instruction& instr);
    void handleCondJump(const ir::Instruction& instr);
 

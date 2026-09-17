@@ -50,11 +50,7 @@ uint8_t operands(OpCode opcode) {
          return 2;
 
 
-      default:
-         g_errors.report(
-            err::Phase::GENERATING, err::Category::INTERNAL, { "IR.cpp", __LINE__ },
-            std::format("How many operands does this opcode have: '{}?!", to_string(opcode)), true);
-         return 8;
+      default: assert(false && "How many operands does this opcode have?!");
    }
 }
 
@@ -77,7 +73,6 @@ bool isIndented(OpCode opcode) {
       case OpCode::LABEL:
          return false;
 
-      default:
-         return true;
+      default: return true;
    }
 }

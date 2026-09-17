@@ -28,10 +28,7 @@ std::uint32_t Stack::offset(std::string_view name) const {
    if(auto it = get(name))
       return it.value()->offset;
    
-   g_errors.report(
-      err::Phase::EMITTING_ASSEMBLY, err::Category::INTERNAL, { "Stack.cpp", __LINE__ },
-      std::format("Tried to get offset of a variable that doesn't exist: '{}'", name), true);
-   return 0;   
+   assert(false && "This variable isn't on the stack");
 }
 
 void Stack::startScope() {
@@ -40,15 +37,12 @@ void Stack::startScope() {
 }
 
 void Stack::endScope() {
-   if(m_scopeMarks.empty()) {
-      g_errors.report(
-         err::Phase::EMITTING_ASSEMBLY, err::Category::INTERNAL, { "Stack.cpp", __LINE__ },
-         "Tried to end a non-existent scope!", true);
-   }
+   assert(!m_scopeMarks.empty() && "Tried to end a non-existent scope!");
 
    std::size_t mark = m_scopeMarks.back();
    m_scopeMarks.pop_back();
 
+   assert(mark <= m_stack.size());
    std::size_t count = m_stack.size() - mark; // how many new variables were in the scope
    if(count == 0) 
       return; // no new memory, nothing to cleanup
