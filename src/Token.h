@@ -1,6 +1,6 @@
 #pragma once
 #include "Errors.h"
-#include "Type.h"
+#include "Types.h"
 
 struct Token {
    TokenType type;

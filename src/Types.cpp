@@ -2,7 +2,7 @@
 #include "Token.h"
 
 #include "Errors.h"
-#include "Type.h"
+#include "Types.h"
 
 namespace
 {
