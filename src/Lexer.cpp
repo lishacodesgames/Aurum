@@ -20,6 +20,10 @@ namespace
          return TokenType::DO;
       else if(buffer == "while")
          return TokenType::WHILE;
+      else if(buffer == "break")
+         return TokenType::BREAK;
+      else if(buffer == "continue")
+         return TokenType::CONTINUE;
       else if(buffer == "exit")
          return TokenType::EXIT;
 

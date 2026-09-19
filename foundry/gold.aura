@@ -1,5 +1,8 @@
 bar y = 10;
-do: y++;
-while y < 20;
+while True: {
+   y++;
+   if(y == 200):
+      break;
+}
 
 exit y;

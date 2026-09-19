@@ -87,13 +87,29 @@ namespace ast
       explicit Decrement(Identifier* identifier) : identifier(identifier) {}
    };
 
+   struct Break {
+      Token token; // for location info
+
+      explicit Break(Token brk) : token(brk) {}
+   };
+
+   struct Continue {
+      Token token;
+
+      explicit Continue(Token cnt) : token(cnt) {}
+   };
+
    // statements that contain statements
    struct Block;
    struct If;
    struct While;
    struct DoWhile;
 
-   using Statement = std::variant<std::monostate, Declaration*, Assignment*, Exit*, Increment*, Decrement*, Block*, If*, While*, DoWhile*>;
+   using Statement = std::variant<
+      std::monostate, Declaration*, Assignment*,
+      Exit*, Increment*, Decrement*,
+      Break*, Continue*,
+      Block*, If*, While*, DoWhile*>;
 
    struct Block {
       std::vector<Statement> statements;

@@ -59,6 +59,8 @@ private:
    template<> ast::Exit*         parse<ast::Exit>();
    template<> ast::Increment*    parse<ast::Increment>();
    template<> ast::Decrement*    parse<ast::Decrement>();
+   template<> ast::Break*        parse<ast::Break>();
+   template<> ast::Continue*     parse<ast::Continue>();
    template<> ast::Block*        parse<ast::Block>();
    template<> ast::If*           parse<ast::If>();
    template<> ast::While*        parse<ast::While>();

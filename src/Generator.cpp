@@ -421,6 +421,26 @@ void Generator::generate(const ast::Decrement* decrement) {
 }
 
 template <>
+void Generator::generate(const ast::Break* brk) {
+   if(m_loopStack.empty()) {
+      error(err::Category::SYNTAX, brk->token.location, "break must be called in a loop!");
+      return;
+   }
+
+   emit(OpCode::JUMP, m_loopStack.back().breakLabel);
+}
+
+template <>
+void Generator::generate(const ast::Continue* cnt) {
+   if(m_loopStack.empty()) {
+      error(err::Category::SYNTAX, cnt->token.location, "continue must be called in a loop!");
+      return;
+   }
+
+   emit(OpCode::JUMP, m_loopStack.back().continueLabel);
+}
+
+template <>
 void Generator::generate(const ast::Block* block) {
    pushScope();
 
@@ -476,12 +496,15 @@ void Generator::generate(const ast::While* whileStmt) {
 
    std::string whileLabel = newLabel("while");
    std::string endLabel = newLabel("endwhile");
+   m_loopStack.emplace_back(endLabel, whileLabel);
 
    emit(OpCode::LABEL, whileLabel);
    emit(OpCode::JUMP_IF_NOT, resolveOperand(whileStmt->condition), endLabel);
    generate<ast::Statement>(whileStmt->doBranch);
    emit(OpCode::JUMP, whileLabel);
    emit(OpCode::LABEL, endLabel);
+
+   m_loopStack.pop_back();
 }
 
 template <>
@@ -499,10 +522,17 @@ void Generator::generate(const ast::DoWhile* doWhileStmt) {
    }
 
    std::string doLabel = newLabel("dowhile");
+   std::string checkLabel = newLabel("check");
+   std::string endLabel = newLabel("enddowhile");
+   m_loopStack.emplace_back(endLabel, checkLabel);
 
    emit(OpCode::LABEL, doLabel);
    generate<ast::Statement>(doWhileStmt->doBranch);
+   emit(OpCode::LABEL, checkLabel);
    emit(OpCode::JUMP_IF, resolveOperand(doWhileStmt->condition), doLabel);
+   emit(OpCode::LABEL, endLabel);
+
+   m_loopStack.pop_back();
 }
 
 #pragma endregion

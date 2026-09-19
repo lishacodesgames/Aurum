@@ -5,6 +5,7 @@
    X(MINT) X(BAR) \
    X(IF) X(ELIF) X(ELSE) \
    X(DO) X(WHILE) \
+   X(BREAK) X(CONTINUE) \
    X(EXIT) \
 \
    /* Literals & identifiers */ \

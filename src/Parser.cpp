@@ -113,6 +113,7 @@ std::optional<Token> Parser::tryConsume(TokenType type, std::optional<Error> err
 #pragma region Statements
 
 ast::Statement Parser::parseStatement() {
+   /// @todo reduce redundancy with some sort of TokenType -> ast type map. Will reduce the size of parseStatement too
    switch(peek().type) {
       case TokenType::BAR:
       case TokenType::MINT: {
@@ -188,6 +189,20 @@ ast::Statement Parser::parseStatement() {
          VALIDATE_PTR_RETURN_MONO(doWhile);
 
          return ast::Statement(std::in_place_type<ast::DoWhile*>, doWhile);
+      }
+
+      case TokenType::BREAK: {
+         ast::Break* brk = parse<ast::Break>();
+         VALIDATE_PTR_RETURN_MONO(brk);
+
+         return ast::Statement(std::in_place_type<ast::Break*>, brk);
+      }
+
+      case TokenType::CONTINUE: {
+         ast::Continue* cnt = parse<ast::Continue>();
+         VALIDATE_PTR_RETURN_MONO(cnt);
+
+         return ast::Statement(std::in_place_type<ast::Continue*>, cnt);
       }
 
       default: {
@@ -290,6 +305,24 @@ ast::Decrement* Parser::parse<ast::Decrement>() {
       Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
 
    return m_arena.create<ast::Decrement>(identifier);
+}
+
+template<>
+ast::Break* Parser::parse<ast::Break>() {
+   Token brk = consume(); // consume break keyword
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
+
+   return m_arena.create<ast::Break>(brk);
+}
+
+template<>
+ast::Continue* Parser::parse<ast::Continue>() {
+   Token cnt = consume(); // consume continue keyword
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
+
+   return m_arena.create<ast::Continue>(cnt);
 }
 
 template<>

@@ -25,6 +25,11 @@ private:
       DataType type = DataType::NONE;
    };
 
+   struct LoopLabels {
+      std::string breakLabel;
+      std::string continueLabel;
+   };
+
 private:
    const ast::Program m_program;
    std::vector<ir::Instruction> m_instructions;
@@ -32,6 +37,7 @@ private:
 
    std::vector<std::unordered_map<std::string, SymbolInfo>> m_scopes{};
    std::size_t m_labelCount = 0;
+   std::vector<LoopLabels> m_loopStack{}; // for control keywords in nested loops
 
 private:
    void comment(std::string_view comment, bool newLine = true);
@@ -78,6 +84,8 @@ private:
    template<> void generate(const ast::Exit* exit);
    template<> void generate(const ast::Increment* increment);
    template<> void generate(const ast::Decrement* decrement);
+   template<> void generate(const ast::Break* brk);
+   template<> void generate(const ast::Continue* cnt);
    template<> void generate(const ast::Block* block);
    template<> void generate(const ast::If* ifStmt);
    template<> void generate(const ast::While* whileStmt);
