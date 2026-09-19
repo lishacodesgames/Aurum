@@ -22,8 +22,8 @@ namespace
 
    /// @return whether dest <- value is a valid DataType conversion
    bool isAssignable(DataType dest, DataType value) {
-      if(dest == DataType::NONE || value == DataType::NONE)
-         return true; // None is always allowed
+      if(dest == DataType::NONE)
+         return true; // None can always be overridden
 
       /// @todo type conversion system, for now only exact matches are allowed
       return dest == value;
@@ -249,6 +249,7 @@ std::optional<DataType> Generator::resolveDeclaredType(DataType exprType, const 
          }
       }
 
+      /// @todo type conversion code here
       return *declaration->type;
    }
 
@@ -348,10 +349,16 @@ void Generator::generate(const ast::Exit* exit) {
    std::optional<DataType> exprType = inferType(exit->expression);
    if(!exprType)
       return;
-   if(!isAssignable(DataType::INT, *exprType)) {
-      error(
-         err::Category::SYNTAX, getLocation(exit->expression),
-         "Exit code must be of type INT, but is " + to_string(*exprType));
+
+   if(*exprType != DataType::INT) {
+      if(!isAssignable(DataType::INT, *exprType)) {
+         error(
+            err::Category::SYNTAX, getLocation(exit->expression),
+            "Exit code must be of type INT, but is " + to_string(*exprType));
+         return;
+      }
+
+      /// @todo type conversion code here
       return;
    }
 
@@ -549,6 +556,8 @@ void Generator::generate(const ast::Literal* literal) {
       emit(OpCode::PUSH_BOOL, "TRUE");
    else if(literal->token.type == TokenType::FALSE)
       emit(OpCode::PUSH_BOOL, "FALSE");
+   else if(literal->type == DataType::NONE)
+      assert(false && "idk what to do here");
    else
       assert(false && "Invalid literal");
 }

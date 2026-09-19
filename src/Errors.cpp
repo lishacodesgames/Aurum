@@ -52,6 +52,7 @@ void ErrorReporter::throwAll(err::Phase phase) const {
 }
 
 void ErrorReporter::printAll() const {
+   std::println();
    for(const Error& error : m_errors)
       std::println("{}", error.to_string());
 }

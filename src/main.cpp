@@ -8,7 +8,7 @@
 #include "Errors.h"
 
 void throwIfError(err::Phase phase) {
-   if(g_errors.count() > 0)
+   if(!g_errors.empty())
       g_errors.throwAll(phase);
 }
 

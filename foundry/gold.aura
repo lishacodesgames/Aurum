@@ -1,7 +1,2 @@
-bar y = 10;
-bar x = y = 5;
-
-while x++ != 100: {}
-
-y = 100;
-exit x++ + y--;
+bar value;
+exit value;

@@ -1,4 +1,4 @@
 $$ EXPECT: FAIL
-$$ CONTAINS: Use of uninitialized identifier
+$$ CONTAINS: is NONE
 bar value;
 exit value;

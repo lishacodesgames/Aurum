@@ -46,13 +46,14 @@ public:
    /// appends FIRST, then checks if it's fatal. If fatal, calls printAll and throws runtime_error with fatal's msg
    void report(err::Phase phase, err::Category category, err::SourceLocation location, std::string_view message, bool isFatal = false);
    void throwAll(err::Phase phase) const;
-   void printAll() const;
 
    bool empty() const noexcept { return m_errors.empty(); }
-   std::size_t count() const noexcept { return m_errors.size(); }
 
 private:
    std::vector<Error> m_errors{};
+
+private:
+   void printAll() const;
 };
 
 inline ErrorReporter g_errors;

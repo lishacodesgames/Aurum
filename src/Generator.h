@@ -106,14 +106,11 @@ private:
    template<ast::VariantNode V>
    void generate(const V& varNode) {
       return std::visit([this](auto&& arg) -> void {
-         using PtrT = std::decay_t<decltype(arg)>;
-         if constexpr(!std::is_same_v<PtrT, std::monostate>) {
-            using T = std::remove_pointer_t<PtrT>;
+         using T = std::remove_pointer_t<std::decay_t<decltype(arg)>>;
+         if constexpr(std::is_same_v<T, std::monostate>)
+            assert(false && "Tried to call generate on monostate!");
+         else
             generate<T>(arg);
-            return;
-         }
-
-         assert(false && "Tried to call generate on monostate!");
       }, varNode);
    }
 };
