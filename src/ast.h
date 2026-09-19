@@ -91,8 +91,9 @@ namespace ast
    struct Block;
    struct If;
    struct While;
+   struct DoWhile;
 
-   using Statement = std::variant<std::monostate, Declaration*, Assignment*, Exit*, Increment*, Decrement*, Block*, If*, While*>;
+   using Statement = std::variant<std::monostate, Declaration*, Assignment*, Exit*, Increment*, Decrement*, Block*, If*, While*, DoWhile*>;
 
    struct Block {
       std::vector<Statement> statements;
@@ -110,10 +111,17 @@ namespace ast
    };
 
    struct While {
-      Expression runCond;
+      Expression condition;
       Statement doBranch;
 
-      explicit While(Expression runCondition, Statement doBranch) : runCond(runCondition), doBranch(doBranch) {}
+      explicit While(Expression runCondition, Statement doBranch) : condition(runCondition), doBranch(doBranch) {}
+   };
+
+   struct DoWhile {
+      Statement doBranch;
+      Expression condition;
+
+      explicit DoWhile(Statement doBranch, Expression condition) : doBranch(doBranch), condition(condition) {}
    };
 
 #pragma endregion

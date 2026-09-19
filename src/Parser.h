@@ -54,20 +54,21 @@ private:
    // statements
    ast::Statement parseStatement();
 
-   template<> ast::Declaration* parse<ast::Declaration>();
-   template<> ast::Assignment* parse<ast::Assignment>();
-   template<> ast::Exit* parse<ast::Exit>();
-   template<> ast::Increment* parse<ast::Increment>();
-   template<> ast::Decrement* parse<ast::Decrement>();
-   template<> ast::Block* parse<ast::Block>();
-   template<> ast::If* parse<ast::If>();
-   template<> ast::While* parse<ast::While>();
+   template<> ast::Declaration*  parse<ast::Declaration>();
+   template<> ast::Assignment*   parse<ast::Assignment>();
+   template<> ast::Exit*         parse<ast::Exit>();
+   template<> ast::Increment*    parse<ast::Increment>();
+   template<> ast::Decrement*    parse<ast::Decrement>();
+   template<> ast::Block*        parse<ast::Block>();
+   template<> ast::If*           parse<ast::If>();
+   template<> ast::While*        parse<ast::While>();
+   template<> ast::DoWhile*      parse<ast::DoWhile>();
 
    // expressions
    /// @param minPrec the minimum precedence that has to be parsed from the expression
    ast::Expression parseExpression(int minPrec = 0);
 
-   template<> ast::Literal* parse<ast::Literal>();
+   template<> ast::Literal*   parse<ast::Literal>();
    template<> ast::Identifier* parse<ast::Identifier>();
    template<> ast::UnaryExpr* parse<ast::UnaryExpr>();
 

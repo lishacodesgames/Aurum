@@ -183,6 +183,13 @@ ast::Statement Parser::parseStatement() {
          return ast::Statement(std::in_place_type<ast::While*>, whileStmt);
       }
 
+      case TokenType::DO: {
+         ast::DoWhile* doWhile = parse<ast::DoWhile>();
+         VALIDATE_PTR_RETURN_MONO(doWhile);
+
+         return ast::Statement(std::in_place_type<ast::DoWhile*>, doWhile);
+      }
+
       default: {
          error(
             err::Category::SYNTAX, peek().location,
@@ -316,7 +323,7 @@ ast::Block* Parser::parse<ast::Block>() {
       recover(); \
       return nullptr; \
    } else if(std::holds_alternative<ast::Declaration*>((branch))) {\
-      error(err::Category::SCOPING, location, "Cannot declare a variable in an un-scoped constrol statement!"); \
+      error(err::Category::SCOPING, location, "Cannot declare a variable in an un-scoped control statement!"); \
       recover(); \
       return nullptr; \
    }
@@ -369,6 +376,29 @@ ast::While* Parser::parse<ast::While>() {
    VALIDATE_CONTROL_BODY_STMT(doBranch);
 
    return m_arena.create<ast::While>(condition, doBranch);
+}
+
+template<>
+ast::DoWhile* Parser::parse<ast::DoWhile>() {
+   consume(); // consume do keyword
+
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::COLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `:`!" }));
+
+   err::SourceLocation location = peek().location;
+   ast::Statement doBranch = parseStatement();
+   VALIDATE_CONTROL_BODY_STMT(doBranch);
+
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::WHILE,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `while`!" }));
+
+   ast::Expression condition = parseExpression();
+   VALIDATE_VARIANT_RETURN_NULL(condition);
+
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
+
+   return m_arena.create<ast::DoWhile>(doBranch, condition);
 }
 
 #pragma endregion

@@ -461,14 +461,15 @@ void Generator::generate(const ast::If* ifStmt) {
 
 template <>
 void Generator::generate(const ast::While* whileStmt) {
-   std::optional<DataType> condType = inferType(whileStmt->runCond);
+   /// @todo extract this verification bit for IF, WHILE, DO-WHILE stmts
+   std::optional<DataType> condType = inferType(whileStmt->condition);
    if(!condType)
       return; // error msg handled by inferType
 
    if(*condType != DataType::BOOL) {
       /// @todo add support for implicit conversion to bool
       error(
-         err::Category::TYPE_MISMATCH, getLocation(whileStmt->runCond),
+         err::Category::TYPE_MISMATCH, getLocation(whileStmt->condition),
          "While condition must be of type BOOL, but is " + to_string(*condType));
       return;
    }
@@ -477,10 +478,31 @@ void Generator::generate(const ast::While* whileStmt) {
    std::string endLabel = newLabel("endwhile");
 
    emit(OpCode::LABEL, whileLabel);
-   emit(OpCode::JUMP_IF_NOT, resolveOperand(whileStmt->runCond), endLabel);
+   emit(OpCode::JUMP_IF_NOT, resolveOperand(whileStmt->condition), endLabel);
    generate<ast::Statement>(whileStmt->doBranch);
    emit(OpCode::JUMP, whileLabel);
    emit(OpCode::LABEL, endLabel);
+}
+
+template <>
+void Generator::generate(const ast::DoWhile* doWhileStmt) {
+   std::optional<DataType> condType = inferType(doWhileStmt->condition);
+   if(!condType)
+      return; // error msg handled by inferType
+
+   if(*condType != DataType::BOOL) {
+      /// @todo add support for implicit conversion to bool
+      error(
+         err::Category::TYPE_MISMATCH, getLocation(doWhileStmt->condition),
+         "Do-While condition must be of type BOOL, but is " + to_string(*condType));
+      return;
+   }
+
+   std::string doLabel = newLabel("dowhile");
+
+   emit(OpCode::LABEL, doLabel);
+   generate<ast::Statement>(doWhileStmt->doBranch);
+   emit(OpCode::JUMP_IF, resolveOperand(doWhileStmt->condition), doLabel);
 }
 
 #pragma endregion

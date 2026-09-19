@@ -4,7 +4,7 @@
    /* Keywords */ \
    X(MINT) X(BAR) \
    X(IF) X(ELIF) X(ELSE) \
-   X(WHILE) \
+   X(DO) X(WHILE) \
    X(EXIT) \
 \
    /* Literals & identifiers */ \

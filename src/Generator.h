@@ -81,6 +81,7 @@ private:
    template<> void generate(const ast::Block* block);
    template<> void generate(const ast::If* ifStmt);
    template<> void generate(const ast::While* whileStmt);
+   template<> void generate(const ast::DoWhile* doWhileStmt);
 
    // -- expressions --
    template<> void generate(const ast::Literal* literal);

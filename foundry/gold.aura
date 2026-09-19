@@ -1,5 +1,5 @@
 bar y = 10;
-while y <= 100 && False:
-   y++;
+do: y++;
+while y < 20;
 
 exit y;
