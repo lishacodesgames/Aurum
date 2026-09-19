@@ -90,8 +90,9 @@ namespace ast
    // statements that contain statements
    struct Block;
    struct If;
+   struct While;
 
-   using Statement = std::variant<std::monostate, Declaration*, Assignment*, Exit*, Increment*, Decrement*, If*, Block*>;
+   using Statement = std::variant<std::monostate, Declaration*, Assignment*, Exit*, Increment*, Decrement*, Block*, If*, While*>;
 
    struct Block {
       std::vector<Statement> statements;
@@ -106,6 +107,13 @@ namespace ast
 
       explicit If(Expression condition, Statement thenBranch, std::optional<Statement> elseBranch)
          : condition(condition), thenBranch(thenBranch), elseBranch(elseBranch) {}
+   };
+
+   struct While {
+      Expression runCond;
+      Statement doBranch;
+
+      explicit While(Expression runCondition, Statement doBranch) : runCond(runCondition), doBranch(doBranch) {}
    };
 
 #pragma endregion

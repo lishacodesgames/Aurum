@@ -196,7 +196,7 @@ void AsmEmitter::handleComparison(const ir::Instruction& instr) {
       default: assert(false && "Invalid comparison instruction");
    }
 
-   write("movzx rax, cl", "mov set flag to rax and zero out the higher 7 bytes of rax");
+   write("movzx rax, cl", "mov set flag to rax and zero out its higher 7 bytes");
    m_stack.push("rax");
 }
 

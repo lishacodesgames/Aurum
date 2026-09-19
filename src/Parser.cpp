@@ -176,6 +176,13 @@ ast::Statement Parser::parseStatement() {
          return ast::Statement(std::in_place_type<ast::If*>, ifStmt);
       }
 
+      case TokenType::WHILE: {
+         ast::While* whileStmt = parse<ast::While>();
+         VALIDATE_PTR_RETURN_MONO(whileStmt);
+
+         return ast::Statement(std::in_place_type<ast::While*>, whileStmt);
+      }
+
       default: {
          error(
             err::Category::SYNTAX, peek().location,
@@ -303,7 +310,8 @@ ast::Block* Parser::parse<ast::Block>() {
 
 // idk if this is the best way to do this
 /// @note requires a predefined location variable of type err::SourceLocation pointing to the beginning of branch's statement
-#define VALIDATE_IF_BODY_STMT(branch)\
+/// @todo replace by auto-scoping all control statement bodies
+#define VALIDATE_CONTROL_BODY_STMT(branch)\
    if(std::holds_alternative<std::monostate>((branch))) { \
       recover(); \
       return nullptr; \
@@ -317,7 +325,6 @@ template<>
 ast::If* Parser::parse<ast::If>() {
    consume(); // consume if/elif
 
-   // parentheses are optional, but if present, expression will handle them
    ast::Expression condition = parseExpression();
    VALIDATE_VARIANT_RETURN_NULL(condition);
 
@@ -326,8 +333,7 @@ ast::If* Parser::parse<ast::If>() {
 
    err::SourceLocation location = peek().location;
    ast::Statement thenBranch = parseStatement();
-
-   VALIDATE_IF_BODY_STMT(thenBranch);
+   VALIDATE_CONTROL_BODY_STMT(thenBranch);
 
    std::optional<ast::Statement> elseBranch = std::nullopt;
 
@@ -342,11 +348,27 @@ ast::If* Parser::parse<ast::If>() {
 
       location = peek().location;
       elseBranch = parseStatement();
-
-      VALIDATE_IF_BODY_STMT(*elseBranch);
+      VALIDATE_CONTROL_BODY_STMT(*elseBranch);
    }
 
    return m_arena.create<ast::If>(condition, thenBranch, elseBranch);
+}
+
+template<>
+ast::While* Parser::parse<ast::While>() {
+   consume(); // consume while keyword
+
+   ast::Expression condition = parseExpression();
+   VALIDATE_VARIANT_RETURN_NULL(condition);
+
+   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::COLON,
+      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `:`!" }));
+
+   err::SourceLocation location = peek().location;
+   ast::Statement doBranch = parseStatement();
+   VALIDATE_CONTROL_BODY_STMT(doBranch);
+
+   return m_arena.create<ast::While>(condition, doBranch);
 }
 
 #pragma endregion

@@ -69,8 +69,6 @@ private:
    bool isBinaryExprValid(const ast::BinaryExpr* binaryExpr) const;
 
 private:
-   /// @retval error striing if falied
-   /// @retval nullopt if everything went well
    template<ast::AstNode T>
    void generate(const T*);
 
@@ -82,6 +80,7 @@ private:
    template<> void generate(const ast::Decrement* decrement);
    template<> void generate(const ast::Block* block);
    template<> void generate(const ast::If* ifStmt);
+   template<> void generate(const ast::While* whileStmt);
 
    // -- expressions --
    template<> void generate(const ast::Literal* literal);

@@ -433,9 +433,10 @@ void Generator::generate(const ast::Block* block) {
 template <>
 void Generator::generate(const ast::If* ifStmt) {
    std::optional<DataType> condType = inferType(ifStmt->condition);
-   if(!condType)
-      return;
-   if(*condType != DataType::BOOL) {
+   if(!condType) {
+      return; // error msg handled by inferType
+
+   } else if(*condType != DataType::BOOL) {
       /// @todo add support for implicit conversion to bool
       error(
          err::Category::TYPE_MISMATCH, getLocation(ifStmt->condition),
@@ -455,6 +456,30 @@ void Generator::generate(const ast::If* ifStmt) {
       generate<ast::Statement>(*ifStmt->elseBranch);
    }
 
+   emit(OpCode::LABEL, endLabel);
+}
+
+template <>
+void Generator::generate(const ast::While* whileStmt) {
+   std::optional<DataType> condType = inferType(whileStmt->runCond);
+   if(!condType)
+      return; // error msg handled by inferType
+
+   if(*condType != DataType::BOOL) {
+      /// @todo add support for implicit conversion to bool
+      error(
+         err::Category::TYPE_MISMATCH, getLocation(whileStmt->runCond),
+         "While condition must be of type BOOL, but is " + to_string(*condType));
+      return;
+   }
+
+   std::string whileLabel = newLabel("while");
+   std::string endLabel = newLabel("endwhile");
+
+   emit(OpCode::LABEL, whileLabel);
+   emit(OpCode::JUMP_IF_NOT, resolveOperand(whileStmt->runCond), endLabel);
+   generate<ast::Statement>(whileStmt->doBranch);
+   emit(OpCode::JUMP, whileLabel);
    emit(OpCode::LABEL, endLabel);
 }
 

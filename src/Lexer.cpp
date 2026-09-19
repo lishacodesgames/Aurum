@@ -16,6 +16,8 @@ namespace
          return TokenType::ELIF;
       else if(buffer == "else")
          return TokenType::ELSE;
+      else if(buffer == "while")
+         return TokenType::WHILE;
       else if(buffer == "exit")
          return TokenType::EXIT;
 

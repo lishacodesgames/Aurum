@@ -71,10 +71,12 @@ $$
             \begin{cases}
                exit\ [expression]; \\
                mint \text{ name} = [expression];\ \ \footnotesize{\text{// constant value}} \\
+               bar \text{ name} = [expression];\ \ \footnotesize{\text{{// mutable value and type}}} \\
+               bar\text{<}type\text{>}\ \text{name} = [expression];\ \ \footnotesize{\text{// mutable value, immutable type}} \\
                [identifier]++; \\
                [identifier]--;
             \end{cases} \\ \\
-         \text{[block statement]} \to \{\ [statement]^+\ \} \\ \\
+         \text{[block statement]} \to \{\ [statement]^*\ \} \\ \\
          \text{[selection statement]}
             \begin{cases}
                if-else,\ elif(cond) = else\{\ if(cond)\ \} \\
@@ -96,21 +98,19 @@ $$
                [unary\ expression]
                   \begin{cases}
                      -[expression] \\
-                     +[expression] \\
+                     !\ \ [expression] \\
                   \end{cases} \\
             \end{cases} \\
       \\
          [binary\ expression]
-            \begin{cases}
-               [expression] &*&\ [expression] - prec. = 1 \\
-               [expression] &/&\ [expression] - prec. = 1 \\
-               [expression] &+&\ [expression] - prec. = 0 \\
-               [expression] &-&\ [expression] - prec. = 0 \\
-            \end{cases}
+         \begin{cases}
+            [arithmetic\ expressions] \\
+            [boolean\ expressions]
+         \end{cases}
       \end{cases}
 \end{align}
 $$
 
 ### Legend
-[<node\>]<sup>*</sup> = 0 or more of node acceptable <br>
-[<node\>]<sup>+</sup> = 1 or more of node acceptable <br>
+[<node\>]<sup>*</sup> = 0 or more acceptable <br>
+[<node\>]<sup>+</sup> = 1 or more acceptable <br>
