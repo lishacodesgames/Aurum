@@ -65,7 +65,7 @@ private:
 
    /// @retval folded string: ONLY for leaf expressions (literal/identifier)
    /// @retval nullopt: for compound expressions (negative/binary)
-   std::optional<std::string> tryFold(const ast::Expression& expr) const;
+   std::optional<std::string> tryFold(const ast::Expression& expr);
    std::optional<DataType> inferType(const ast::Expression& expr) const;
 
    /// @return NOT string view because that'll leave a dangling pointer if folded
@@ -83,16 +83,18 @@ private:
 
    // -- statements --
    template<> void generate(const ast::Declaration* declaration);
-   template<> void generate(const ast::Assignment* assignment);
    template<> void generate(const ast::Exit* exit);
-   template<> void generate(const ast::Increment* increment);
-   template<> void generate(const ast::Decrement* decrement);
    template<> void generate(const ast::Break* brk);
    template<> void generate(const ast::Continue* cnt);
    template<> void generate(const ast::Block* block);
    template<> void generate(const ast::If* ifStmt);
    template<> void generate(const ast::While* whileStmt);
    template<> void generate(const ast::DoWhile* doWhileStmt);
+
+   // -- both --
+   template<> void generate(const ast::Assignment* assignment);
+   template<> void generate(const ast::Increment* increment);
+   template<> void generate(const ast::Decrement* decrement);
 
    // -- expressions --
    template<> void generate(const ast::Literal* literal);

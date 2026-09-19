@@ -133,10 +133,22 @@ ast::Statement Parser::parseStatement() {
 
       case TokenType::IDENTIFIER: {
          switch(peek(1).type) {
+            // since these can also be expressions, they don't parse the semicolon, we do.
+            case TokenType::EQUALS: {
+               ast::Assignment* assignment = parse<ast::Assignment>();
+               VALIDATE_PTR_RETURN_MONO(assignment);
+
+               VALIDATE_PTR_RETURN_MONO(tryConsume(TokenType::SEMICOLON,
+                  Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
+               return ast::Statement(std::in_place_type<ast::Assignment*>, assignment);
+            }
+
             case TokenType::INCREMENT: {
                ast::Increment* increment = parse<ast::Increment>();
                VALIDATE_PTR_RETURN_MONO(increment);
 
+               VALIDATE_PTR_RETURN_MONO(tryConsume(TokenType::SEMICOLON,
+                  Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
                return ast::Statement(std::in_place_type<ast::Increment*>, increment);
             }
 
@@ -144,14 +156,9 @@ ast::Statement Parser::parseStatement() {
                ast::Decrement* decrement = parse<ast::Decrement>();
                VALIDATE_PTR_RETURN_MONO(decrement);
 
+               VALIDATE_PTR_RETURN_MONO(tryConsume(TokenType::SEMICOLON,
+                  Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
                return ast::Statement(std::in_place_type<ast::Decrement*>, decrement);
-            }
-
-            case TokenType::EQUALS: {
-               ast::Assignment* assignment = parse<ast::Assignment>();
-               VALIDATE_PTR_RETURN_MONO(assignment);
-
-               return ast::Statement(std::in_place_type<ast::Assignment*>, assignment);
             }
 
             default: {
@@ -255,22 +262,6 @@ template<> ast::Declaration* Parser::parse<ast::Declaration>() {
 }
 
 template<>
-ast::Assignment* Parser::parse<ast::Assignment>() {
-   ast::Identifier* identifier = parse<ast::Identifier>();
-   VALIDATE_PTR_RETURN_NULL(identifier);
-
-   consume(); // consume =
-
-   ast::Expression expression = parseExpression();
-   VALIDATE_VARIANT_RETURN_NULL(expression);
-
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
-      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
-
-   return m_arena.create<ast::Assignment>(identifier, expression);
-}
-
-template<>
 ast::Exit* Parser::parse<ast::Exit>() {
    consume(); // consume exit keyword
 
@@ -281,30 +272,6 @@ ast::Exit* Parser::parse<ast::Exit>() {
       Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
 
    return m_arena.create<ast::Exit>(expression);
-}
-
-template<>
-ast::Increment* Parser::parse<ast::Increment>() {
-   ast::Identifier* identifier = parse<ast::Identifier>();
-   VALIDATE_PTR_RETURN_NULL(identifier);
-
-   consume(); // consume ++
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
-      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
-
-   return m_arena.create<ast::Increment>(identifier);
-}
-
-template<>
-ast::Decrement* Parser::parse<ast::Decrement>() {
-   ast::Identifier* identifier = parse<ast::Identifier>();
-   VALIDATE_PTR_RETURN_NULL(identifier);
-
-   consume(); // consume --
-   VALIDATE_PTR_RETURN_NULL(tryConsume(TokenType::SEMICOLON,
-      Error{ .category = err::Category::SYNTAX, .location = peek().location, .message = "Expected `;`!" }));
-
-   return m_arena.create<ast::Decrement>(identifier);
 }
 
 template<>
@@ -436,6 +403,41 @@ ast::DoWhile* Parser::parse<ast::DoWhile>() {
 
 #pragma endregion
 
+#pragma region Both
+
+template<>
+ast::Assignment* Parser::parse<ast::Assignment>() {
+   ast::Identifier* identifier = parse<ast::Identifier>();
+   VALIDATE_PTR_RETURN_NULL(identifier);
+
+   consume(); // consume =
+
+   ast::Expression expression = parseExpression();
+   VALIDATE_VARIANT_RETURN_NULL(expression);
+
+   return m_arena.create<ast::Assignment>(identifier, expression);
+}
+
+template<>
+ast::Increment* Parser::parse<ast::Increment>() {
+   ast::Identifier* identifier = parse<ast::Identifier>();
+   VALIDATE_PTR_RETURN_NULL(identifier);
+
+   consume(); // consume ++
+   return m_arena.create<ast::Increment>(identifier);
+}
+
+template<>
+ast::Decrement* Parser::parse<ast::Decrement>() {
+   ast::Identifier* identifier = parse<ast::Identifier>();
+   VALIDATE_PTR_RETURN_NULL(identifier);
+
+   consume(); // consume --
+   return m_arena.create<ast::Decrement>(identifier);
+}
+
+#pragma endregion
+
 #pragma region Expressions
 
 ast::Expression Parser::parseTerm() {
@@ -451,10 +453,36 @@ ast::Expression Parser::parseTerm() {
       }
 
       case TokenType::IDENTIFIER: {
-         ast::Identifier* identifier = parse<ast::Identifier>();
-         VALIDATE_PTR_RETURN_MONO(identifier);
+         switch(peek(1).type) {
+            /// @todo expression-ify these stmts
+            case TokenType::EQUALS: {
+               ast::Assignment* assignment = parse<ast::Assignment>();
+               VALIDATE_PTR_RETURN_MONO(assignment);
 
-         return ast::Expression(std::in_place_type<ast::Identifier*>, identifier);
+               return ast::Expression(std::in_place_type<ast::Assignment*>, assignment);
+            }
+
+            case TokenType::INCREMENT: {
+               ast::Increment* increment = parse<ast::Increment>();
+               VALIDATE_PTR_RETURN_MONO(increment);
+
+               return ast::Expression(std::in_place_type<ast::Increment*>, increment);
+            }
+
+            case TokenType::DECREMENT: {
+               ast::Decrement* decrement = parse<ast::Decrement>();
+               VALIDATE_PTR_RETURN_MONO(decrement);
+
+               return ast::Expression(std::in_place_type<ast::Decrement*>, decrement);
+            }
+
+            default: {
+               ast::Identifier* identifier = parse<ast::Identifier>();
+               VALIDATE_PTR_RETURN_MONO(identifier);
+      
+               return ast::Expression(std::in_place_type<ast::Identifier*>, identifier);
+            }
+         }
       }
 
       case TokenType::LOGICAL_NOT:

@@ -120,13 +120,17 @@ const Generator::SymbolInfo* Generator::findSymbol(const std::string& name) cons
    return nullptr;
 }
 
-std::optional<std::string> Generator::tryFold(const ast::Expression& expr) const {
-   return std::visit([](auto&& arg) -> std::optional<std::string> {
-      using PtrT = std::decay_t<decltype(arg)>;
+std::optional<std::string> Generator::tryFold(const ast::Expression& expr) {
+   return std::visit([this](auto&& arg) -> std::optional<std::string> {
+      using T = std::remove_pointer_t<std::decay_t<decltype(arg)>>;
 
-      if constexpr(std::is_same_v<PtrT, ast::Identifier*>)
+      if constexpr(std::is_same_v<T, ast::Identifier>)
          return arg->token.value.value();
-      else if constexpr(std::is_same_v<PtrT, ast::Literal*>) {
+      else if constexpr(std::is_same_v<T, ast::Assignment> || std::is_same_v<T, ast::Increment> || std::is_same_v<T, ast::Decrement>) {
+         generate<T>(arg);
+         return arg->identifier->token.value.value();
+
+      } else if constexpr(std::is_same_v<T, ast::Literal>) {
          if(arg->type == DataType::INT)
             return arg->token.value.value();
          if(arg->token.type == TokenType::TRUE)
@@ -141,14 +145,15 @@ std::optional<std::string> Generator::tryFold(const ast::Expression& expr) const
 
 std::optional<DataType> Generator::inferType(const ast::Expression& expr) const {
    return std::visit([this](auto&& arg) -> std::optional<DataType> {
-      using PtrT = std::decay_t<decltype(arg)>;
+      using T = std::remove_pointer_t<std::decay_t<decltype(arg)>>;
 
-      if constexpr(std::is_same_v<PtrT, ast::Literal*>) {
+      if constexpr(std::is_same_v<T, ast::Literal>) {
          return arg->type;
 
-      } else if constexpr(std::is_same_v<PtrT, ast::Identifier*>) {
+      } else if constexpr(std::is_same_v<T, ast::Identifier>) {
          const std::string& varName = arg->token.value.value();
          const SymbolInfo* symbol = findSymbol(varName);
+         /// @todo is this check needed HERE given that we check before calling inferType anyways?
          if(!symbol) {
             error(err::Category::NAME_RESOLUTION, arg->token.location, std::format("Use of undeclared identifier '{}'!", varName));
             return std::nullopt;
@@ -156,7 +161,7 @@ std::optional<DataType> Generator::inferType(const ast::Expression& expr) const 
 
          return symbol->type;
 
-      } else if constexpr(std::is_same_v<PtrT, ast::UnaryExpr*>) {
+      } else if constexpr(std::is_same_v<T, ast::UnaryExpr>) {
          std::optional<DataType> operandType = inferType(arg->operand);
          if(!operandType) {
             // yes, double error.
@@ -189,11 +194,25 @@ std::optional<DataType> Generator::inferType(const ast::Expression& expr) const 
                return std::nullopt;
          }
 
-      } else if constexpr(std::is_same_v<PtrT, ast::BinaryExpr*>) {
+      } else if constexpr(std::is_same_v<T, ast::BinaryExpr>) {
          if(isBinaryExprValid(arg))
             return arg->type;
 
          return std::nullopt;
+
+      } else if constexpr(std::is_same_v<T, ast::Assignment>) {
+         const std::string& varName = arg->identifier->token.value.value();
+         const SymbolInfo* symbol = findSymbol(varName);
+         /// @todo is this check needed HERE given that we check before calling inferType anyways?
+         if(!symbol) {
+            error(err::Category::NAME_RESOLUTION, arg->identifier->token.location, std::format("Use of undeclared identifier '{}'!", varName));
+            return std::nullopt;
+         }
+
+         return symbol->type;
+
+      } else if constexpr(std::is_same_v<T, ast::Increment> || std::is_same_v<T, ast::Decrement>) {
+         return DataType::INT;
       }
 
       assert(false && "Cannot infer type!");
@@ -325,42 +344,6 @@ void Generator::generate(const ast::Declaration* declaration) {
 }
 
 template <>
-void Generator::generate(const ast::Assignment* assignment) {
-   const std::string& varName = assignment->identifier->token.value.value();
-   SymbolInfo* symbol = findSymbol(varName);
-
-   if(!symbol) {
-      error(
-         err::Category::NAME_RESOLUTION, assignment->identifier->token.location,
-         std::format("Use of undeclared identifier '{}'!", varName));
-      return;
-   } else if(!symbol->valueMutable) {
-      error(
-         err::Category::MUTABILITY, assignment->identifier->token.location,
-         std::format("Tried to modify immutable variable '{}'!", varName));
-      return;
-   }
-
-   std::optional<DataType> exprType = inferType(assignment->expression);
-   if(!exprType)
-      return;
-
-   if(symbol->type != *exprType) {
-      if(!symbol->typeMutable && !isAssignable(symbol->type, *exprType)) {
-         error(
-            err::Category::TYPE_MISMATCH, assignment->identifier->token.location,
-            std::format("Tried to change type of locked variable '{}'!", varName));
-         return;
-      }
-
-      if(symbol->typeMutable)
-         symbol->type = *exprType;
-   }
-
-   emit(OpCode::STORE_VAR, varName, resolveOperand(assignment->expression));
-}
-
-template <>
 void Generator::generate(const ast::Exit* exit) {
    std::optional<DataType> exprType = inferType(exit->expression);
    if(!exprType)
@@ -373,58 +356,6 @@ void Generator::generate(const ast::Exit* exit) {
    }
 
    emit(OpCode::EXIT, resolveOperand(exit->expression));
-}
-
-template <>
-void Generator::generate(const ast::Increment* increment) {
-   const std::string& varName = increment->identifier->token.value.value();
-   const SymbolInfo* symbol = findSymbol(varName);
-
-   if(!symbol) {
-      error(
-         err::Category::NAME_RESOLUTION, increment->identifier->token.location,
-         std::format("Use of undeclared identifier '{}'!", varName));
-      return;
-
-   } else if(!symbol->valueMutable) {
-      error(
-         err::Category::MUTABILITY, increment->identifier->token.location,
-         std::format("Tried to modify immutable variable '{}'!", varName));
-      return;
-
-   } else if(symbol->type != DataType::INT) {
-      error(
-         err::Category::TYPE_MISMATCH, increment->identifier->token.location,
-         std::format("Cannot increment non-int identifier '{}' of type {}!", varName, to_string(symbol->type)));
-      return;
-   }
-
-   emit(OpCode::INCR, varName);
-}
-
-template <>
-void Generator::generate(const ast::Decrement* decrement) {
-   const std::string& varName = decrement->identifier->token.value.value();
-   const SymbolInfo* symbol = findSymbol(varName);
-
-   if(!symbol) {
-      error(err::Category::NAME_RESOLUTION, decrement->identifier->token.location,
-         std::format("Use of undeclared identifier '{}'!", varName));
-      return;
-
-   } else if(!symbol->valueMutable) {
-      error(err::Category::MUTABILITY, decrement->identifier->token.location,
-         std::format("Tried to modify immutable variable '{}'!", varName));
-      return;
-
-   } else if(symbol->type != DataType::INT) {
-      error(
-         err::Category::TYPE_MISMATCH, decrement->identifier->token.location,
-         std::format("Cannot decrement non-int identifier '{}' of type {}!", varName, to_string(symbol->type)));
-      return;
-   }
-
-   emit(OpCode::DECR, varName);
 }
 
 template <>
@@ -512,6 +443,98 @@ void Generator::generate(const ast::DoWhile* doWhileStmt) {
    emit(OpCode::LABEL, endLabel);
 
    m_loopStack.pop_back();
+}
+
+#pragma endregion
+
+#pragma region Both
+
+template <>
+void Generator::generate(const ast::Assignment* assignment) {
+   const std::string& varName = assignment->identifier->token.value.value();
+   SymbolInfo* symbol = findSymbol(varName);
+
+   if(!symbol) {
+      error(
+         err::Category::NAME_RESOLUTION, assignment->identifier->token.location,
+         std::format("Use of undeclared identifier '{}'!", varName));
+      return;
+   } else if(!symbol->valueMutable) {
+      error(
+         err::Category::MUTABILITY, assignment->identifier->token.location,
+         std::format("Tried to modify immutable variable '{}'!", varName));
+      return;
+   }
+
+   std::optional<DataType> exprType = inferType(assignment->expression);
+   if(!exprType)
+      return;
+
+   if(symbol->type != *exprType) {
+      if(!symbol->typeMutable && !isAssignable(symbol->type, *exprType)) {
+         error(
+            err::Category::TYPE_MISMATCH, assignment->identifier->token.location,
+            std::format("Tried to change type of locked variable '{}'!", varName));
+         return;
+      }
+
+      if(symbol->typeMutable)
+         symbol->type = *exprType;
+   }
+
+   emit(OpCode::STORE_VAR, varName, resolveOperand(assignment->expression));
+}
+
+template <>
+void Generator::generate(const ast::Increment* increment) {
+   const std::string& varName = increment->identifier->token.value.value();
+   const SymbolInfo* symbol = findSymbol(varName);
+
+   if(!symbol) {
+      error(
+         err::Category::NAME_RESOLUTION, increment->identifier->token.location,
+         std::format("Use of undeclared identifier '{}'!", varName));
+      return;
+
+   } else if(!symbol->valueMutable) {
+      error(
+         err::Category::MUTABILITY, increment->identifier->token.location,
+         std::format("Tried to modify immutable variable '{}'!", varName));
+      return;
+
+   } else if(symbol->type != DataType::INT) {
+      error(
+         err::Category::TYPE_MISMATCH, increment->identifier->token.location,
+         std::format("Cannot increment non-int identifier '{}' of type {}!", varName, to_string(symbol->type)));
+      return;
+   }
+
+   emit(OpCode::INCR, varName);
+}
+
+template <>
+void Generator::generate(const ast::Decrement* decrement) {
+   const std::string& varName = decrement->identifier->token.value.value();
+   const SymbolInfo* symbol = findSymbol(varName);
+
+   if(!symbol) {
+      error(err::Category::NAME_RESOLUTION, decrement->identifier->token.location,
+         std::format("Use of undeclared identifier '{}'!", varName));
+      return;
+
+   } else if(!symbol->valueMutable) {
+      error(err::Category::MUTABILITY, decrement->identifier->token.location,
+         std::format("Tried to modify immutable variable '{}'!", varName));
+      return;
+
+   } else if(symbol->type != DataType::INT) {
+      error(
+         err::Category::TYPE_MISMATCH, decrement->identifier->token.location,
+         std::format("Cannot decrement non-int identifier '{}' of type {}!", varName, to_string(symbol->type)));
+      return;
+   }
+
+   emit(OpCode::DECR, varName);
 }
 
 #pragma endregion

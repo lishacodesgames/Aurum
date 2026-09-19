@@ -26,7 +26,14 @@ namespace ast
    struct UnaryExpr;
    struct BinaryExpr;
 
-   using Expression = std::variant<std::monostate, Literal*, Identifier*, UnaryExpr*, BinaryExpr*>;
+   // both exprs and stmts
+   struct Assignment;
+   struct Increment;
+   struct Decrement;
+
+   using Expression = std::variant<std::monostate,
+      Literal*, Identifier*, UnaryExpr*, BinaryExpr*,
+      Assignment*, Increment*, Decrement*>;
 
    struct UnaryExpr {
       Token opToken; /// '!' requires BOOL, '-' requires INT
@@ -42,6 +49,29 @@ namespace ast
 
       explicit BinaryExpr(Expression left, Token op, Expression right, DataType type)
          : left(left), right(right), opToken(op), type(type) {}
+   };
+
+#pragma endregion
+
+#pragma region Both
+
+   struct Assignment {
+      Identifier* identifier;
+      Expression expression;
+
+      explicit Assignment(Identifier* identifier, Expression expression) : identifier(identifier), expression(expression) {}
+   };
+
+   struct Increment {
+      Identifier* identifier;
+
+      explicit Increment(Identifier* identifier) : identifier(identifier) {}
+   };
+
+   struct Decrement {
+      Identifier* identifier;
+
+      explicit Decrement(Identifier* identifier) : identifier(identifier) {}
    };
 
 #pragma endregion
@@ -62,29 +92,10 @@ namespace ast
          : identifier(identifier), expression(expression), valueMutable(valueMutable), typeMutable(typeMutable), type(type) {}
    };
 
-   struct Assignment {
-      Identifier* identifier;
-      Expression expression;
-
-      explicit Assignment(Identifier* identifier, Expression expression) : identifier(identifier), expression(expression) {}
-   };
-
    struct Exit {
       Expression expression;
 
       explicit Exit(Expression expression) : expression(expression) {}
-   };
-
-   struct Increment {
-      Identifier* identifier;
-
-      explicit Increment(Identifier* identifier) : identifier(identifier) {}
-   };
-
-   struct Decrement {
-      Identifier* identifier;
-
-      explicit Decrement(Identifier* identifier) : identifier(identifier) {}
    };
 
    struct Break {
@@ -105,9 +116,9 @@ namespace ast
    struct While;
    struct DoWhile;
 
-   using Statement = std::variant<
-      std::monostate, Declaration*, Assignment*,
-      Exit*, Increment*, Decrement*,
+   using Statement = std::variant<std::monostate,
+      Assignment*, Increment*, Decrement*,
+      Declaration*, Exit*,
       Break*, Continue*,
       Block*, If*, While*, DoWhile*>;
 

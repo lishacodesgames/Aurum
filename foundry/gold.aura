@@ -1,8 +1,7 @@
 bar y = 10;
-do: {
-   y++;
-   if(y == 200):
-      break;
-} while None;
+bar x = y = 5;
 
-exit y;
+while x++ != 100: {}
+
+y = 100;
+exit x++ + y--;

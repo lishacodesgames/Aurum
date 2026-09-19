@@ -55,16 +55,18 @@ private:
    ast::Statement parseStatement();
 
    template<> ast::Declaration*  parse<ast::Declaration>();
-   template<> ast::Assignment*   parse<ast::Assignment>();
    template<> ast::Exit*         parse<ast::Exit>();
-   template<> ast::Increment*    parse<ast::Increment>();
-   template<> ast::Decrement*    parse<ast::Decrement>();
    template<> ast::Break*        parse<ast::Break>();
    template<> ast::Continue*     parse<ast::Continue>();
    template<> ast::Block*        parse<ast::Block>();
    template<> ast::If*           parse<ast::If>();
    template<> ast::While*        parse<ast::While>();
    template<> ast::DoWhile*      parse<ast::DoWhile>();
+
+   // both
+   template<> ast::Assignment*   parse<ast::Assignment>();
+   template<> ast::Increment*    parse<ast::Increment>();
+   template<> ast::Decrement*    parse<ast::Decrement>();
 
    // expressions
    /// @param minPrec the minimum precedence that has to be parsed from the expression
