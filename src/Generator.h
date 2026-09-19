@@ -72,6 +72,9 @@ private:
    std::string resolveOperand(const ast::Expression& expr);
    std::optional<DataType> resolveDeclaredType(DataType exprType, const ast::Declaration* declaration);
 
+   /// @param stmt "if"/"while"/"do-while". It's printed in the error msg. It's const char because it's only called with string literals
+   /// @return whether expr's inferred type is BOOL
+   bool isValidCondition(const ast::Expression& expr, const char* stmt);
    bool isBinaryExprValid(const ast::BinaryExpr* binaryExpr) const;
 
 private:

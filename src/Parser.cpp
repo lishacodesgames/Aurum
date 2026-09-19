@@ -442,7 +442,8 @@ ast::Expression Parser::parseTerm() {
    switch(peek().type) {
       case TokenType::INTEGER_LITERAL:
       case TokenType::TRUE:
-      case TokenType::FALSE: {
+      case TokenType::FALSE:
+      case TokenType::NONE: {
          ast::Literal* literal = parse<ast::Literal>();
          VALIDATE_PTR_RETURN_MONO(literal);
 
@@ -506,6 +507,9 @@ ast::Literal* Parser::parse<ast::Literal>() {
       case TokenType::TRUE:
       case TokenType::FALSE:
          return m_arena.create<ast::Literal>(DataType::BOOL, consume());
+
+      case TokenType::NONE:
+         return m_arena.create<ast::Literal>(DataType::NONE, consume());
 
       default:
          error(err::Category::SYNTAX, peek().location, "Expected a literal! Got: " + to_string(peek().type));

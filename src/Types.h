@@ -61,5 +61,6 @@ int getPrecedence(TokenType type);
 bool isLeftAssociative(TokenType type);
 
 /// For binary operators only
+/// @return currently, only INT and BOOL
 DataType getReturnType(TokenType op); /// @todo change after introducing functions
 std::string to_string(DataType type);

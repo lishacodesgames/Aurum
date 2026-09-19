@@ -1,8 +1,8 @@
 bar y = 10;
-while True: {
+do: {
    y++;
    if(y == 200):
       break;
-}
+} while None;
 
 exit y;

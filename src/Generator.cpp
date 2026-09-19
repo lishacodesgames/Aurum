@@ -22,13 +22,10 @@ namespace
 
    /// @return whether dest <- value is a valid DataType conversion
    bool isAssignable(DataType dest, DataType value) {
+      if(dest == DataType::NONE || value == DataType::NONE)
+         return true; // None is always allowed
+
       /// @todo type conversion system, for now only exact matches are allowed
-      if(dest == DataType::NONE)
-         return true; // None can always be overridden
-
-      if(value == DataType::NONE)
-         return false; // can't assign uninitialized value to a variable
-
       return dest == value;
    }
 }
@@ -152,13 +149,8 @@ std::optional<DataType> Generator::inferType(const ast::Expression& expr) const 
       } else if constexpr(std::is_same_v<PtrT, ast::Identifier*>) {
          const std::string& varName = arg->token.value.value();
          const SymbolInfo* symbol = findSymbol(varName);
-
          if(!symbol) {
             error(err::Category::NAME_RESOLUTION, arg->token.location, std::format("Use of undeclared identifier '{}'!", varName));
-            return std::nullopt;
-
-         } else if(symbol->type == DataType::NONE) {
-            error(err::Category::TYPE_MISMATCH, arg->token.location, std::format("Use of uninitialized identifier '{}'!", varName));
             return std::nullopt;
          }
 
@@ -167,6 +159,7 @@ std::optional<DataType> Generator::inferType(const ast::Expression& expr) const 
       } else if constexpr(std::is_same_v<PtrT, ast::UnaryExpr*>) {
          std::optional<DataType> operandType = inferType(arg->operand);
          if(!operandType) {
+            // yes, double error.
             error(err::Category::TYPE_MISMATCH, getLocation(arg->operand), std::format(
                "Invalid expression for unary operator '{}'!", to_string(arg->opToken.type)));
             return std::nullopt;
@@ -241,6 +234,20 @@ std::optional<DataType> Generator::resolveDeclaredType(DataType exprType, const 
    }
 
    return exprType; // inferred type is default in case declaration's type isn't specified
+}
+
+bool Generator::isValidCondition(const ast::Expression& expr, const char* stmt) {
+   std::optional<DataType> condType = inferType(expr);
+
+   if(!condType) {
+      return false; // error msg is handled by inferType
+
+   } else if(*condType != DataType::BOOL) {
+      error(err::Category::TYPE_MISMATCH, getLocation(expr), std::format("{} condition must be of type BOOL but is {}!", stmt, to_string(*condType)));
+      return false;
+   }
+
+   return true;
 }
 
 bool Generator::isBinaryExprValid(const ast::BinaryExpr* binaryExpr) const {
@@ -452,17 +459,8 @@ void Generator::generate(const ast::Block* block) {
 
 template <>
 void Generator::generate(const ast::If* ifStmt) {
-   std::optional<DataType> condType = inferType(ifStmt->condition);
-   if(!condType) {
-      return; // error msg handled by inferType
-
-   } else if(*condType != DataType::BOOL) {
-      /// @todo add support for implicit conversion to bool
-      error(
-         err::Category::TYPE_MISMATCH, getLocation(ifStmt->condition),
-         "If condition must be of type BOOL, but is " + to_string(*condType));
+   if(!isValidCondition(ifStmt->condition, "if"))
       return;
-   }
 
    std::string endLabel = newLabel("endif");
    std::string falseLabel = ifStmt->elseBranch ? newLabel("else") : endLabel;
@@ -481,18 +479,8 @@ void Generator::generate(const ast::If* ifStmt) {
 
 template <>
 void Generator::generate(const ast::While* whileStmt) {
-   /// @todo extract this verification bit for IF, WHILE, DO-WHILE stmts
-   std::optional<DataType> condType = inferType(whileStmt->condition);
-   if(!condType)
-      return; // error msg handled by inferType
-
-   if(*condType != DataType::BOOL) {
-      /// @todo add support for implicit conversion to bool
-      error(
-         err::Category::TYPE_MISMATCH, getLocation(whileStmt->condition),
-         "While condition must be of type BOOL, but is " + to_string(*condType));
+   if(!isValidCondition(whileStmt->condition, "while"))
       return;
-   }
 
    std::string whileLabel = newLabel("while");
    std::string endLabel = newLabel("endwhile");
@@ -509,17 +497,8 @@ void Generator::generate(const ast::While* whileStmt) {
 
 template <>
 void Generator::generate(const ast::DoWhile* doWhileStmt) {
-   std::optional<DataType> condType = inferType(doWhileStmt->condition);
-   if(!condType)
-      return; // error msg handled by inferType
-
-   if(*condType != DataType::BOOL) {
-      /// @todo add support for implicit conversion to bool
-      error(
-         err::Category::TYPE_MISMATCH, getLocation(doWhileStmt->condition),
-         "Do-While condition must be of type BOOL, but is " + to_string(*condType));
+   if(!isValidCondition(doWhileStmt->condition, "do-while"))
       return;
-   }
 
    std::string doLabel = newLabel("dowhile");
    std::string checkLabel = newLabel("check");
