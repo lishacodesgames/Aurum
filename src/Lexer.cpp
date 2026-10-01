@@ -93,7 +93,7 @@ std::vector<Token> Lexer::tokenize() {
          buffer.clear();
 
       } else if(std::isdigit(*peek())) {
-         /// @todo allow float type
+         /// @todo allow float type (including with f suffix)
          do buffer.push_back(consume());
          while(peek() && std::isdigit(*peek()));
 

@@ -144,7 +144,8 @@ std::optional<std::string> Generator::tryFold(const ast::Expression& expr) {
 }
 
 std::optional<DataType> Generator::inferType(const ast::Expression& expr) const {
-   return std::visit([this](auto&& arg) -> std::optional<DataType> {
+   // store result, easier for debugging. optimised away with Release Mode anyways.
+   auto result = std::visit([this](auto&& arg) -> std::optional<DataType> {
       using T = std::remove_pointer_t<std::decay_t<decltype(arg)>>;
 
       if constexpr(std::is_same_v<T, ast::Literal>) {
@@ -153,7 +154,6 @@ std::optional<DataType> Generator::inferType(const ast::Expression& expr) const 
       } else if constexpr(std::is_same_v<T, ast::Identifier>) {
          const std::string& varName = arg->token.value.value();
          const SymbolInfo* symbol = findSymbol(varName);
-         /// @todo is this check needed HERE given that we check before calling inferType anyways?
          if(!symbol) {
             error(err::Category::NAME_RESOLUTION, arg->token.location, std::format("Use of undeclared identifier '{}'!", varName));
             return std::nullopt;
@@ -203,7 +203,6 @@ std::optional<DataType> Generator::inferType(const ast::Expression& expr) const 
       } else if constexpr(std::is_same_v<T, ast::Assignment>) {
          const std::string& varName = arg->identifier->token.value.value();
          const SymbolInfo* symbol = findSymbol(varName);
-         /// @todo is this check needed HERE given that we check before calling inferType anyways?
          if(!symbol) {
             error(err::Category::NAME_RESOLUTION, arg->identifier->token.location, std::format("Use of undeclared identifier '{}'!", varName));
             return std::nullopt;
@@ -218,6 +217,8 @@ std::optional<DataType> Generator::inferType(const ast::Expression& expr) const 
       assert(false && "Cannot infer type!");
       return std::nullopt;
    }, expr);
+
+   return result;
 }
 
 std::string Generator::resolveOperand(const ast::Expression& expr) {
@@ -346,6 +347,7 @@ void Generator::generate(const ast::Declaration* declaration) {
 
 template <>
 void Generator::generate(const ast::Exit* exit) {
+   std::string operand = resolveOperand(exit->expression); // resolve first, in case it's a stmt-expression
    std::optional<DataType> exprType = inferType(exit->expression);
    if(!exprType)
       return;
@@ -362,7 +364,7 @@ void Generator::generate(const ast::Exit* exit) {
       return;
    }
 
-   emit(OpCode::EXIT, resolveOperand(exit->expression));
+   emit(OpCode::EXIT, operand);
 }
 
 template <>

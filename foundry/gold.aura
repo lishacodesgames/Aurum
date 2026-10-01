@@ -1,2 +1,2 @@
-bar value;
-exit value;
+bar value = 5;
+exit (value--) * 5+5; $$ 25
